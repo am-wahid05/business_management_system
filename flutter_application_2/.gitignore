@@ -1,6 +1,5 @@
 # Miscellaneous
 *.class
-
 *.log
 *.pyc
 *.swp
@@ -47,5 +46,3 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
-
-

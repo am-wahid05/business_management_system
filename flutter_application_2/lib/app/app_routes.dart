@@ -1,0 +1,20 @@
+abstract final class AppRoutes {
+  static const login = '/';
+  static const secretaryDashboard = '/secretary';
+  static const newReceiving = '/secretary/new-receiving';
+  static const todaysRecords = '/secretary/todays-records';
+  static const adminDashboard = '/admin';
+  static const suppliers = '/admin/suppliers';
+  static const deliveries = '/admin/deliveries';
+  static const products = '/admin/products';
+  static const reports = '/admin/reports';
+  static const monthlyReports = '/admin/reports/monthly';
+  static const yearlyReports = '/admin/reports/yearly';
+  static const statements = '/admin/statements';
+  static const excel = '/admin/excel';
+  static const excelImport = '/admin/excel/import';
+  static const users = '/admin/users';
+  static const settings = '/admin/settings';
+  static const assistant = '/admin/assistant';
+  static const analytics = '/admin/analytics';
+}
