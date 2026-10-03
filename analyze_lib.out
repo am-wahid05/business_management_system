@@ -1,0 +1,22 @@
+Analyzing lib...                                                
+
+   info - The imported package 'archive' isn't a dependency of the importing package. Try adding a dependency for 'archive' in the 'pubspec.yaml' file - lib\features\imports\excel_workbook_repair.dart:4:8 - depend_on_referenced_packages
+   info - The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file - lib\features\imports\excel_workbook_repair.dart:5:8 - depend_on_referenced_packages
+   info - The imported package 'archive' isn't a dependency of the importing package. Try adding a dependency for 'archive' in the 'pubspec.yaml' file - lib\features\imports\workbook_formula_cache.dart:4:8 - depend_on_referenced_packages
+   info - The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file - lib\features\imports\workbook_formula_cache.dart:5:8 - depend_on_referenced_packages
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\locations\ghana_location_fields.dart:40:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\locations\ghana_location_fields.dart:42:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\locations\ghana_location_fields.dart:61:19 - curly_braces_in_flow_control_structures
+warning - The declaration '_formatDate' isn't referenced. Try removing the declaration of '_formatDate' - lib\features\management\admin_dashboard_screen.dart:265:17 - unused_element
+   info - Constructors for public widgets should have a named 'key' parameter. Try adding a named parameter to the constructor - lib\features\management\admin_dashboard_screen.dart:637:9 - use_key_in_widget_constructors
+warning - The value of the field '_savedWorkbooks' isn't used. Try removing the field, or using it - lib\features\management\workbook_grid_screen.dart:112:29 - unused_field
+warning - The value of the field '_loadingSaved' isn't used. Try removing the field, or using it - lib\features\management\workbook_grid_screen.dart:113:14 - unused_field
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\receiving\sms_receipt_service.dart:64:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\receiving\sms_receipt_service.dart:174:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\new_receiving_screen.dart:246:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\new_receiving_screen.dart:386:21 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\new_receiving_screen.dart:388:21 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext - lib\features\suppliers\supplier_profile_screen.dart:96:36 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext - lib\features\suppliers\supplier_profile_screen.dart:102:49 - use_build_context_synchronously
+
+18 issues found. (ran in 32.2s)

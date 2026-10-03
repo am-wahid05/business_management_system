@@ -1,0 +1,5 @@
+﻿C:\Projects\flutter_application_2\lib\features\auth\supabase_auth_repository.dart:153: final membership = selected.first;
+C:\Projects\flutter_application_2\lib\features\imports\workbook_formula_cache.dart:109: final formula = cell.findElements('f').firstOrNull;
+C:\Projects\flutter_application_2\lib\features\imports\workbook_formula_cache.dart:119: cachedText: cell.findElements('v').firstOrNull?.innerText,
+C:\Projects\flutter_application_2\lib\features\management\excel_import_screen.dart:102: _sheet = workbook.sheets.values.first;
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart:516: final columnName = definition.split(' ').first;

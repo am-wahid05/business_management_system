@@ -1,0 +1,65 @@
+Launching lib\main.dart on Windows in debug mode...
+Building Windows application...                                   184.5s
+√ Built build\windows\x64\runner\Debug\business_management_system.exe
+[IMPORTANT:flutter/shell/platform/embedder/embedder_surface_gl_impeller.cc(126)] Using the Impeller rendering backend (OpenGLESSDF).
+supabase.supabase_flutter: INFO: ***** Supabase init completed ***** 
+Syncing files to device Windows...                                  5.6s
+
+Flutter run key commands.
+r Hot reload. 
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on Windows is available at: http://127.0.0.1:56764/S5Rsh5I38VI=/
+The Flutter DevTools debugger and profiler on Windows is available at: http://127.0.0.1:56764/S5Rsh5I38VI=/devtools/?uri=ws://127.0.0.1:56764/S5Rsh5I38VI=/ws
+
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following assertion was thrown building ExcelImportScreen(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedTheme, _LocalizationsScope-[GlobalKey#01734]], state:
+_ExcelImportScreenState#0a3d0):
+There should be exactly one item with [DropdownButton]'s value: DATE.
+Either zero or 2 or more [DropdownMenuItem]s were detected with the same value
+'package:flutter/src/material/dropdown.dart':
+Failed assertion: line 1852 pos 10: 'items == null ||
+             items.isEmpty ||
+             (initialValue == null && value == null) ||
+             items
+                     .where((DropdownMenuItem<T> item) => item.value == (initialValue ?? value))
+                     .length ==
+                 1'
+
+The relevant error-causing widget was:
+  ExcelImportScreen
+  ExcelImportScreen:file:///C:/Users/PC/OneDrive/Desktop/AL_BNC%20MANAGEMENT%20SYSTEM/flutter_application_2/lib/app/albnc_app.dart:437:13
+
+When the exception was thrown, this was the stack:
+#2      new DropdownButtonFormField (package:flutter/src/material/dropdown.dart:1852:10)
+#3      _ExcelImportScreenState._mappingDropdown (package:flutter_application_2/features/management/excel_import_screen.dart:506:12)
+#4      _ExcelImportScreenState.build.<anonymous closure> (package:flutter_application_2/features/management/excel_import_screen.dart:264:50)
+#5      MappedListIterable.elementAt (dart:_internal/iterable.dart:443:31)
+#6      ListIterator.moveNext (dart:_internal/iterable.dart:372:26)
+#7      List.addAll (dart:core-patch/growable_array.dart:328:13)
+#8      _ExcelImportScreenState.build (package:flutter_application_2/features/management/excel_import_screen.dart:264:35)
+#9      StatefulElement.build (package:flutter/src/widgets/framework.dart:5944:27)
+#10     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5830:15)
+#11     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5995:11)
+#12     Element.rebuild (package:flutter/src/widgets/framework.dart:5542:7)
+#13     BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2763:15)
+#14     BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2820:11)
+#15     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3124:18)
+#16     WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1571:21)
+#17     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#18     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#19     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#20     SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1198:5)
+#21     _invoke (dart:ui/hooks.dart:441:13)
+#22     PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:450:5)
+#23     _drawFrame (dart:ui/hooks.dart:413:31)
+(elided 2 frames from class _AssertionError)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Lost connection to device.

@@ -1,0 +1,8 @@
+﻿p1.txt
+run.txt
+z9.txt
+build_windows_debug.log
+flutter_clean.log
+fresh_windows_build.log
+t1.log
+

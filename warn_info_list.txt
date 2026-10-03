@@ -1,0 +1,30 @@
+﻿WARNING unused_element C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\management\admin_dashboard_screen.dart L144 :: The declaration '_formatDate' isn't referenced.
+WARNING unused_field C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\management\workbook_grid_screen.dart L112 :: The value of the field '_savedWorkbooks' isn't used.
+WARNING unused_field C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\management\workbook_grid_screen.dart L113 :: The value of the field '_loadingSaved' isn't used.
+WARNING override_on_non_overriding_member C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\features\assistant\business_assistant_service_test.dart L22 :: The method doesn't override an inherited method.
+WARNING unused_local_variable C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\phase1_harness.dart L185 :: The value of the local variable 'mapping' isn't used.
+INFO depend_on_referenced_packages C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\imports\excel_workbook_repair.dart L4 :: The imported package 'archive' isn't a dependency of the importing package.
+INFO depend_on_referenced_packages C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\imports\excel_workbook_repair.dart L5 :: The imported package 'xml' isn't a dependency of the importing package.
+INFO depend_on_referenced_packages C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\imports\workbook_formula_cache.dart L4 :: The imported package 'archive' isn't a dependency of the importing package.
+INFO depend_on_referenced_packages C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\imports\workbook_formula_cache.dart L5 :: The imported package 'xml' isn't a dependency of the importing package.
+INFO deprecated_member_use C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\receiving\receipt_service.dart L31 :: 'Table.fromTextArray' is deprecated and shouldn't be used. Use TableHelper.fromTextArray() instead.
+INFO deprecated_member_use C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\receiving\receipt_service.dart L58 :: 'Table.fromTextArray' is deprecated and shouldn't be used. Use TableHelper.fromTextArray() instead.
+INFO use_build_context_synchronously C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\lib\features\suppliers\supplier_profile_screen.dart L50 :: Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\dbg.dart L36 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\dbg.dart L38 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\dbg.dart L41 :: Don't invoke 'print' in production code.
+INFO depend_on_referenced_packages C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\features\imports\excel_workbook_repair_test.dart L4 :: The imported package 'archive' isn't a dependency of the importing package.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\phase1_harness.dart L16 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\phase1_harness.dart L19 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\phase1_harness.dart L286 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\test\phase1_harness.dart L287 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_domain_check.dart L11 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_domain_check.dart L14 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_domain_check.dart L22 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_domain_check.dart L24 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_domain_check.dart L151 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_domain_check.dart L152 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_excel_check.dart L16 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_excel_check.dart L19 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_excel_check.dart L178 :: Don't invoke 'print' in production code.
+INFO avoid_print C:\Users\PC\OneDrive\Desktop\AL_BNC MANAGEMENT SYSTEM\flutter_application_2\tool\bulk_excel_check.dart L179 :: Don't invoke 'print' in production code.

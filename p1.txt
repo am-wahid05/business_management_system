@@ -1,0 +1,62 @@
+Launching lib\main.dart on Windows in debug mode...
+Building Windows application...                                   224.5s
+√ Built build\windows\x64\runner\Debug\business_management_system.exe
+[IMPORTANT:flutter/shell/platform/embedder/embedder_surface_gl_impeller.cc(126)] Using the Impeller rendering backend (OpenGLESSDF).
+supabase.supabase_flutter: INFO: ***** Supabase init completed ***** 
+Syncing files to device Windows...                                 10.8s
+
+Flutter run key commands.
+r Hot reload. 
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on Windows is available at: http://127.0.0.1:62512/oKbcQZstuMw=/
+The Flutter DevTools debugger and profiler on Windows is available at: http://127.0.0.1:62512/oKbcQZstuMw=/devtools/?uri=ws://127.0.0.1:62512/oKbcQZstuMw=/ws
+
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during layout:
+A RenderFlex overflowed by 260 pixels on the right.
+
+The relevant error-causing widget was:
+  Row
+  Row:file:///C:/Users/PC/OneDrive/Desktop/AL_BNC%20MANAGEMENT%20SYSTEM/flutter_application_2/lib/features/imports/workbook_grid_view.dart:349:12
+
+To inspect this widget in Flutter DevTools, visit:
+http://127.0.0.1:62512/oKbcQZstuMw=/devtools//#/inspector?uri=http%3A%2F%2F127.0.0.1%3A62512%2FoKbcQZstuMw%3D%2F&inspectorRef=inspector-0
+
+The overflowing RenderFlex has an orientation of Axis.horizontal.
+The edge of the RenderFlex that is overflowing has been marked in the rendering with a yellow and
+black striped pattern. This is usually caused by the contents being too big for the RenderFlex.
+Consider applying a flex factor (e.g. using an Expanded widget) to force the children of the
+RenderFlex to fit within the available space instead of being sized to their natural size.
+This is considered an error condition because it indicates that there is content that cannot be
+seen. If the content is legitimately bigger than the available space, consider clipping it with a
+ClipRect widget before putting it in the flex, or using a scrollable container rather than a Flex,
+like a ListView.
+The specific RenderFlex in question is: RenderFlex#4939a OVERFLOWING:
+  creator: Row ← RepaintBoundary ← IndexedSemantics ← _SelectionKeepAlive ←
+    NotificationListener<KeepAliveNotification> ← KeepAlive ← AutomaticKeepAlive ← KeyedSubtree ←
+    SliverVariedExtentList ← MediaQuery ← SliverPadding ← Viewport ← ⋯
+  parentData: <none> (can use size)
+  constraints: BoxConstraints(w=1690.0, h=30.0)
+  size: Size(1690.0, 30.0)
+  direction: horizontal
+  mainAxisAlignment: start
+  mainAxisSize: max
+  crossAxisAlignment: center
+  textDirection: ltr
+  verticalDirection: down
+  spacing: 0.0
+◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Another exception was thrown: A RenderFlex overflowed by 260 pixels on the right.
+Another exception was thrown: A RenderFlex overflowed by 260 pixels on the right.
+Another exception was thrown: setState() or markNeedsBuild() called during build.
+Another exception was thrown: setState() or markNeedsBuild() called during build.
+supabase.auth: INFO: Signing out user with scope: local 
+supabase.auth: INFO: Signing out user with scope: local 
+Lost connection to device.

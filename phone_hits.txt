@@ -1,0 +1,105 @@
+﻿C:\Projects\flutter_application_2\lib\app\app_responsive.dart:9: /// a phone, which is the behaviour that keeps resizing smooth), and changing the
+C:\Projects\flutter_application_2\lib\app\app_responsive.dart:35: /// Phones, and a small or half-width Windows window.
+C:\Projects\flutter_application_2\lib\domain\models\supplier.dart:12: this.phone,
+C:\Projects\flutter_application_2\lib\domain\models\supplier.dart:31: final String? phone;
+C:\Projects\flutter_application_2\lib\domain\models\supplier.dart:43: String? phone,
+C:\Projects\flutter_application_2\lib\domain\models\supplier.dart:58: phone: phone ?? this.phone,
+C:\Projects\flutter_application_2\lib\features\about\about_row.dart:6: /// field for showing a phone number or a URL as text, so neither the WhatsApp
+C:\Projects\flutter_application_2\lib\features\auth\change_password_screen.dart:135: // The button is full width on a phone and naturally sized on a desktop,
+C:\Projects\flutter_application_2\lib\features\auth\password_widgets.dart:69: /// 400px phone and on a 2560px monitor without the form stretching or the button
+C:\Projects\flutter_application_2\lib\features\imports\supplier_name_detector.dart:88: 'phone',
+C:\Projects\flutter_application_2\lib\features\management\settings_screen.dart:40: // section on one screen. A small window or a phone therefore keeps the
+C:\Projects\flutter_application_2\lib\features\management\suppliers_screen.dart:104: labelText: 'Search by name, ID, phone, or town',
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart:184: phone TEXT NOT NULL,
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart:306: phone TEXT,
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart:394: phone TEXT,
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart:411: phone, town, district, region, notes, is_active, created_at, updated_at,
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart:416: phone, town, district, region, notes, is_active, created_at, updated_at,
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:510: final phone = filters.phone?.trim() ?? '';
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:511: if (phone.isNotEmpty) {
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:512: final supplierIds = await _supplierIdsMatchingPhone(phone);
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:529: /// Supplier business IDs whose saved phone contains the last digits of
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:530: /// [phone]. Scoped to the active company so a search cannot reach another
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:532: Future<List<String>> _supplierIdsMatchingPhone(String phone) async {
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:533: final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:540: 'phone IS NOT NULL AND LOWER(REPLACE(REPLACE(REPLACE(phone, \' \', \'\'), \'-\', \'\'), \'+\', \'\')) LIKE ?${_usesCompanyScope ? ' AND company_id IS ?' : ''}',
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:577: phone: row['phone'] as String?,
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:585: /// Saved supplier phone for a delivery, used for phone search and for the
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:587: Future<String?> _supplierPhoneFor(String supplierId, String? companyId) async {
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:590: columns: ['phone'],
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:598: final phone = rows.first['phone'] as String?;
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:599: return phone != null && phone.trim().isNotEmpty ? phone.trim() : null;
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:635: phone: await _supplierPhoneFor(
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:705: this.phone,
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:715: /// Matches the saved supplier phone number.
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:716: final String? phone;
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:731: (phone == null || phone!.trim().isEmpty) &&
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:742: this.phone,
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:752: final String? phone;
+C:\Projects\flutter_application_2\lib\features\receiving\receipt_service.dart:35: if (delivery.supplier.phone != null) pw.Text('Phone: ${delivery.supplier.phone}'),
+C:\Projects\flutter_application_2\lib\features\receiving\receipt_service.dart:103: final phone = delivery.supplier.phone?.replaceAll(RegExp(r'[^0-9+]'), '');
+C:\Projects\flutter_application_2\lib\features\receiving\receipt_service.dart:104: if (phone == null || phone.isEmpty) return false;
+C:\Projects\flutter_application_2\lib\features\receiving\receipt_service.dart:106: return launchUrl(Uri.parse('https://wa.me/$phone?text=$text'), mode: LaunchMode.externalApplication);
+C:\Projects\flutter_application_2\lib\features\receiving\receiving_service.dart:32: String? phone,
+C:\Projects\flutter_application_2\lib\features\receiving\receiving_service.dart:95: phone: phone,
+C:\Projects\flutter_application_2\lib\features\receiving\sms_receipt_service.dart:44: final phone = GhanaPhoneNumber.normalize(delivery.supplier.phone);
+C:\Projects\flutter_application_2\lib\features\receiving\sms_receipt_service.dart:45: if (phone == null) {
+C:\Projects\flutter_application_2\lib\features\receiving\sms_receipt_service.dart:46: throw const SmsReceiptException('A valid Ghana phone number is required before sending a receipt.');
+C:\Projects\flutter_application_2\lib\features\receiving\sms_receipt_service.dart:56: phone: phone,
+C:\Projects\flutter_application_2\lib\features\receiving\sms_receipt_service.dart:76: 'to': phone,
+C:\Projects\flutter_application_2\lib\features\receiving\sms_receipt_service.dart:101: 'phone': phone,
+C:\Projects\flutter_application_2\lib\features\receiving\sms_receipt_service.dart:130: abstract final class GhanaPhoneNumber {
+C:\Projects\flutter_application_2\lib\features\receiving\sms_transport.dart:34: required String phone,
+C:\Projects\flutter_application_2\lib\features\receiving\sms_transport.dart:54: required String phone,
+C:\Projects\flutter_application_2\lib\features\receiving\sms_transport.dart:61: body: {'delivery_id': reference, 'phone': phone},
+C:\Projects\flutter_application_2\lib\features\receiving\sms_transport.dart:128: required String phone,
+C:\Projects\flutter_application_2\lib\features\receiving\sms_transport.dart:139: 'to': phone,
+C:\Projects\flutter_application_2\lib\features\secretary\delivery_detail_screen.dart:76: final phone = _delivery.supplier.phone;
+C:\Projects\flutter_application_2\lib\features\secretary\delivery_detail_screen.dart:77: if (phone == null || phone.trim().isEmpty) {
+C:\Projects\flutter_application_2\lib\features\secretary\delivery_detail_screen.dart:78: ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No supplier phone number is saved for this delivery.')));
+C:\Projects\flutter_application_2\lib\features\secretary\new_receiving_screen.dart:45: final _phoneController = TextEditingController();
+C:\Projects\flutter_application_2\lib\features\secretary\new_receiving_screen.dart:90: _phoneController.dispose();
+C:\Projects\flutter_application_2\lib\features\secretary\new_receiving_screen.dart:181: phone: _phoneController.text,
+C:\Projects\flutter_application_2\lib\features\secretary\new_receiving_screen.dart:224: TextField(controller: _searchController, onChanged: (_) => setState(() => _selectedSupplier = null), decoration: const InputDecoration(labelText: 'Search supplier name, ID, phone, or town', prefixIcon: Icon(Icons.search))),
+C:\Projects\flutter_application_2\lib\features\secretary\new_receiving_screen.dart:233: TextField(controller: _phoneController, decoration: const InputDecoration(labelText: 'Phone (optional)'), keyboardType: TextInputType.phone),
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:55: final _phoneController = TextEditingController();
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:72: _phoneController.dispose();
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:86: phone: _phoneController.text,
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:189: _phoneController.clear();
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:290: "phone number. Only your own company's receipts are shown.",
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:312: controller: _phoneController,
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:313: keyboardType: TextInputType.phone,
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:315: labelText: 'Phone number',
+C:\Projects\flutter_application_2\lib\features\secretary\todays_records_screen.dart:316: prefixIcon: Icon(Icons.phone_outlined),
+C:\Projects\flutter_application_2\lib\features\spreadsheet\spreadsheet_screen.dart:25: /// and the same grid is used on a desktop and on a phone.
+C:\Projects\flutter_application_2\lib\features\spreadsheet\spreadsheet_screen.dart:643: // UI, on a desktop and on a phone alike, so the same cells are
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:24: late final TextEditingController _phoneController;
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:39: _phoneController = TextEditingController(text: supplier?.phone);
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:50: _phoneController.dispose();
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:66: phone: _phoneController.text,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:76: phone: _phoneController.text.trim(),
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:131: controller: _phoneController,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:132: decoration: const InputDecoration(labelText: 'Phone (optional)'),
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_form_screen.dart:133: keyboardType: TextInputType.phone,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_profile_screen.dart:329: if (supplier.phone != null) Text(supplier.phone!),
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:101: _normalize(supplier.phone ?? '').contains(normalizedQuery) ||
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:118: required String phone,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:133: final contact = _normalizeContact(phone);
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:142: phone: contact,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:156: phone: contact,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:249: phone: null,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:279: phone: null,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:387: String? phone,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:428: phone: phone == null ? null : _normalizeContact(phone),
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:576: String? phone,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:589: phone: phone,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:607: 'phone': supplier.phone,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:633: /// This reuses the project's existing Ghana phone normalization rather than
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:642: static String? _normalizeContact(String phone) {
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:643: final trimmed = phone.trim();
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:645: return GhanaPhoneNumber.normalize(trimmed) ?? trimmed;
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:656: phone: row['phone'] as String?,
+C:\Projects\flutter_application_2\lib\features\suppliers\supplier_repository.dart:674: 'phone': supplier.phone,
+C:\Projects\flutter_application_2\lib\features\sync\supabase_delivery_store.dart:70: 'phone': row['phone'],
+C:\Projects\flutter_application_2\lib\features\sync\supabase_delivery_store.dart:121: 'phone': row['phone'],
+C:\Projects\flutter_application_2\lib\features\sync\supabase_delivery_store.dart:258: 'phone': supplierRow?['phone'] ?? delivery.supplier.phone,

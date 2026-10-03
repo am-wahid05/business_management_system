@@ -1,0 +1,9 @@
+﻿ERRCODE 35 undefined_method
+ERRCODE 29 undefined_identifier
+ERRCODE 26 undefined_function
+ERRCODE 12 argument_type_not_assignable
+ERRCODE 11 non_type_as_type_argument
+ERRCODE 9 undefined_getter
+ERRCODE 7 undefined_named_parameter
+ERRCODE 1 unchecked_use_of_nullable_value
+ERRCODE 1 implements_non_class

@@ -1,0 +1,3 @@
+﻿C:\Projects\flutter_application_2\lib\domain\models\delivery.dart:218: if (userId == null || userId.trim().isEmpty || userId == 'local-secretary') {
+C:\Projects\flutter_application_2\lib\features\receiving\delivery_repository.dart:684: value == 'local-secretary') {
+C:\Projects\flutter_application_2\lib\features\secretary\new_receiving_screen.dart:168: recordedByUserId: 'local-secretary',

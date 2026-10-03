@@ -1,0 +1,157 @@
+00:00 +0: loading C:/Projects/flutter_application_2/test/features/products/product_database_recorder_migration_test.dart
+00:00 +0: C:/Projects/flutter_application_2/test/features/products/product_database_recorder_migration_test.dart: v12 to v13 keeps legacy rows and allows NULL recorder IDs
+error SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while executing, no such table: suppliers, SQL logic error (code 1)
+  Causing statement:       INSERT INTO suppliers_company_scoped (
+        internal_id, supplier_id, company_id, normalized_name, name, type,
+        phone, town, district, region, notes, is_active, created_at, updated_at,
+        synchronization_status, synchronization_error
+      )
+      SELECT
+        internal_id, supplier_id, company_id, normalized_name, name, type,
+        phone, town, district, region, notes, is_active, created_at, updated_at,
+        synchronization_status, synchronization_error
+      FROM suppliers
+    , parameters: }) DatabaseException(SqliteException(1): while executing, no such table: suppliers, SQL logic error (code 1)
+  Causing statement:       INSERT INTO suppliers_company_scoped (
+        internal_id, supplier_id, company_id, normalized_name, name, type,
+        phone, town, district, region, notes, is_active, created_at, updated_at,
+        synchronization_status, synchronization_error
+      )
+      SELECT
+        internal_id, supplier_id, company_id, normalized_name, name, type,
+        phone, town, district, region, notes, is_active, created_at, updated_at,
+        synchronization_status, synchronization_error
+      FROM suppliers
+    , parameters: ) sql '      INSERT INTO suppliers_company_scoped (
+        internal_id, supplier_id, company_id, normalized_name, name, type,
+        phone, town, district, region, notes, is_active, created_at, updated_at,
+        synchronization_status, synchronization_error
+      )
+      SELECT
+        internal_id, supplier_id, company_id, normalized_name, name, type,
+        phone, town, district, region, notes, is_active, created_at, updated_at,
+        synchronization_status, synchronization_error
+      FROM suppliers
+    ' {details: {database: {path: C:\Users\PC\AppData\Local\Temp\recorded-by-migration-9b08c4e3\legacy.db, id: 2, readOnly: false, singleInstance: true}}} during open, closing...
+00:01 +0 -1: C:/Projects/flutter_application_2/test/features/products/product_database_recorder_migration_test.dart: v12 to v13 keeps legacy rows and allows NULL recorder IDs [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while executing, no such table: suppliers, SQL logic error (code 1)
+    Causing statement:       INSERT INTO suppliers_company_scoped (
+          internal_id, supplier_id, company_id, normalized_name, name, type,
+          phone, town, district, region, notes, is_active, created_at, updated_at,
+          synchronization_status, synchronization_error
+        )
+        SELECT
+          internal_id, supplier_id, company_id, normalized_name, name, type,
+          phone, town, district, region, notes, is_active, created_at, updated_at,
+          synchronization_status, synchronization_error
+        FROM suppliers
+      , parameters: }) DatabaseException(SqliteException(1): while executing, no such table: suppliers, SQL logic error (code 1)
+    Causing statement:       INSERT INTO suppliers_company_scoped (
+          internal_id, supplier_id, company_id, normalized_name, name, type,
+          phone, town, district, region, notes, is_active, created_at, updated_at,
+          synchronization_status, synchronization_error
+        )
+        SELECT
+          internal_id, supplier_id, company_id, normalized_name, name, type,
+          phone, town, district, region, notes, is_active, created_at, updated_at,
+          synchronization_status, synchronization_error
+        FROM suppliers
+      , parameters: ) sql '      INSERT INTO suppliers_company_scoped (
+          internal_id, supplier_id, company_id, normalized_name, name, type,
+          phone, town, district, region, notes, is_active, created_at, updated_at,
+          synchronization_status, synchronization_error
+        )
+        SELECT
+          internal_id, supplier_id, company_id, normalized_name, name, type,
+          phone, town, district, region, notes, is_active, created_at, updated_at,
+          synchronization_status, synchronization_error
+        FROM suppliers
+      ' {details: {database: {path: C:\Users\PC\AppData\Local\Temp\recorded-by-migration-9b08c4e3\legacy.db, id: 2, readOnly: false, singleInstance: true}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:01 +0 -1: loading C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart
+00:09 +0 -1: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order starts as Cashew, Shea Nuts, Cocoa
+00:10 +0 -2: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order starts as Cashew, Shea Nuts, Cocoa [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -2: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order the product ids are the existing ones and are not renamed
+00:10 +0 -3: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order the product ids are the existing ones and are not renamed [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 2, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -3: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order the order is not alphabetical
+00:10 +0 -4: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order the order is not alphabetical [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 3, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -4: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order seeding twice does not duplicate the products
+00:10 +0 -5: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: the required display order seeding twice does not duplicate the products [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 4, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -5: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products a new product appears after the three initial products
+00:10 +0 -6: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products a new product appears after the three initial products [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 5, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -6: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products several added products are ordered alphabetically after them
+00:10 +0 -7: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products several added products are ordered alphabetically after them [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 6, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -7: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products adding a product does not disturb the three initial ones
+00:10 +0 -8: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products adding a product does not disturb the three initial ones [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 7, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -8: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: company isolation company A products do not appear for company B
+00:10 +0 -9: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: company isolation company A products do not appear for company B [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 8, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -9: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: company isolation each company seeds its own copy independently
+00:10 +0 -10: C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: company isolation each company seeds its own copy independently [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1}) DatabaseException(SqliteException(1): while preparing statement, no such column: company_id, SQL logic error (code 1)
+    Causing statement (at position 40): SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1) sql 'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1' args [cashew, company-a] {details: {database: {path: :memory:, id: 9, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 126:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate_io.dart 84:12   SqfliteIsolate.handle
+  
+00:10 +0 -10: loading C:/Projects/flutter_application_2/test/features/products/product_repository_test.dart
+00:14 +0 -10: C:/Projects/flutter_application_2/test/features/products/product_repository_test.dart: seeds the three initial products once
+00:14 +1 -10: C:/Projects/flutter_application_2/test/features/products/product_repository_test.dart: creates future products and rejects duplicate names
+00:14 +2 -10: C:/Projects/flutter_application_2/test/features/products/product_repository_test.dart: updates product name and active status without deleting it
+00:14 +3 -10: Some tests failed.
+
+Failing tests:
+  C:/Projects/flutter_application_2/test/features/products/product_database_recorder_migration_test.dart: v12 to v13 keeps legacy rows and allows NULL recorder IDs
+  C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products a new product appears after the three initial products
+  C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products adding a product does not disturb the three initial ones
+  C:/Projects/flutter_application_2/test/features/products/product_ordering_test.dart: admin added products several added products are ordered alphabetically after them
+  ... and 6 more

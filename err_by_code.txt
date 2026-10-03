@@ -1,0 +1,9 @@
+﻿35 undefined_method
+29 undefined_identifier
+26 undefined_function
+12 argument_type_not_assignable
+11 non_type_as_type_argument
+9 undefined_getter
+7 undefined_named_parameter
+1 unchecked_use_of_nullable_value
+1 implements_non_class
