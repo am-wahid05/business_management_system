@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_navigation.dart';
+import '../../app/app_responsive.dart';
+import '../../app/app_ui.dart';
 import '../auth/active_company_context.dart';
 import '../../domain/models/supplier.dart';
 import '../suppliers/supplier_form_screen.dart';
@@ -8,7 +11,6 @@ import '../suppliers/supplier_repository.dart';
 import '../suppliers/supplier_statement.dart';
 import '../exports/excel_export_service.dart';
 import '../receiving/delivery_repository.dart';
-import 'admin_dashboard_screen.dart';
 
 class SuppliersScreen extends StatefulWidget {
   const SuppliersScreen({
@@ -32,6 +34,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   final _searchController = TextEditingController();
   SupplierType? _type;
   bool _showInactive = false;
+  bool _loading = true;
 
   @override
   void initState() {
@@ -48,9 +51,15 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   }
 
   void _loadSuppliers() {
-    widget.repository.initialize().then((_) {
-      if (mounted) setState(() {});
-    });
+    setState(() => _loading = true);
+    widget.repository
+        .initialize()
+        .then((_) {
+          if (mounted) setState(() => _loading = false);
+        })
+        .catchError((_) {
+          if (mounted) setState(() => _loading = false);
+        });
   }
 
   List<Supplier> get _suppliers {
@@ -83,7 +92,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     final suppliers = _suppliers;
     return Scaffold(
       appBar: AppBar(title: const Text('Suppliers')),
-      drawer: AdminNavigationDrawer(
+      drawer: adminDrawerFor(
+        context,
         onLogout: widget.onLogout,
         activeCompanyContext: widget.activeCompanyContext,
       ),
@@ -92,92 +102,106 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         icon: const Icon(Icons.person_add_alt_1),
         label: const Text('Add supplier'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Text(
-            'Farmer and aggregator profiles',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _searchController,
-            onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              labelText: 'Search by name, ID, phone, or town',
-              prefixIcon: Icon(Icons.search),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
+      body: AppResponsive(
+        maxWidth: AppBreakpoints.contentMaxWidth,
+        centre: false,
+        builder: (context, size) {
+          return ListView(
+            padding: const EdgeInsets.all(24),
             children: [
-              FilterChip(
-                label: const Text('Farmers'),
-                selected: _type == SupplierType.farmer,
-                onSelected: (selected) => setState(
-                  () => _type = selected ? SupplierType.farmer : null,
+              const AppPageHeader(
+                title: 'Suppliers',
+                subtitle: 'Farmer and aggregator profiles',
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Search by name, ID, phone, or town',
+                  prefixIcon: Icon(Icons.search),
                 ),
               ),
-              FilterChip(
-                label: const Text('Aggregators'),
-                selected: _type == SupplierType.aggregator,
-                onSelected: (selected) => setState(
-                  () => _type = selected ? SupplierType.aggregator : null,
-                ),
-              ),
-              FilterChip(
-                label: const Text('Show inactive'),
-                selected: _showInactive,
-                onSelected: (selected) =>
-                    setState(() => _showInactive = selected),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (suppliers.isEmpty)
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Text('No suppliers found.'),
-              ),
-            ),
-          ...suppliers.map(
-            (supplier) => Card(
-              child: ListTile(
-                leading: Icon(
-                  supplier.type == SupplierType.farmer
-                      ? Icons.person_outline
-                      : Icons.groups_outlined,
-                ),
-                title: Text(supplier.name),
-                subtitle: Text(
-                  '${supplier.id} · ${supplier.town} · ${supplier.isActive ? 'Active' : 'Inactive'}',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SupplierProfileScreen(
-                        repository: widget.repository,
-                        supplier: supplier,
-                        activeCompanyContext: widget.activeCompanyContext,
-                        statementService: SupplierStatementService(
-                          widget.deliveryRepository,
-                        ),
-                        statementExporter: ExcelExportService(
-                          widget.deliveryRepository,
-                        ),
-                      ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [
+                  FilterChip(
+                    label: const Text('Farmers'),
+                    selected: _type == SupplierType.farmer,
+                    onSelected: (selected) => setState(
+                      () => _type = selected ? SupplierType.farmer : null,
                     ),
-                  );
-                  setState(() {});
-                },
+                  ),
+                  FilterChip(
+                    label: const Text('Aggregators'),
+                    selected: _type == SupplierType.aggregator,
+                    onSelected: (selected) => setState(
+                      () => _type = selected ? SupplierType.aggregator : null,
+                    ),
+                  ),
+                  FilterChip(
+                    label: const Text('Show inactive'),
+                    selected: _showInactive,
+                    onSelected: (selected) =>
+                        setState(() => _showInactive = selected),
+                  ),
+                ],
               ),
-            ),
-          ),
-        ],
+              const SizedBox(height: 16),
+              if (_loading)
+                const AppLoadingList(rows: 6)
+              else if (suppliers.isEmpty)
+                AppEmptyState(
+                  title: 'No suppliers found',
+                  message:
+                      'Try a different search or add a new supplier profile.',
+                  icon: Icons.people_outline,
+                  action: OutlinedButton.icon(
+                    onPressed: _createSupplier,
+                    icon: const Icon(Icons.person_add_alt_1),
+                    label: const Text('Add supplier'),
+                  ),
+                ),
+              if (!_loading)
+                ...suppliers.map(
+                  (supplier) => Card(
+                    child: ListTile(
+                      leading: Icon(
+                        supplier.type == SupplierType.farmer
+                            ? Icons.person_outline
+                            : Icons.groups_outlined,
+                      ),
+                      title: Text(supplier.name),
+                      subtitle: Text(
+                        '${supplier.id} · ${supplier.town} · ${supplier.isActive ? 'Active' : 'Inactive'}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SupplierProfileScreen(
+                              repository: widget.repository,
+                              supplier: supplier,
+                              activeCompanyContext: widget.activeCompanyContext,
+                              statementService: SupplierStatementService(
+                                widget.deliveryRepository,
+                              ),
+                              statementExporter: ExcelExportService(
+                                widget.deliveryRepository,
+                              ),
+                            ),
+                          ),
+                        );
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

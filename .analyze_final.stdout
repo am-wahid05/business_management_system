@@ -1,0 +1,31 @@
+Analyzing lib...                                                
+
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\app\app_ui.dart:897:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\analytics\analytics_report_screen.dart:268:27 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\assistant\business_assistant_service.dart:12:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\assistant\business_assistant_service.dart:61:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\assistant\business_assistant_service.dart:63:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\assistant\business_assistant_service.dart:65:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\assistant\business_assistant_service.dart:87:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\assistant\business_assistant_service.dart:92:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\assistant\business_assistant_service.dart:94:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\auth\user_management_screen.dart:51:9 - curly_braces_in_flow_control_structures
+   info - The imported package 'archive' isn't a dependency of the importing package. Try adding a dependency for 'archive' in the 'pubspec.yaml' file - lib\features\imports\excel_workbook_repair.dart:4:8 - depend_on_referenced_packages
+   info - The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file - lib\features\imports\excel_workbook_repair.dart:5:8 - depend_on_referenced_packages
+   info - The imported package 'archive' isn't a dependency of the importing package. Try adding a dependency for 'archive' in the 'pubspec.yaml' file - lib\features\imports\workbook_formula_cache.dart:4:8 - depend_on_referenced_packages
+   info - The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file - lib\features\imports\workbook_formula_cache.dart:5:8 - depend_on_referenced_packages
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\locations\ghana_location_service.dart:36:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\locations\ghana_location_service.dart:41:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\locations\ghana_location_service.dart:86:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\management\reports_screen.dart:40:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\delivery_detail_screen.dart:186:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\delivery_detail_screen.dart:229:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\delivery_detail_screen.dart:252:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\delivery_detail_screen.dart:364:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\secretary\new_receiving_screen.dart:352:27 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\spreadsheet\spreadsheet_formula.dart:129:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\spreadsheet\spreadsheet_validation.dart:36:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\sync\sync_status_card.dart:45:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\sync\sync_status_card.dart:69:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\sync\sync_status_card.dart:74:9 - curly_braces_in_flow_control_structures
+

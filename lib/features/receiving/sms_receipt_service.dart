@@ -6,139 +6,395 @@ import 'package:sqflite/sqflite.dart';
 import '../../domain/models/delivery.dart';
 import 'sms_transport.dart';
 
-/// Neutral label used when the active company does not provide a name.
-/// Receipts are customer-facing, so tenant-specific branding must never be
-/// hardcoded here.
 String _companyLabel(String? companyName) {
   final name = companyName?.trim();
   return (name == null || name.isEmpty) ? 'Company' : name;
 }
 
 class SmsReceiptException implements Exception {
-  const SmsReceiptException(this.message);
+  const SmsReceiptException(this.message, {this.code});
 
   final String message;
+  final String? code;
 
   @override
   String toString() => message;
 }
 
 /// Read-only access to the authenticated company's server-managed SMS balance.
-/// Sending services may consult it before a send, but only the server can
-/// reserve or change credits.
 abstract interface class SmsCreditBalanceReader {
   Future<int?> balanceFor(String companyId);
 }
 
+class SmsRecipient {
+  const SmsRecipient({required this.raw, required this.normalized});
+
+  final String raw;
+  final String normalized;
+}
+
+/// Normalizes, de-duplicates, and preserves the order of SMS recipients.
+class SmsRecipientList {
+  SmsRecipientList._({
+    required List<SmsRecipient> unique,
+    required List<String> duplicates,
+    required List<String> rejected,
+  }) : unique = List.unmodifiable(unique),
+       duplicates = List.unmodifiable(duplicates),
+       rejected = List.unmodifiable(rejected);
+
+  factory SmsRecipientList.build(Iterable<String> rawValues) {
+    final unique = <SmsRecipient>[];
+    final seen = <String>{};
+    final duplicateSet = <String>{};
+    final rejected = <String>[];
+
+    for (final raw in rawValues) {
+      if (raw.trim().isEmpty) continue;
+      final normalized = GhanaPhoneNumber.normalize(raw);
+      if (normalized == null) {
+        rejected.add(raw);
+        continue;
+      }
+      if (!seen.add(normalized)) {
+        duplicateSet.add(normalized);
+        continue;
+      }
+      unique.add(SmsRecipient(raw: raw, normalized: normalized));
+    }
+
+    return SmsRecipientList._(
+      unique: unique,
+      duplicates: duplicateSet.toList(growable: false),
+      rejected: rejected,
+    );
+  }
+
+  final List<SmsRecipient> unique;
+  final List<String> duplicates;
+  final List<String> rejected;
+
+  int get uniqueCount => unique.length;
+  bool get isEmpty => unique.isEmpty;
+  bool get hasDuplicates => duplicates.isNotEmpty;
+
+  bool contains(String raw) {
+    final normalized = GhanaPhoneNumber.normalize(raw);
+    return normalized != null &&
+        unique.any((item) => item.normalized == normalized);
+  }
+}
+
+SmsRecipientList initialSmsRecipients(String? savedPhone) =>
+    SmsRecipientList.build(savedPhone == null ? const [] : [savedPhone]);
+
+class SmsSendFailure {
+  const SmsSendFailure({
+    required this.recipient,
+    required this.errorCode,
+    required this.message,
+  });
+
+  final SmsRecipient recipient;
+  final String errorCode;
+  final String message;
+}
+
+class SmsSendSummary {
+  SmsSendSummary({
+    required this.recipientCount,
+    required this.creditsRequired,
+    required this.creditsCharged,
+    required this.creditsRefunded,
+    required List<SmsRecipient> sent,
+    required List<SmsSendFailure> failures,
+    required List<String> duplicates,
+    required List<String> rejected,
+  }) : sent = List.unmodifiable(sent),
+       failures = List.unmodifiable(failures),
+       duplicates = List.unmodifiable(duplicates),
+       rejected = List.unmodifiable(rejected);
+
+  final int recipientCount;
+  final int creditsRequired;
+  final int creditsCharged;
+  final int creditsRefunded;
+  final List<SmsRecipient> sent;
+  final List<SmsSendFailure> failures;
+  final List<String> duplicates;
+  final List<String> rejected;
+
+  bool get allSucceeded => failures.isEmpty && sent.length == recipientCount;
+
+  String get message {
+    if (allSucceeded) {
+      final noun = recipientCount == 1 ? 'recipient' : 'recipients';
+      return '$recipientCount $noun accepted by the SMS provider.';
+    }
+    if (sent.isEmpty) return 'No SMS was accepted by the provider.';
+    return '${sent.length} of $recipientCount SMS messages were accepted; '
+        '${failures.length} failed and were not charged.';
+  }
+}
+
+/// Sends receipt summaries while keeping company balance changes on the server.
+///
+/// The production transport is [SupabaseEdgeFunctionSmsTransport]. That Edge
+/// Function derives the company from the authenticated membership and delivery,
+/// atomically reserves the company's credits, calls the one shared Sailup
+/// account, then consumes or refunds the reservation. The optional balance
+/// reader here is only a fast UI guard; it never mutates a balance.
 class SmsReceiptService {
   SmsReceiptService({
     http.Client? client,
     String? gatewayUrl,
-    this._database,
+    this.database,
     this.transport,
+    this.senderLabel = 'Company',
+    this.companyIdProvider,
+    this.creditReader,
   }) : _client = client ?? http.Client(),
        _gatewayUrl =
            gatewayUrl ?? const String.fromEnvironment('SMS_GATEWAY_URL');
 
   final http.Client _client;
   final String _gatewayUrl;
-  final Database? _database;
+  final Database? database;
   final SmsTransport? transport;
+  final String senderLabel;
+  final String? Function()? companyIdProvider;
+  final SmsCreditBalanceReader? creditReader;
 
   Future<void> send(Delivery delivery, {String? companyName}) async {
-    final phone = GhanaPhoneNumber.normalize(delivery.supplier.phone);
-    if (phone == null) {
+    final summary = await sendToMany(
+      delivery,
+      phones: [delivery.supplier.phone ?? ''],
+      companyName: companyName,
+    );
+    if (summary.sent.isEmpty) {
+      final failure = summary.failures.isEmpty ? null : summary.failures.first;
+      throw SmsReceiptException(
+        failure?.message ?? 'The SMS service rejected the receipt.',
+        code: failure?.errorCode,
+      );
+    }
+  }
+
+  Future<SmsSendSummary> sendToMany(
+    Delivery delivery, {
+    required Iterable<String> phones,
+    String? companyName,
+  }) async {
+    final companyId = _resolveCompany(delivery);
+    final recipients = SmsRecipientList.build(phones);
+    if (recipients.isEmpty) {
       throw const SmsReceiptException(
         'A valid Ghana phone number is required before sending a receipt.',
+        code: 'PHONE_REQUIRED',
       );
     }
-    final database = _database;
-    if (database != null) {
-      final previous = await database.query(
-        'receipt_sends',
-        where: 'delivery_id = ? AND channel = ? AND status = ?',
-        whereArgs: [delivery.id, 'sms', 'sent'],
-        limit: 1,
-      );
-      if (previous.isNotEmpty) {
-        throw const SmsReceiptException(
-          'This receipt was already sent by SMS.',
+
+    final requiredCredits = recipients.uniqueCount;
+    final reader = creditReader;
+    if (reader != null && companyId != null) {
+      final balance = await reader.balanceFor(companyId);
+      if (balance != null && balance < requiredCredits) {
+        throw SmsReceiptException(
+          requiredCredits == 1
+              ? 'SMS credits exhausted. You currently have 0 SMS credits. '
+                    'Please top up your SMS credits before sending a receipt.'
+              : 'You do not have enough SMS credits for all the recipients on '
+                    'this list. No SMS was sent and no credits were used.',
+          code: balance <= 0
+              ? 'SMS_CREDITS_EXHAUSTED'
+              : 'SMS_CREDITS_INSUFFICIENT',
         );
       }
     }
-    final configuredTransport = transport;
-    if (configuredTransport != null) {
-      final result = await configuredTransport.send(
-        phone: phone,
-        message: _message(delivery, companyName),
-        reference: delivery.id,
+
+    final pending = <SmsRecipient>[];
+    for (final recipient in recipients.unique) {
+      if (await _alreadySent(delivery.id, recipient.normalized, companyId)) {
+        continue;
+      }
+      pending.add(recipient);
+    }
+    if (pending.isEmpty) {
+      throw const SmsReceiptException(
+        'This receipt was already sent by SMS.',
+        code: 'RECEIPT_ALREADY_SENT',
+      );
+    }
+
+    final sent = <SmsRecipient>[];
+    final failures = <SmsSendFailure>[];
+    var refunded = 0;
+    for (final recipient in pending) {
+      final result = await _sendOne(
+        delivery,
+        recipient,
+        companyName: companyName,
       );
       if (!result.accepted) {
-        throw SmsReceiptException(
-          result.errorMessage ?? 'The SMS service rejected the receipt.',
+        refunded++;
+        failures.add(
+          SmsSendFailure(
+            recipient: recipient,
+            errorCode: result.errorCode ?? 'SMS_REJECTED',
+            message:
+                result.errorMessage ?? 'The SMS provider rejected the receipt.',
+          ),
         );
+        continue;
       }
-      return;
+      sent.add(recipient);
+      await _recordAccepted(
+        delivery,
+        recipient,
+        companyId: companyId,
+        providerReference: result.providerReference,
+      );
+    }
+
+    return SmsSendSummary(
+      recipientCount: pending.length,
+      creditsRequired: pending.length,
+      creditsCharged: sent.length,
+      creditsRefunded: refunded,
+      sent: sent,
+      failures: failures,
+      duplicates: recipients.duplicates,
+      rejected: recipients.rejected,
+    );
+  }
+
+  String? _resolveCompany(Delivery delivery) {
+    final provider = companyIdProvider;
+    if (provider == null) return delivery.companyId;
+    final activeCompany = provider();
+    if (activeCompany == null || activeCompany.trim().isEmpty) {
+      throw const SmsReceiptException(
+        'Select an active company before sending a receipt.',
+        code: 'COMPANY_ACCESS_REQUIRED',
+      );
+    }
+    if (delivery.companyId != null && delivery.companyId != activeCompany) {
+      throw const SmsReceiptException(
+        'This receipt belongs to a different company.',
+        code: 'COMPANY_ACCESS_REQUIRED',
+      );
+    }
+    return activeCompany;
+  }
+
+  Future<bool> _alreadySent(
+    String deliveryId,
+    String phone,
+    String? companyId,
+  ) async {
+    final db = database;
+    if (db == null) return false;
+    final clauses = <String>[
+      'delivery_id = ?',
+      'channel = ?',
+      'status IN (?, ?)',
+    ];
+    final args = <Object?>[deliveryId, 'sms', 'sent', 'queued'];
+    if (companyId != null) {
+      clauses.add('company_id = ?');
+      args.add(companyId);
+    }
+    clauses.add('phone = ?');
+    args.add(phone);
+    final rows = await db.query(
+      'receipt_sends',
+      columns: ['id'],
+      where: clauses.join(' AND '),
+      whereArgs: args,
+      limit: 1,
+    );
+    return rows.isNotEmpty;
+  }
+
+  Future<SmsSendResult> _sendOne(
+    Delivery delivery,
+    SmsRecipient recipient, {
+    String? companyName,
+  }) async {
+    final message = _message(delivery, companyName);
+    final configuredTransport = transport;
+    if (configuredTransport != null) {
+      return configuredTransport.send(
+        phone: recipient.normalized,
+        message: message,
+        reference: delivery.id,
+      );
     }
     if (_gatewayUrl.trim().isEmpty) {
-      throw const SmsReceiptException(
+      return const SmsSendResult.rejected(
+        'SMS_NOT_CONFIGURED',
         'SMS sending is not configured. Set SMS_GATEWAY_URL to your secure backend endpoint.',
       );
     }
-
-    late http.Response response;
     try {
-      response = await _client
+      final response = await _client
           .post(
             Uri.parse(_gatewayUrl),
             headers: const {'content-type': 'application/json'},
             body: jsonEncode({
-              'to': phone,
-              'message': _message(delivery, companyName),
+              'to': recipient.normalized,
+              'message': message,
               'reference': delivery.id,
             }),
           )
           .timeout(const Duration(seconds: 15));
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return SmsSendResult.rejected(
+          'SMS_REJECTED',
+          'The SMS service rejected the receipt (${response.statusCode}).',
+        );
+      }
+      final decoded = jsonDecode(response.body);
+      if (decoded is! Map<String, dynamic> || decoded['accepted'] != true) {
+        return const SmsSendResult.rejected(
+          'SMS_NOT_CONFIRMED',
+          'The SMS provider did not confirm receipt submission.',
+        );
+      }
+      return SmsSendResult.accepted(
+        providerReference: decoded['reference'] as String?,
+      );
     } catch (_) {
-      throw const SmsReceiptException(
+      return const SmsSendResult.rejected(
+        'SMS_UNREACHABLE',
         'The SMS service could not be reached. Check the connection and try again.',
       );
     }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw SmsReceiptException(
-        'The SMS service rejected the receipt (${response.statusCode}).',
-      );
-    }
-    late Object? decoded;
-    try {
-      decoded = jsonDecode(response.body);
-    } catch (_) {
-      throw const SmsReceiptException(
-        'The SMS service returned an invalid response.',
-      );
-    }
-    if (decoded is! Map<String, dynamic> || decoded['accepted'] != true) {
-      throw const SmsReceiptException(
-        'The SMS provider did not confirm receipt submission.',
-      );
-    }
-    if (database != null) {
-      await database.insert('receipt_sends', {
-        'id': 'sms-${DateTime.now().microsecondsSinceEpoch}',
-        'delivery_id': delivery.id,
-        'phone': phone,
-        'channel': 'sms',
-        'status': 'sent',
-        'sent_at': DateTime.now().toUtc().toIso8601String(),
-      });
-    }
   }
 
-  static String _message(Delivery delivery, String? companyName) {
-    // A weighing-bridge record has no bag weights, so the per-bag breakdown is
-    // omitted for it entirely. Listing nothing there would read as a broken
-    // receipt, and inventing per-bag figures from the total would misstate what
-    // was actually measured.
+  Future<void> _recordAccepted(
+    Delivery delivery,
+    SmsRecipient recipient, {
+    required String? companyId,
+    String? providerReference,
+  }) async {
+    final db = database;
+    if (db == null) return;
+    final row = <String, Object?>{
+      'id':
+          'sms-${DateTime.now().microsecondsSinceEpoch}-${recipient.normalized}',
+      'delivery_id': delivery.id,
+      'phone': recipient.normalized,
+      'channel': 'sms',
+      'status': 'queued',
+      'sent_at': DateTime.now().toUtc().toIso8601String(),
+      'provider_reference': providerReference ?? 'sms-provider',
+    };
+    if (companyId != null) row['company_id'] = companyId;
+    await db.insert('receipt_sends', row);
+  }
+
+  String _message(Delivery delivery, String? companyName) {
     final weights = delivery.isBulk
         ? null
         : delivery.bagWeights
@@ -152,7 +408,10 @@ class SmsReceiptService {
     final weightsSection = weights == null
         ? 'Bags: ${delivery.numberOfBags}\nTotal Weight: ${delivery.totalWeight.toStringAsFixed(1)} kg'
         : 'Weights:\n$weights\n\nTotal Weight: ${delivery.totalWeight.toStringAsFixed(1)} kg';
-    return '${_companyLabel(companyName)}\n\nReceipt\nCustomer: ${delivery.supplier.name}\nDate: ${_date(delivery.recordedAt)}\nReference: ${delivery.id}\n\n$weightsSection\n\nThank you for doing business with us.';
+    return '${_companyLabel(companyName ?? senderLabel)}\n\nReceipt\n'
+        'Customer: ${delivery.supplier.name}\nDate: ${_date(delivery.recordedAt)}\n'
+        'Reference: ${delivery.id}\n\n$weightsSection\n\n'
+        'Thank you for doing business with us.';
   }
 
   static String _date(DateTime date) =>
@@ -171,7 +430,7 @@ abstract final class GhanaPhoneNumber {
     } else {
       return null;
     }
-    if (digits.length != 9 || !digits.startsWith(RegExp(r'[2357]'))) {
+    if (digits.length != 9 || !RegExp(r'^[2357]').hasMatch(digits)) {
       return null;
     }
     return '233$digits';

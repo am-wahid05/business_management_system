@@ -63,10 +63,8 @@ class FakeRecoveryAccountService implements AccountService {
 }
 
 Widget gateHarness(AccountService? account) => MaterialApp(
-  builder: (context, child) => PasswordRecoveryGate(
-    accountService: account,
-    child: child,
-  ),
+  builder: (context, child) =>
+      PasswordRecoveryGate(accountService: account, child: child),
   home: const Text('sign in'),
 );
 
@@ -118,10 +116,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         key: const ValueKey('signed-in:company-1'),
-        builder: (context, child) => PasswordRecoveryGate(
-          accountService: account,
-          child: child,
-        ),
+        builder: (context, child) =>
+            PasswordRecoveryGate(accountService: account, child: child),
         home: const Text('dashboard'),
       ),
     );

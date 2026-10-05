@@ -1,0 +1,6 @@
+﻿lib\app\app_navigation.dart:1024: class _DrawerActionRow extends StatelessWidget {
+lib\app\app_navigation.dart:1025: const _DrawerActionRow({
+lib\app\app_navigation.dart:1104: class _DrawerSignOut extends StatelessWidget {
+lib\app\app_navigation.dart:1105: const _DrawerSignOut({required this.onLogout});
+lib\app\app_navigation.dart:1205: _DrawerSignOut(onLogout: onLogout),
+lib\app\app_navigation.dart:1275: _DrawerSignOut(onLogout: onLogout),

@@ -1,4 +1,4 @@
-﻿/// The lifecycle of a company's software subscription.
+/// The lifecycle of a company's software subscription.
 ///
 /// This is an explicit state machine, mirroring the `subscription_status` enum
 /// in the database. The two are kept in step deliberately: the database is
@@ -59,20 +59,20 @@ enum PaymentPurpose {
 
 extension PaymentPurposeWire on PaymentPurpose {
   String get wireName => switch (this) {
-        PaymentPurpose.setupFee => 'SETUP_FEE',
-        PaymentPurpose.softwareSubscription => 'SOFTWARE_SUBSCRIPTION',
-        PaymentPurpose.secretaryBundle => 'SECRETARY_BUNDLE',
-        PaymentPurpose.aiSubscription => 'AI_SUBSCRIPTION',
-        PaymentPurpose.smsCredits => 'SMS_CREDITS',
-      };
+    PaymentPurpose.setupFee => 'SETUP_FEE',
+    PaymentPurpose.softwareSubscription => 'SOFTWARE_SUBSCRIPTION',
+    PaymentPurpose.secretaryBundle => 'SECRETARY_BUNDLE',
+    PaymentPurpose.aiSubscription => 'AI_SUBSCRIPTION',
+    PaymentPurpose.smsCredits => 'SMS_CREDITS',
+  };
 
   static PaymentPurpose fromWire(String value) => switch (value) {
-        'SETUP_FEE' => PaymentPurpose.setupFee,
-        'SECRETARY_BUNDLE' => PaymentPurpose.secretaryBundle,
-        'AI_SUBSCRIPTION' => PaymentPurpose.aiSubscription,
-        'SMS_CREDITS' => PaymentPurpose.smsCredits,
-        _ => PaymentPurpose.softwareSubscription,
-      };
+    'SETUP_FEE' => PaymentPurpose.setupFee,
+    'SECRETARY_BUNDLE' => PaymentPurpose.secretaryBundle,
+    'AI_SUBSCRIPTION' => PaymentPurpose.aiSubscription,
+    'SMS_CREDITS' => PaymentPurpose.smsCredits,
+    _ => PaymentPurpose.softwareSubscription,
+  };
 }
 
 /// A payment's state. Only `successful` ever grants anything.
@@ -90,24 +90,24 @@ extension PaymentStatusWire on PaymentStatus {
   String get wireName => wireNameFrom(this);
 
   static String wireNameFrom(PaymentStatus status) => switch (status) {
-        PaymentStatus.pending => 'PENDING',
-        PaymentStatus.processing => 'PROCESSING',
-        PaymentStatus.successful => 'SUCCESSFUL',
-        PaymentStatus.failed => 'FAILED',
-        PaymentStatus.cancelled => 'CANCELLED',
-        PaymentStatus.expired => 'EXPIRED',
-        PaymentStatus.refunded => 'REFUNDED',
-      };
+    PaymentStatus.pending => 'PENDING',
+    PaymentStatus.processing => 'PROCESSING',
+    PaymentStatus.successful => 'SUCCESSFUL',
+    PaymentStatus.failed => 'FAILED',
+    PaymentStatus.cancelled => 'CANCELLED',
+    PaymentStatus.expired => 'EXPIRED',
+    PaymentStatus.refunded => 'REFUNDED',
+  };
 
   static PaymentStatus fromWire(String value) => switch (value) {
-        'PROCESSING' => PaymentStatus.processing,
-        'SUCCESSFUL' => PaymentStatus.successful,
-        'FAILED' => PaymentStatus.failed,
-        'CANCELLED' => PaymentStatus.cancelled,
-        'EXPIRED' => PaymentStatus.expired,
-        'REFUNDED' => PaymentStatus.refunded,
-        _ => PaymentStatus.pending,
-      };
+    'PROCESSING' => PaymentStatus.processing,
+    'SUCCESSFUL' => PaymentStatus.successful,
+    'FAILED' => PaymentStatus.failed,
+    'CANCELLED' => PaymentStatus.cancelled,
+    'EXPIRED' => PaymentStatus.expired,
+    'REFUNDED' => PaymentStatus.refunded,
+    _ => PaymentStatus.pending,
+  };
 }
 
 /// Prices and durations, read from the server's `subscription_config`.
@@ -170,29 +170,33 @@ class SubscriptionConfig {
   final int aiTrialDays;
   final int gracePeriodDays;
 
-  factory SubscriptionConfig.fromJson(Map<String, dynamic> json) =>
-      SubscriptionConfig(
-        currency: (json['currency'] as String?) ?? fallback.currency,
-        setupFeeMinor:
-            (json['setupFeeMinor'] as num?)?.toInt() ?? fallback.setupFeeMinor,
-        baseMonthlyMinor: (json['baseMonthlyMinor'] as num?)?.toInt() ??
-            fallback.baseMonthlyMinor,
-        additionalSecretaryBundleMinor:
-            (json['additionalSecretaryBundleMinor'] as num?)?.toInt() ??
-                fallback.additionalSecretaryBundleMinor,
-        secretaryBundleSize: (json['secretaryBundleSize'] as num?)?.toInt() ??
-            fallback.secretaryBundleSize,
-        baseSecretaryLimit: (json['baseSecretaryLimit'] as num?)?.toInt() ??
-            fallback.baseSecretaryLimit,
-        aiMonthlyMinor: (json['aiMonthlyMinor'] as num?)?.toInt() ??
-            fallback.aiMonthlyMinor,
-        softwareTrialDays: (json['softwareTrialDays'] as num?)?.toInt() ??
-            fallback.softwareTrialDays,
-        aiTrialDays:
-            (json['aiTrialDays'] as num?)?.toInt() ?? fallback.aiTrialDays,
-        gracePeriodDays: (json['gracePeriodDays'] as num?)?.toInt() ??
-            fallback.gracePeriodDays,
-      );
+  factory SubscriptionConfig.fromJson(
+    Map<String, dynamic> json,
+  ) => SubscriptionConfig(
+    currency: (json['currency'] as String?) ?? fallback.currency,
+    setupFeeMinor:
+        (json['setupFeeMinor'] as num?)?.toInt() ?? fallback.setupFeeMinor,
+    baseMonthlyMinor:
+        (json['baseMonthlyMinor'] as num?)?.toInt() ??
+        fallback.baseMonthlyMinor,
+    additionalSecretaryBundleMinor:
+        (json['additionalSecretaryBundleMinor'] as num?)?.toInt() ??
+        fallback.additionalSecretaryBundleMinor,
+    secretaryBundleSize:
+        (json['secretaryBundleSize'] as num?)?.toInt() ??
+        fallback.secretaryBundleSize,
+    baseSecretaryLimit:
+        (json['baseSecretaryLimit'] as num?)?.toInt() ??
+        fallback.baseSecretaryLimit,
+    aiMonthlyMinor:
+        (json['aiMonthlyMinor'] as num?)?.toInt() ?? fallback.aiMonthlyMinor,
+    softwareTrialDays:
+        (json['softwareTrialDays'] as num?)?.toInt() ??
+        fallback.softwareTrialDays,
+    aiTrialDays: (json['aiTrialDays'] as num?)?.toInt() ?? fallback.aiTrialDays,
+    gracePeriodDays:
+        (json['gracePeriodDays'] as num?)?.toInt() ?? fallback.gracePeriodDays,
+  );
 
   /// The total monthly software cost for a given number of extra bundles.
   ///
@@ -217,9 +221,9 @@ String formatCedi(int amountMinor, {String currency = 'GHS'}) {
   final whole = absolute ~/ 100;
   final pesewas = absolute % 100;
   final grouped = whole.toString().replaceAllMapped(
-        RegExp(r'(\d)(?=(\d{3})+$)'),
-        (match) => '${match[1]},',
-      );
+    RegExp(r'(\d)(?=(\d{3})+$)'),
+    (match) => '${match[1]},',
+  );
   final text = '$symbol$grouped.${pesewas.toString().padLeft(2, '0')}';
   return negative ? '-$text' : text;
 }

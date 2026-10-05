@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../app/app_routes.dart';
 import '../../app/app_ui.dart';
+import '../../app/app_theme.dart';
+import '../../app/app_navigation.dart';
 import '../../domain/models/delivery.dart';
 import '../analytics/analytics_models.dart';
 import '../analytics/analytics_repository.dart';
@@ -99,35 +101,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               onCompanyChanging: widget.onCompanyChanging,
               onCompanyChanged: widget.onCompanyChanged,
             ),
-          Padding(
-            padding: const EdgeInsets.only(right: 24),
-            child: AppStatusPill(
-              label: 'Local data',
-              icon: Icons.cloud_off_outlined,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ),
+          const SizedBox(width: 8),
         ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
       ),
-      drawer: AdminNavigationDrawer(
+      drawer: adminDrawerFor(
+        context,
         onLogout: widget.onLogout,
         activeCompanyContext: widget.activeCompanyContext,
         brandingService: widget.brandingService,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, AppRoutes.assistant),
-        icon: const Icon(Icons.auto_awesome),
-        label: const Text('Assistant'),
       ),
       body: FutureBuilder<AdminDashboardData>(
         future: _data,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return const _AdminDashboardSkeleton();
           }
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Could not load dashboard: ${snapshot.error}'),
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: AppErrorState(
+                title: 'Dashboard unavailable',
+                message: 'We could not load today\'s receiving summary.',
+                onRetry: () => setState(() {
+                  _reload();
+                  _loadAnalytics();
+                }),
+              ),
             );
           }
           return RefreshIndicator(
@@ -176,42 +179,64 @@ class _DashboardBody extends StatelessWidget {
         final wide = constraints.maxWidth >= 1000;
         return ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(28),
+          padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 24, wide ? 28 : 16, 32),
           children: [
             _Greeting(userName: userName),
-            const SizedBox(height: 24),
-            GridView.count(
-              crossAxisCount: wide ? 4 : 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: wide ? 1.65 : 1.35,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                AppKpiCard(
-                  label: 'Total weight',
-                  value: '${data.totalWeight.toStringAsFixed(1)} kg',
-                  icon: Icons.scale_outlined,
-                ),
-                AppKpiCard(
-                  label: 'Total bags',
-                  value: '${data.bagCount}',
-                  icon: Icons.inventory_2_outlined,
-                  tint: const Color(0xFFB56A20),
-                ),
-                AppKpiCard(
-                  label: 'Deliveries',
-                  value: '${data.deliveryCount}',
-                  icon: Icons.local_shipping_outlined,
-                  tint: const Color(0xFF2B6CB0),
-                ),
-                AppKpiCard(
-                  label: 'Suppliers',
-                  value: '${data.supplierCount}',
-                  icon: Icons.people_outline,
-                  tint: const Color(0xFF7A55A8),
-                ),
-              ],
+            const SizedBox(height: 22),
+            // A fixed-height wrap rather than GridView.count: a grid's aspect
+            // ratio has to be re-tuned at every width, and any width it was not
+            // tuned for either clips the value or leaves a dead gap under it.
+            LayoutBuilder(
+              builder: (context, inner) {
+                final columns = inner.maxWidth >= 1080
+                    ? 4
+                    : inner.maxWidth >= 620
+                    ? 2
+                    : 1;
+                const gap = 14.0;
+                final tile = (inner.maxWidth - (gap * (columns - 1))) / columns;
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: [
+                    SizedBox(
+                      width: tile,
+                      child: AppKpiCard(
+                        label: "Today's weight",
+                        value: '${data.totalWeight.toStringAsFixed(1)} kg',
+                        icon: Icons.scale_outlined,
+                      ),
+                    ),
+                    SizedBox(
+                      width: tile,
+                      child: AppKpiCard(
+                        label: "Today's bags",
+                        value: '${data.bagCount}',
+                        icon: Icons.inventory_2_outlined,
+                        tint: AppTheme.secondary,
+                      ),
+                    ),
+                    SizedBox(
+                      width: tile,
+                      child: AppKpiCard(
+                        label: 'Deliveries today',
+                        value: '${data.deliveryCount}',
+                        icon: Icons.local_shipping_outlined,
+                        tint: AppTheme.info,
+                      ),
+                    ),
+                    SizedBox(
+                      width: tile,
+                      child: AppKpiCard(
+                        label: 'Suppliers today',
+                        value: '${data.supplierCount}',
+                        icon: Icons.people_outline,
+                        tint: AppTheme.success,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             if (creditService != null) ...[
               SmsCreditsCard(
@@ -261,9 +286,6 @@ class _DashboardBody extends StatelessWidget {
       },
     );
   }
-
-  static String _formatDate(DateTime date) =>
-      '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
 }
 
 class _Greeting extends StatelessWidget {
@@ -328,10 +350,27 @@ class _AnalyticsSection extends StatelessWidget {
       future: analytics,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const LinearProgressIndicator();
+          return const Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: AppKpiSkeleton()),
+                  SizedBox(width: 12),
+                  Expanded(child: AppKpiSkeleton()),
+                  SizedBox(width: 12),
+                  Expanded(child: AppKpiSkeleton()),
+                ],
+              ),
+              SizedBox(height: 16),
+              AppChartSkeleton(height: 180),
+            ],
+          );
         }
         if (snapshot.hasError) {
-          return Text('Could not load analytics: ${snapshot.error}');
+          return const AppErrorState(
+            title: 'Analytics unavailable',
+            message: 'The dashboard summary could not be calculated right now.',
+          );
         }
         final data = snapshot.data!;
         return Card(
@@ -447,6 +486,42 @@ class _AnalyticsMetric extends StatelessWidget {
   );
 }
 
+class _AdminDashboardSkeleton extends StatelessWidget {
+  const _AdminDashboardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(28),
+      children: [
+        const AppSkeleton(width: 260, height: 28),
+        const SizedBox(height: 10),
+        const AppSkeleton(width: 360, height: 16),
+        const SizedBox(height: 24),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 1000 ? 4 : 2;
+            return GridView.count(
+              crossAxisCount: columns,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: columns == 4 ? 1.65 : 1.35,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: List.generate(4, (_) => const AppKpiSkeleton()),
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        const AppChartSkeleton(height: 190),
+        const SizedBox(height: 24),
+        const AppLoadingList(rows: 4),
+      ],
+    );
+  }
+}
+
 class _QuickActions extends StatelessWidget {
   const _QuickActions();
 
@@ -472,12 +547,6 @@ class _QuickActions extends StatelessWidget {
                       Navigator.pushNamed(context, AppRoutes.suppliers),
                   icon: const Icon(Icons.people_outline),
                   label: const Text('Suppliers'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, AppRoutes.deliveries),
-                  icon: const Icon(Icons.local_shipping_outlined),
-                  label: const Text('Deliveries'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () =>
@@ -631,224 +700,4 @@ class _RecentDeliveries extends StatelessWidget {
       ),
     ),
   );
-}
-
-class AdminNavigationDrawer extends StatelessWidget {
-  const AdminNavigationDrawer({
-    super.key,
-    required this.onLogout,
-    this.activeCompanyContext,
-    this.brandingService,
-  });
-
-  final VoidCallback onLogout;
-
-  /// Same active-company branding source used by the dashboard AppBar, so the
-  /// drawer shows the active company's name/logo without any extra
-  /// company-selection state.
-  final ActiveCompanyContext? activeCompanyContext;
-  final CompanyBrandingService? brandingService;
-
-  @override
-  Widget build(BuildContext context) {
-    return NavigationDrawer(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 20, 18),
-          child: Row(
-            children: [
-              if (activeCompanyContext == null) ...[
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: const Icon(Icons.eco_outlined, color: Colors.white),
-                ),
-                const SizedBox(width: 12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Company',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    Text('Management', style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ] else
-                CompanyBrandMark(
-                  context: activeCompanyContext!,
-                  service: brandingService,
-                  nameStyle: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-            ],
-          ),
-        ),
-        _item(
-          context,
-          'Dashboard',
-          Icons.dashboard_outlined,
-          AppRoutes.adminDashboard,
-        ),
-        _item(context, 'Suppliers', Icons.people_outline, AppRoutes.suppliers),
-        _item(
-          context,
-          'Deliveries',
-          Icons.local_shipping_outlined,
-          AppRoutes.deliveries,
-        ),
-        const _ReportsNavigationItem(),
-        _item(
-          context,
-          'Analytics',
-          Icons.insights_outlined,
-          AppRoutes.analytics,
-        ),
-        _item(
-          context,
-          'Statements',
-          Icons.receipt_long_outlined,
-          AppRoutes.statements,
-        ),
-        _item(
-          context,
-          'Products',
-          Icons.inventory_2_outlined,
-          AppRoutes.products,
-        ),
-        _item(context, 'Excel', Icons.table_chart_outlined, AppRoutes.excel),
-        _item(
-          context,
-          'Spreadsheet',
-          Icons.grid_on_outlined,
-          AppRoutes.spreadsheet,
-        ),
-        _item(
-          context,
-          'Users',
-          Icons.manage_accounts_outlined,
-          AppRoutes.users,
-        ),
-        _item(
-          context,
-          'Print Records',
-          Icons.print_outlined,
-          AppRoutes.deliveries,
-        ),
-        _item(
-          context,
-          'Print Supplier Statements',
-          Icons.receipt_long_outlined,
-          AppRoutes.statements,
-        ),
-        _item(
-          context,
-          'Change Password',
-          Icons.lock_outline,
-          AppRoutes.accountSettings,
-        ),
-        _item(context, 'Settings', Icons.settings_outlined, AppRoutes.settings),
-        _item(
-          context,
-          'Billing & Subscription',
-          Icons.payments_outlined,
-          AppRoutes.billing,
-        ),
-        _item(context, 'About', Icons.info_outline, AppRoutes.about),
-        _item(
-          context,
-          'Business Assistant',
-          Icons.auto_awesome,
-          AppRoutes.assistant,
-        ),
-        _item(
-          context,
-          'Log out',
-          Icons.logout,
-          AppRoutes.login,
-          onLogout: onLogout,
-        ),
-      ],
-    );
-  }
-
-  static Widget _item(
-    BuildContext context,
-    String label,
-    IconData icon,
-    String route, {
-    VoidCallback? onLogout,
-  }) => ListTile(
-    leading: Icon(icon),
-    title: Text(label),
-    onTap: () {
-      final navigator = Navigator.of(context);
-      navigator.pop();
-      if (route == AppRoutes.login) {
-        onLogout?.call();
-        navigator.pushReplacementNamed(route);
-      } else {
-        navigator.pushNamed(route);
-      }
-    },
-  );
-}
-
-class _ReportsNavigationItem extends StatelessWidget {
-  const _ReportsNavigationItem();
-
-  @override
-  Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        leading: const Icon(Icons.assessment_outlined),
-        title: const Text('Reports'),
-        subtitle: const Text('Daily, monthly, yearly'),
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        childrenPadding: const EdgeInsets.only(left: 20, right: 8, bottom: 4),
-        children: [
-          _reportItem(
-            context,
-            'Daily Report',
-            Icons.today_outlined,
-            AppRoutes.reports,
-          ),
-          _reportItem(
-            context,
-            'Monthly Report',
-            Icons.calendar_view_month_outlined,
-            AppRoutes.monthlyReports,
-          ),
-          _reportItem(
-            context,
-            'Yearly Report',
-            Icons.calendar_today_outlined,
-            AppRoutes.yearlyReports,
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _reportItem(
-    BuildContext context,
-    String label,
-    IconData icon,
-    String route,
-  ) {
-    return ListTile(
-      dense: true,
-      leading: Icon(icon, size: 20),
-      title: Text(label),
-      onTap: () {
-        final navigator = Navigator.of(context);
-        navigator.pop();
-        navigator.pushNamed(route);
-      },
-    );
-  }
 }

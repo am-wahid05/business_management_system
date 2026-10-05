@@ -18,12 +18,8 @@ class ProductRepository {
       final companyId = _usesCompanyScope ? (_companyId ?? '') : null;
       final existing = await database.query(
         'products',
-        where: !_usesCompanyScope
-            ? 'id = ?'
-            : 'id = ? AND company_id = ?',
-        whereArgs: !_usesCompanyScope
-            ? [product.id]
-            : [product.id, companyId],
+        where: !_usesCompanyScope ? 'id = ?' : 'id = ? AND company_id = ?',
+        whereArgs: !_usesCompanyScope ? [product.id] : [product.id, companyId],
         limit: 1,
       );
       if (existing.isNotEmpty) continue;
@@ -45,16 +41,15 @@ class ProductRepository {
   /// the database happens to return them in. Anything an admin added later
   /// follows, alphabetically, so the catalogue stays predictable as it grows.
   static List<Product> _inDisplayOrder(List<Product> products) {
-    final ranked = products.where((product) => product.displayRank != null).toList()
-      ..sort(
-        (left, right) => left.displayRank!.compareTo(right.displayRank!),
-      );
-    final added = products.where((product) => product.displayRank == null).toList()
-      ..sort(
-        (left, right) => left.name.toLowerCase().compareTo(
-          right.name.toLowerCase(),
-        ),
-      );
+    final ranked =
+        products.where((product) => product.displayRank != null).toList()..sort(
+          (left, right) => left.displayRank!.compareTo(right.displayRank!),
+        );
+    final added =
+        products.where((product) => product.displayRank == null).toList()..sort(
+          (left, right) =>
+              left.name.toLowerCase().compareTo(right.name.toLowerCase()),
+        );
     return [...ranked, ...added];
   }
 
@@ -83,12 +78,8 @@ class ProductRepository {
     final companyId = _usesCompanyScope ? (_companyId ?? '') : null;
     final rows = await database.query(
       'products',
-      where: !_usesCompanyScope
-          ? 'id = ?'
-          : 'id = ? AND company_id = ?',
-      whereArgs: !_usesCompanyScope
-          ? [id]
-          : [id, companyId],
+      where: !_usesCompanyScope ? 'id = ?' : 'id = ? AND company_id = ?',
+      whereArgs: !_usesCompanyScope ? [id] : [id, companyId],
       limit: 1,
     );
     return rows.isEmpty ? null : _fromRow(rows.first);
@@ -128,9 +119,7 @@ class ProductRepository {
           'is_active': product.isActive ? 1 : 0,
           'updated_at': DateTime.now().toIso8601String(),
         },
-        where: !_usesCompanyScope
-            ? 'id = ?'
-            : 'id = ? AND company_id = ?',
+        where: !_usesCompanyScope ? 'id = ?' : 'id = ? AND company_id = ?',
         whereArgs: !_usesCompanyScope
             ? [product.id]
             : [product.id, _companyId ?? ''],

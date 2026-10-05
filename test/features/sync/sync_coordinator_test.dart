@@ -59,8 +59,7 @@ class DownloadFailingStore implements CompanyCatalogStore {
       throw StateError('catalog rejected');
 
   @override
-  Future<void> downloadCompany() async =>
-      throw StateError('download blocked');
+  Future<void> downloadCompany() async => throw StateError('download blocked');
 }
 
 void main() {
@@ -154,33 +153,30 @@ void main() {
     expect((await repository.unsynchronized()), isEmpty);
   });
 
-  test(
-    'a delivery accepted by the server is NOT marked failed when only a '
-    'later follow-up write fails',
-    () async {
-      await repository.save(_delivery('partial'));
-      final store = PartiallyFailingStore();
-      final subject = SyncCoordinator(
-        database: database,
-        deliveryRepository: repository,
-        remoteStore: store,
-      );
+  test('a delivery accepted by the server is NOT marked failed when only a '
+      'later follow-up write fails', () async {
+    await repository.save(_delivery('partial'));
+    final store = PartiallyFailingStore();
+    final subject = SyncCoordinator(
+      database: database,
+      deliveryRepository: repository,
+      remoteStore: store,
+    );
 
-      final summary = await subject.synchronize();
+    final summary = await subject.synchronize();
 
-      // The server has the record.
-      expect(store.uploadedIds, ['partial']);
-      // ...so the local state must say it was delivered, not failed.
-      final row = (await database.query('deliveries')).single;
-      expect(row['synchronization_status'], 'synced');
-      expect(row['synchronization_error'], isNull);
-      expect(summary.failed, 0, reason: 'a confirmed upload is not a failure');
-      expect(summary.synced, 1);
-      expect(summary.warnings, isNotEmpty);
-      // And it must not be re-uploaded on the next run.
-      expect(await repository.unsynchronized(), isEmpty);
-    },
-  );
+    // The server has the record.
+    expect(store.uploadedIds, ['partial']);
+    // ...so the local state must say it was delivered, not failed.
+    final row = (await database.query('deliveries')).single;
+    expect(row['synchronization_status'], 'synced');
+    expect(row['synchronization_error'], isNull);
+    expect(summary.failed, 0, reason: 'a confirmed upload is not a failure');
+    expect(summary.synced, 1);
+    expect(summary.warnings, isNotEmpty);
+    // And it must not be re-uploaded on the next run.
+    expect(await repository.unsynchronized(), isEmpty);
+  });
 
   test(
     'a failing catalog or download is reported as a warning and never marks an '
@@ -201,11 +197,11 @@ void main() {
       expect(row['synchronization_status'], 'synced');
       expect(summary.failed, 0);
       expect(summary.synced, 1);
+      expect(summary.warnings.join(' '), contains('could not be downloaded'));
       expect(
         summary.warnings.join(' '),
-        contains('could not be downloaded'),
+        contains('catalog could not be uploaded'),
       );
-      expect(summary.warnings.join(' '), contains('catalog could not be uploaded'));
     },
   );
 

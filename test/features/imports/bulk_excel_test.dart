@@ -160,7 +160,10 @@ void main() {
     });
 
     test('an individual delivery is unchanged', () {
-      final row = SpreadsheetRow.fromDelivery(individual(), recorderName: 'Ama');
+      final row = SpreadsheetRow.fromDelivery(
+        individual(),
+        recorderName: 'Ama',
+      );
       expect(row.isBulk, isFalse);
       expect(row.weights, '48.5,51.2,49.9');
       expect(row.parsedWeights, [48.5, 51.2, 49.9]);

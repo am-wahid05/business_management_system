@@ -113,9 +113,9 @@ class PushedHarness extends StatelessWidget {
         builder: (context) => Scaffold(
           body: Center(
             child: ElevatedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => screen),
-              ),
+              onPressed: () =>
+                  Navigator.of(context)
+                      .push(MaterialPageRoute<void>(builder: (_) => screen)),
               child: const Text('Open'),
             ),
           ),
@@ -231,9 +231,7 @@ void main() {
     testWidgets('submits a valid change and confirms success', (tester) async {
       final service = FakeAccountService();
       await tester.pumpWidget(
-        PushedHarness(
-          screen: ChangePasswordScreen(accountService: service),
-        ),
+        PushedHarness(screen: ChangePasswordScreen(accountService: service)),
       );
       await openPushedScreen(tester);
 
@@ -293,7 +291,9 @@ void main() {
         harness(ChangePasswordScreen(accountService: FakeAccountService())),
       );
 
-      for (final field in tester.widgetList<TextField>(find.byType(TextField))) {
+      for (final field in tester.widgetList<TextField>(
+        find.byType(TextField),
+      )) {
         expect(field.obscureText, isTrue);
       }
 
@@ -461,16 +461,17 @@ void main() {
     test('the screen carries no role or permission gate', () {
       // Guards against someone later gating this screen behind AppPermission or
       // a subscription, which would lock a secretary out of their own account.
-      final source = File(
-        'lib/features/auth/change_password_screen.dart',
-      ).readAsStringSync();
+      final source = File('lib/features/auth/change_password_screen.dart')
+          .readAsStringSync();
       expect(source, isNot(contains('AppPermission')));
       expect(source, isNot(contains('UserRole')));
       expect(source, isNot(contains('subscriptionGated')));
     });
   });
   group('About page describes the software', () {
-    testWidgets('shows the product name, version and developer', (tester) async {
+    testWidgets('shows the product name, version and developer', (
+      tester,
+    ) async {
       await tester.pumpWidget(harness(const AboutScreen()));
 
       expect(find.text('Business Management System'), findsOneWidget);
@@ -518,9 +519,8 @@ void main() {
       // The page must be a function of AppInfo alone. If a company name, logo
       // or contact field ever appears here, one tenant's details could be shown
       // to another tenant's user.
-      final source = File(
-        'lib/features/about/about_screen.dart',
-      ).readAsStringSync();
+      final source = File('lib/features/about/about_screen.dart')
+          .readAsStringSync();
       expect(source, isNot(contains('activeCompanyContext')));
       expect(source, isNot(contains('CompanyMembership')));
       expect(source, isNot(contains('brandingService')));
@@ -530,9 +530,8 @@ void main() {
     });
 
     test('the software mark is not the company logo', () {
-      final source = File(
-        'lib/features/about/about_screen.dart',
-      ).readAsStringSync();
+      final source = File('lib/features/about/about_screen.dart')
+          .readAsStringSync();
       expect(source, contains('Icons.business_center_outlined'));
     });
   });
@@ -547,22 +546,13 @@ void main() {
         AppWindowSize.of(AppBreakpoints.compact - 1),
         AppWindowSize.compact,
       );
-      expect(
-        AppWindowSize.of(AppBreakpoints.compact),
-        AppWindowSize.compact,
-      );
-      expect(
-        AppWindowSize.of(AppBreakpoints.medium),
-        AppWindowSize.medium,
-      );
+      expect(AppWindowSize.of(AppBreakpoints.compact), AppWindowSize.compact);
+      expect(AppWindowSize.of(AppBreakpoints.medium), AppWindowSize.medium);
       expect(
         AppWindowSize.of(AppBreakpoints.medium - 1),
         AppWindowSize.compact,
       );
-      expect(
-        AppWindowSize.of(AppBreakpoints.expanded),
-        AppWindowSize.expanded,
-      );
+      expect(AppWindowSize.of(AppBreakpoints.expanded), AppWindowSize.expanded);
       expect(
         AppWindowSize.of(AppBreakpoints.expanded - 1),
         AppWindowSize.medium,

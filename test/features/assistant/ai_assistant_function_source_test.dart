@@ -10,9 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// someone later adds a write, trusts a client-supplied company, or executes
 /// model output, this suite fails.
 void main() {
-  final source = File(
-    'supabase/functions/ai-assistant/index.ts',
-  ).readAsStringSync();
+  final source = File('supabase/functions/ai-assistant/index.ts')
+      .readAsStringSync();
 
   // Block comments are stripped, and line comments are only stripped when the
   // '//' starts the line, so a URL like https://... is never mangled. This stops
@@ -27,15 +26,18 @@ void main() {
   final hardcodedModel = RegExp('model:\\s*.gpt-');
 
   group('the assistant can never write business data', () {
-    test('contains no insert, update, upsert or delete against the database', () {
-      for (final verb in ['.insert(', '.update(', '.upsert(', '.delete(']) {
-        expect(
-          code,
-          isNot(contains(verb)),
-          reason: 'The assistant is read-only, so $verb must never appear.',
-        );
-      }
-    });
+    test(
+      'contains no insert, update, upsert or delete against the database',
+      () {
+        for (final verb in ['.insert(', '.update(', '.upsert(', '.delete(']) {
+          expect(
+            code,
+            isNot(contains(verb)),
+            reason: 'The assistant is read-only, so $verb must never appear.',
+          );
+        }
+      },
+    );
 
     test('has no raw SQL execution path', () {
       // The model can never reach the database directly, because the function
@@ -59,10 +61,13 @@ void main() {
       expect(code, contains('auth.getUser()'));
     });
 
-    test('reads the company from company_memberships, not from the request', () {
-      expect(code, contains("from('company_memberships')"));
-      expect(code, contains(".eq('user_id', callerId)"));
-    });
+    test(
+      'reads the company from company_memberships, not from the request',
+      () {
+        expect(code, contains("from('company_memberships')"));
+        expect(code, contains(".eq('user_id', callerId)"));
+      },
+    );
 
     test('rejects a client-supplied company_id outright', () {
       expect(code, contains('COMPANY_ID_NOT_ACCEPTABLE'));
@@ -88,14 +93,17 @@ void main() {
       expect(code, contains("Deno.env.get('OPENAI_API_KEY')"));
     });
 
-    test('reads the model id from the environment instead of hardcoding it', () {
-      expect(code, contains("Deno.env.get('OPENAI_MODEL')"));
-      expect(
-        hardcodedModel.hasMatch(code),
-        isFalse,
-        reason: 'The model must come from OPENAI_MODEL, not from the source.',
-      );
-    });
+    test(
+      'reads the model id from the environment instead of hardcoding it',
+      () {
+        expect(code, contains("Deno.env.get('OPENAI_MODEL')"));
+        expect(
+          hardcodedModel.hasMatch(code),
+          isFalse,
+          reason: 'The model must come from OPENAI_MODEL, not from the source.',
+        );
+      },
+    );
 
     test('uses the current Responses API, not legacy Chat Completions', () {
       expect(code, contains('https://api.openai.com/v1/responses'));

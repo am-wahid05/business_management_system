@@ -69,8 +69,10 @@ void main() {
     });
 
     test('an unrecognised status reads as a trial rather than as expired', () {
-      expect(entitlementsWith(status: 'SOMETHING_NEW').status,
-          SubscriptionStatus.trial);
+      expect(
+        entitlementsWith(status: 'SOMETHING_NEW').status,
+        SubscriptionStatus.trial,
+      );
     });
 
     test('reactivation restores admin access without a new trial', () {
@@ -107,7 +109,10 @@ void main() {
 
     test('three extra bundles allow 12', () {
       expect(
-        entitlementsWith(maxSecretaries: 12, secretaryBundles: 3).maxSecretaries,
+        entitlementsWith(
+          maxSecretaries: 12,
+          secretaryBundles: 3,
+        ).maxSecretaries,
         12,
       );
     });

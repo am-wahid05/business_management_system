@@ -9,6 +9,11 @@ In the Supabase Dashboard, open **SQL Editor** and run these files in order for 
 3. `migrations/202609240001_company_branding_storage.sql`
 4. `migrations/202609240002_recorded_by_identity.sql`
 5. `migrations/202609250001_company_sms_sender_id.sql`
+6. `migrations/202609260001_sms_credits.sql`
+7. `migrations/202609260002_bulk_deliveries.sql`
+8. `migrations/202609260003_sms_credit_reserve_many.sql`
+9. `migrations/202609270001_subscriptions.sql`
+10. `migrations/202610020001_sms_initial_credits_and_send_claims.sql`
 
 For an existing project where earlier migrations are already deployed, run only the new ones. Do not rerun or edit completed migrations. The branding migration requires the multi-company schema from migration 002.
 
@@ -23,6 +28,15 @@ Migration `202609250001_company_sms_sender_id.sql` adds the nullable `companies.
 Deploy `functions/send-sms-receipt/index.ts` as the `send-sms-receipt` Edge Function. It needs the standard `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` secrets, plus `SAILUP_API_KEY`, which is read only inside the function. Never place the Sailup key in the Flutter app.
 
 The function derives the company from the caller's `company_memberships` and the delivery's `company_id`, then reads that company's `sms_sender_id`. The client never sends or chooses a sender ID; a request containing `sender_id` or `from` is rejected with `SENDER_ID_NOT_ACCEPTABLE`. Sailup HTTP 202 is recorded as `queued`, never as `delivered`, and a `sender_not_approved` response is surfaced as `SMS_SENDER_ID_NOT_APPROVED` without echoing the provider body.
+
+`202609260001_sms_credits.sql` owns the company-level balance, reservations and
+append-only ledger. The additive migration
+`202610020001_sms_initial_credits_and_send_claims.sql` changes only the default
+for newly inserted companies to **5 credits** and adds a server-only
+company/delivery/phone claim table that prevents concurrent duplicate provider
+sends. It does not alter existing company balances. Run it in Supabase before
+deploying the updated Edge Function. Do not create separate Sailup accounts or
+put provider credentials in Flutter.
 
 Before SMS works, an owner or admin must register the sender ID in Sailup and then save the same value once in the app under **Settings → Company branding → SMS sender ID**, or with `update companies set sms_sender_id = '...' where id = '<company id>';`. Until that value exists and is approved in Sailup, sending a receipt reports `SMS_SENDER_ID_NOT_CONFIGURED`.
 
@@ -57,5 +71,17 @@ Individual and bulk deliveries are totalled with the same rule the app's analyti
 Then deploy `functions/invite-company-member/index.ts` as the `invite-company-member` Edge Function. The function needs Supabase's `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` Edge Function secrets. Keep the service-role key in Supabase only.
 
 New owner accounts are created in the app's sign-up form. If email confirmation is enabled in Supabase Auth, the owner must confirm the email before signing in. Company membership and default products are provisioned by the database auth trigger.
+
+## Auth email links and redirect URLs
+
+Configure these values in **Dashboard → Authentication → URL Configuration**:
+
+- **Site URL:** set this to the exact deployed web origin used by the Flutter web build, for example `https://app.example.com`. Do not use `localhost` for a production build. The web client intentionally omits an explicit redirect so Supabase uses this Site URL.
+- **Additional Redirect URLs:** add `businessms://auth-callback` for Windows and other native builds. Keep the scheme and host exactly as shown; the native client registers this callback and passes it to both signup and password recovery.
+- **Web builds:** if the deployed web app is hosted at a path, set the Site URL to that exact URL and ensure the browser returns to the same origin. The client accepts Supabase callback query or fragment parameters only when they are on the current web origin.
+
+Use the configured redirect variable in the Auth email templates. The confirmation and recovery templates should link with Supabase's `{{ .ConfirmationURL }}` (or the platform's equivalent configured confirmation URL), not with a hard-coded localhost URL, unrelated domain, or manually constructed company/role URL. The callback is only for establishing the Supabase session; the app reads the verified profile and company membership through its normal RLS-protected queries.
+
+The Flutter client does not exchange callback codes itself. `supabase_flutter` performs the single PKCE/deep-link exchange and emits `PASSWORD_RECOVERY` or `SIGNED_IN`; the app only observes those events and displays safe invalid/expired-link messages when Supabase reports an error. Never add a service-role key, role, company ID, or authorization decision to an email-link query parameter.
 
 Run the Windows app with `flutter run -d windows`. The publishable client key and project URL are already set as safe client configuration defaults in `lib/app/supabase_config.dart`.

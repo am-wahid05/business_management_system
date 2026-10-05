@@ -1,0 +1,108 @@
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final user = _hasUsers || _remote
+          ? await widget.authRepository.signIn(
+              _usernameController.text,
+              _passwordController.text,
+            )
+          : await widget.authRepository.createUser(
+              username: _usernameController.text,
+              displayName: _displayNameController.text,
+              role: UserRole.admin,
+              password: _passwordController.text,
+            );
+      if (user == null) {
+        setState(() {
+          _error = _remote
+              ? 'Email or password is incorrect.'
+              : 'Invalid username or password.';
+        });
+        return;
+      }
+      var authenticatedUser = user;
+      if (_remote) {
+        final memberships = await widget.authRepository
+            .companiesForCurrentUser();
+        if (memberships.length > 1) {
+          if (!mounted) return;
+          _choosingCompany = true;
+          final companyId = await showDialog<String>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Choose a company'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: memberships
+                    .map(
+                      (membership) => ListTile(
+                        title: Text(membership.companyName),
+                        subtitle: Text(
+                          membership.role == UserRole.admin
+                              ? 'Admin'
+                              : 'Secretary',
+                        ),
+                        onTap: () =>
+                            Navigator.pop(context, membership.companyId),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ),
+          );
+          if (companyId == null) {
+            await widget.authRepository.signOut();
+            return;
+          }
+          await widget.authRepository.selectCompany(companyId);
+          authenticatedUser = widget.authRepository.currentUser ?? user;
+        }
+
+        // No role gate on a remote sign-in.
+        //
+        // The role tab is only offered on a local sign-in, so on a remote one
+        // `_selectedRole` is still its initial value and reflects nothing the
+        // user chose. The company the user just picked in the dialog already
+        // determines the role, and checking it against a value the user never
+        // entered would reject a legitimate sign-in.
+      } else {
+        final roleError = roleMismatchMessage(
+          selected: _selectedRole,
+          actual: user.role,
+        );
+        if (roleError != null) {
+          setState(() => _error = roleError);
+          return;
+        }
+      }
+      await widget.onAuthenticated?.call(authenticatedUser);
+      if (mounted) _openDashboard(authenticatedUser);
+    } on ArgumentError catch (error) {
+      setState(() => _error = error.message);
+    } on StateError catch (error) {
+      setState(() => _error = error.message);
+    } catch (_) {
+      setState(() {
+        _error = _remote
+            ? 'Unable to sign in. Check your connection and try again.'
+            : 'Unable to complete sign in. Please try again.';
+      });
+    } finally {
+      _choosingCompany = false;
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _openDashboard(AppUser user) {
+    Navigator.pushReplacementNamed(
+      context,
+      user.role == UserRole.admin
+          ? AppRoutes.adminDashboard
+          : AppRoutes.secretaryDashboard,
+    );
+  }
+

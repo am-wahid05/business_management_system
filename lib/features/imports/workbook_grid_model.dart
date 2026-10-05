@@ -42,8 +42,7 @@ class WorkbookMerge {
       column <= endColumn;
 
   /// True when the merge covers more than the single cell it anchors on.
-  bool get isSpanned =>
-      startRow != endRow || startColumn != endColumn;
+  bool get isSpanned => startRow != endRow || startColumn != endColumn;
 
   Map<String, Object?> toJson() => {
     'r': startRow,
@@ -98,7 +97,8 @@ class WorkbookGrid {
 
   /// The widest row. The grid is always at least as wide as this, so a sheet
   /// whose last column is narrow still has somewhere to type.
-  int get columnCount => _cells.fold<int>(0, (wide, row) => row.length > wide ? row.length : wide);
+  int get columnCount =>
+      _cells.fold<int>(0, (wide, row) => row.length > wide ? row.length : wide);
 
   /// The cell at a position, or a blank cell outside the used range.
   ///
@@ -186,9 +186,7 @@ class WorkbookGrid {
     if (!cell.isFormula) return FormulaResult.literal(cell.text);
     // The recovered expression is preferred over the cell's display text, which
     // for a formula is a result rather than something to calculate.
-    final expression = cell.formula == null
-        ? cell.text
-        : '=${cell.formula}';
+    final expression = cell.formula == null ? cell.text : '=${cell.formula}';
     return FormulaEvaluator(formulaGrid).evaluate(expression);
   }
 
@@ -331,7 +329,8 @@ class WorkbookGrid {
   /// sheet cannot be reordered safely.
   bool sortByColumn(int column, {bool ascending = true}) {
     if (sortBlockedReason != null) return false;
-    final sorted = [..._cells]..sort((left, right) {
+    final sorted = [..._cells]
+      ..sort((left, right) {
         final a = _sortKey(left, column);
         final b = _sortKey(right, column);
         final compared = _compareSortKeys(a, b);
@@ -352,7 +351,10 @@ class WorkbookGrid {
     return (1, 0, text.toLowerCase());
   }
 
-  static int _compareSortKeys((int, double, String) a, (int, double, String) b) {
+  static int _compareSortKeys(
+    (int, double, String) a,
+    (int, double, String) b,
+  ) {
     if (a.$1 != b.$1) return a.$1.compareTo(b.$1);
     if (a.$1 == 0) return a.$2.compareTo(b.$2);
     return a.$3.compareTo(b.$3);
@@ -391,7 +393,11 @@ class WorkbookGrid {
   /// something wrong.
   ///
   /// Returns how many cells were written.
-  int pasteClipboard(WorkbookClipboard clipboard, int targetRow, int targetColumn) {
+  int pasteClipboard(
+    WorkbookClipboard clipboard,
+    int targetRow,
+    int targetColumn,
+  ) {
     if (clipboard.rowCount == 0) return 0;
     // The shift is the distance from where the block was copied, not from
     // column A, so a formula copied from C keeps its true offset.
@@ -507,9 +513,7 @@ class WorkbookGrid {
       cells: cells,
       merges: [
         for (final entry in rawMerges)
-          WorkbookMerge.fromJson(
-            (entry as Map<String, Object?>?) ?? const {},
-          ),
+          WorkbookMerge.fromJson((entry as Map<String, Object?>?) ?? const {}),
       ],
       styles: {
         for (final entry in rawStyles.entries)
@@ -558,8 +562,7 @@ class WorkbookClipboard {
   /// This is the plain-text form every other application understands; the typed
   /// cells above are what the grid itself pastes with.
   String get toText => [
-    for (final row in cells)
-      [for (final cell in row) cell.text].join('\t'),
+    for (final row in cells) [for (final cell in row) cell.text].join('\t'),
   ].join('\n');
 }
 
@@ -630,7 +633,9 @@ class WorkbookCellStyle {
     horizontalAlign: clearHorizontalAlign
         ? null
         : (horizontalAlign ?? this.horizontalAlign),
-    verticalAlign: clearVerticalAlign ? null : (verticalAlign ?? this.verticalAlign),
+    verticalAlign: clearVerticalAlign
+        ? null
+        : (verticalAlign ?? this.verticalAlign),
     textColor: clearTextColor ? null : (textColor ?? this.textColor),
     backgroundColor: clearBackgroundColor
         ? null
@@ -691,4 +696,3 @@ class _GridFormulaSource implements FormulaGrid {
   @override
   String textAt(int row, int column) => _grid.displayAt(row, column).label;
 }
-

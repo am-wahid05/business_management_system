@@ -1,8 +1,17 @@
+import 'package:printing/printing.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../receiving/paper_size.dart';
+import '../receiving/print_settings_service.dart';
+
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../../app/app_navigation.dart';
+import '../../app/app_responsive.dart';
+import '../../app/app_ui.dart';
 import '../backup/backup_service.dart';
 import '../auth/active_company_context.dart';
 import '../auth/account_service.dart';
@@ -31,90 +40,172 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _working = false;
   String? _message;
+  _SettingsCategory? _selected;
+
+  /// The categories with real content for the signed-in user.
+  ///
+  /// Account needs a backend-backed account service, and company branding is
+  /// admin-only, so a category the user cannot use is not shown at all rather
+  /// than rendered as a dead link.
+  ///
+  /// Printing is offered to everyone, because a Secretary prints the receipts
+  /// far more often than an Admin does. Paper sizes are a company preference and
+  /// are saved by whoever can administer the company; in the local
+  /// single-company setup there is no company row, so the values are simply
+  /// remembered on this device.
+  List<_SettingsCategory> get _categories {
+    return [
+      if (widget.accountService?.isAvailable ?? false)
+        _SettingsCategory.account,
+      if (widget.brandingService != null &&
+          widget.activeCompanyContext?.value?.role == UserRole.admin)
+        _SettingsCategory.company,
+      _SettingsCategory.printing,
+      _SettingsCategory.backups,
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final categories = _categories;
+    final selected = (_selected != null && categories.contains(_selected))
+        ? _selected!
+        : categories.first;
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      // The settings list is long, so it scrolls rather than trying to fit every
-      // section on one screen. A small window or a phone therefore keeps the
-      // buttons reachable instead of pushing them off the bottom.
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Text(
-            'Business data backup',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Backups contain business records only. Login passwords and password secrets are never included.',
-          ),
-          const SizedBox(height: 20),
-          // Wrapped rather than left in a fixed-height row, so the two buttons
-          // stack on a narrow window instead of overflowing a Row.
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+      appBar: AppBar(
+        title: const Text('Settings'),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
+      ),
+      drawer: adminDrawerFor(context),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // A wide window gives the categories their own column so the content
+          // stays scannable. A narrow window stacks every section instead,
+          // which keeps the buttons reachable.
+          if (constraints.maxWidth < AppBreakpoints.medium) {
+            return ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                for (final category in categories) ...[
+                  AppSectionHeader(
+                    title: category.label,
+                    subtitle: category.description,
+                  ),
+                  const SizedBox(height: 14),
+                  _sectionBody(context, category),
+                  const SizedBox(height: 28),
+                ],
+              ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              FilledButton.icon(
-                onPressed: _working ? null : _createBackup,
-                icon: const Icon(Icons.backup_outlined),
-                label: const Text('Create Backup'),
+              SizedBox(
+                width: 240,
+                child: _SettingsNavigation(
+                  categories: categories,
+                  selected: selected,
+                  onSelected: (category) =>
+                      setState(() => _selected = category),
+                ),
               ),
-              OutlinedButton.icon(
-                onPressed: _working ? null : _restoreBackup,
-                icon: const Icon(Icons.restore_outlined),
-                label: const Text('Restore Backup'),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(24),
+                  children: [
+                    AppSectionHeader(
+                      title: selected.label,
+                      subtitle: selected.description,
+                    ),
+                    const SizedBox(height: 14),
+                    _sectionBody(context, selected),
+                  ],
+                ),
               ),
             ],
-          ),
-          if (_working) ...[
-            const SizedBox(height: 20),
-            const LinearProgressIndicator(),
-          ],
-          if (_message != null) ...[
-            const SizedBox(height: 20),
-            SelectableText(_message!),
-          ],
-          const SizedBox(height: 28),
-          if (widget.accountService?.isAvailable ?? false) ...[
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.lock_outline),
-                title: const Text('Change Password'),
-                subtitle: const Text('Update your account password.'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => ChangePasswordScreen(
-                      accountService: widget.accountService!,
-                    ),
-                  ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _sectionBody(BuildContext context, _SettingsCategory category) {
+    switch (category) {
+      case _SettingsCategory.printing:
+        return _PrintingSettingsSection(
+          client: widget.brandingService?.client,
+          activeCompanyContext: widget.activeCompanyContext,
+        );
+      case _SettingsCategory.account:
+        return Card(
+          child: ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: const Text('Change Password'),
+            subtitle: const Text('Update your account password.'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => ChangePasswordScreen(
+                  accountService: widget.accountService!,
                 ),
               ),
             ),
-            const SizedBox(height: 28),
-          ],
-          if (widget.brandingService != null &&
-              widget.activeCompanyContext?.value?.role == UserRole.admin) ...[
-            _CompanyBrandingSettings(
-              service: widget.brandingService!,
-              activeCompanyContext: widget.activeCompanyContext!,
+          ),
+        );
+      case _SettingsCategory.company:
+        return _CompanyBrandingSettings(
+          service: widget.brandingService!,
+          activeCompanyContext: widget.activeCompanyContext!,
+        );
+      case _SettingsCategory.backups:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Backups contain business records only. Login passwords and password secrets are never included.',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: 28),
-          ],
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
+            const SizedBox(height: 20),
+            // Wrapped rather than left in a fixed-height row, so the two
+            // buttons stack on a narrow window instead of overflowing a Row.
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                FilledButton.icon(
+                  onPressed: _working ? null : _createBackup,
+                  icon: const Icon(Icons.backup_outlined),
+                  label: const Text('Create Backup'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _working ? null : _restoreBackup,
+                  icon: const Icon(Icons.restore_outlined),
+                  label: const Text('Restore Backup'),
+                ),
+              ],
+            ),
+            if (_working) ...[
+              const SizedBox(height: 20),
+              const LinearProgressIndicator(),
+            ],
+            if (_message != null) ...[
+              const SizedBox(height: 20),
+              SelectableText(_message!),
+            ],
+            const SizedBox(height: 16),
+            const AppPanel(
               child: Text(
                 'Cloud synchronization provides another layer of protection by uploading synchronized delivery records to Supabase. Keep both local backups and cloud synchronization enabled where possible.',
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        );
+    }
   }
 
   Future<void> _createBackup() async {
@@ -351,8 +442,7 @@ class _CompanyBrandingSettingsState extends State<_CompanyBrandingSettings> {
                 enabled: !_working,
                 decoration: InputDecoration(
                   labelText: 'Approved Sailup sender ID',
-                  helperText:
-                      'Leave empty if SMS is not used. Up to 11 letters or digits, or up to 15 digits.',
+                  helperText: 'Leave empty if SMS is not used. Up to 11 letters or digits, or up to 15 digits.',
                   errorText: (() {
                     final value = _senderIdController.text.trim();
                     if (value.isEmpty || isValidSmsSenderId(value)) {
@@ -377,15 +467,335 @@ class _CompanyBrandingSettingsState extends State<_CompanyBrandingSettings> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     'No sender ID is configured yet. Until one is set and approved in Sailup, sending a receipt by SMS will report a configuration error.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: Theme.of(context).colorScheme.error),
                   ),
                 ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Settings → Printing.
+///
+/// Paper sizes are a company preference, so they are read from and written to
+/// the active company. When there is no company (the local single-company
+/// setup) the same values are remembered on this device, so the screen is
+/// still useful rather than being a dead form.
+class _PrintingSettingsSection extends StatefulWidget {
+  const _PrintingSettingsSection({
+    required this.client,
+    required this.activeCompanyContext,
+  });
+
+  final SupabaseClient? client;
+  final ActiveCompanyContext? activeCompanyContext;
+
+  @override
+  State<_PrintingSettingsSection> createState() =>
+      _PrintingSettingsSectionState();
+}
+
+class _PrintingSettingsSectionState extends State<_PrintingSettingsSection> {
+  CompanyPrintProfile? _profile;
+  List<Printer> _printers = const [];
+  bool _canListPrinters = false;
+  bool _saving = false;
+  String? _message;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final profile = await PrintPreferences.current(
+      client: widget.client,
+      context: widget.activeCompanyContext,
+    );
+    // Printer enumeration is a platform capability, not an assumption. If the
+    // running platform cannot list printers, no printer list is shown at all
+    // rather than an empty box that looks broken.
+    var printers = <Printer>[];
+    var canList = false;
+    try {
+      final info = await Printing.info();
+      canList = info.canListPrinters;
+      if (canList) printers = await Printing.listPrinters();
+    } catch (_) {
+      canList = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      _profile = profile;
+      _printers = printers;
+      _canListPrinters = canList;
+    });
+  }
+
+  Future<void> _update(CompanyPrintProfile next) async {
+    setState(() {
+      _profile = next;
+      _saving = true;
+      _message = null;
+    });
+    final companyId = widget.activeCompanyContext?.value?.companyId;
+    try {
+      if (companyId != null && widget.client != null) {
+        await CompanyPrintProfileService(
+          widget.client!,
+          widget.activeCompanyContext!,
+        ).save(next);
+      }
+      PrintPreferences.remember(companyId, next);
+      if (mounted) setState(() => _message = 'Printing settings saved.');
+    } catch (error) {
+      if (mounted) setState(() => _message = 'Could not save: $error');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = _profile;
+    if (profile == null) {
+      return const AppSkeleton(width: 260, height: 160);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AppSectionHeader(
+          title: 'Printing',
+          subtitle:
+              'Paper sizes and the print preview for the active company. '
+              'These settings belong to this company only.',
+        ),
+        const SizedBox(height: 18),
+        _paperField(
+          context,
+          label: 'Receipt paper size',
+          helper:
+              'Thermal rolls print a narrow receipt layout; sheets print a '
+              'full page.',
+          value: profile.receiptPaper,
+          options: PaperSize.receiptOptions,
+          onChanged: (size) => _update(profile.copyWith(receiptPaper: size)),
+        ),
+        const SizedBox(height: 18),
+        _paperField(
+          context,
+          label: 'Report paper size',
+          helper: 'Used for reports and analytics.',
+          value: profile.reportPaper,
+          options: PaperSize.sheetOptions,
+          onChanged: (size) => _update(profile.copyWith(reportPaper: size)),
+        ),
+        const SizedBox(height: 18),
+        _paperField(
+          context,
+          label: 'Supplier statement paper size',
+          helper: 'Used for supplier histories and statements.',
+          value: profile.statementPaper,
+          options: PaperSize.sheetOptions,
+          onChanged: (size) => _update(profile.copyWith(statementPaper: size)),
+        ),
+        const SizedBox(height: 18),
+        SwitchListTile.adaptive(
+          value: profile.showPreview,
+          onChanged: (value) => _update(profile.copyWith(showPreview: value)),
+          title: const Text('Show print preview'),
+          subtitle: const Text(
+            'Show the document before sending it to the printer.',
+          ),
+          contentPadding: EdgeInsets.zero,
+        ),
+        const SizedBox(height: 18),
+        _printerSection(context),
+        if (_saving) ...[
+          const SizedBox(height: 12),
+          const LinearProgressIndicator(),
+        ],
+        if (_message != null) ...[
+          const SizedBox(height: 12),
+          Text(_message!, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ],
+    );
+  }
+
+  Widget _paperField(
+    BuildContext context, {
+    required String label,
+    required String helper,
+    required PaperSize value,
+    required List<PaperSize> options,
+    required ValueChanged<PaperSize> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<PaperSize>(
+          initialValue: value,
+          items: [
+            for (final size in options)
+              DropdownMenuItem(value: size, child: Text(size.label)),
+          ],
+          onChanged: (size) {
+            if (size != null) onChanged(size);
+          },
+        ),
+        const SizedBox(height: 4),
+        Text(helper, style: Theme.of(context).textTheme.bodySmall),
+      ],
+    );
+  }
+
+  /// The printer list, only when the platform can actually provide one.
+  ///
+  /// Printing goes through the operating system's own print dialog, so this is
+  /// a convenience rather than a requirement. Where enumeration is not
+  /// supported the section says so plainly instead of showing an empty picker
+  /// that cannot work.
+  Widget _printerSection(BuildContext context) {
+    if (!_canListPrinters) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.info_outline, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'This device does not support choosing a printer here. '
+                  'Printing still uses the default printer from the system '
+                  'print dialog.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Available printers',
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Printing uses the system print dialog. A printer belongs to this '
+          'computer rather than to the company, so it is never shared between '
+          'companies.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final printer in _printers)
+              Chip(
+                avatar: Icon(
+                  printer.isDefault
+                      ? Icons.check_circle_outline
+                      : Icons.print_outlined,
+                  size: 16,
+                ),
+                label: Text(printer.name),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The settings sections that actually exist in this application.
+///
+/// Only real, working sections appear here; there is deliberately no entry for
+/// something the app does not support yet.
+enum _SettingsCategory {
+  account(
+    'Account',
+    'Your sign-in credentials for this account.',
+    Icons.lock_outline,
+  ),
+  company(
+    'Company',
+    'Company name, logo, and the SMS sender ID used on receipts.',
+    Icons.business_outlined,
+  ),
+  printing(
+    'Printing',
+    'Paper sizes, printers and the print preview for this company.',
+    Icons.print_outlined,
+  ),
+  backups(
+    'Backups & data',
+    'Local backups and cloud synchronization for business records.',
+    Icons.backup_outlined,
+  );
+
+  const _SettingsCategory(this.label, this.description, this.icon);
+
+  final String label;
+  final String description;
+  final IconData icon;
+}
+
+/// The category list shown beside the settings content on wide windows.
+class _SettingsNavigation extends StatelessWidget {
+  const _SettingsNavigation({
+    required this.categories,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<_SettingsCategory> categories;
+  final _SettingsCategory selected;
+  final ValueChanged<_SettingsCategory> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        for (final category in categories)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: ListTile(
+              selected: category == selected,
+              selectedTileColor: scheme.primary.withValues(alpha: 0.10),
+              selectedColor: scheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              leading: Icon(category.icon),
+              title: Text(
+                category.label,
+                style: TextStyle(
+                  fontWeight: category == selected
+                      ? FontWeight.w700
+                      : FontWeight.w600,
+                ),
+              ),
+              onTap: () => onSelected(category),
+            ),
+          ),
+      ],
     );
   }
 }

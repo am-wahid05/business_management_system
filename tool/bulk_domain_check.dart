@@ -98,8 +98,14 @@ void main() {
   checkThrows('zero individual weight rejected', () => individual([0]));
 
   // --- bulk totals ---
-  check('bulk total comes from the stored value', bulk(total: 62430).totalWeight == 62430);
-  check('bulk bag count comes from the stored value', bulk(bags: 1250).numberOfBags == 1250);
+  check(
+    'bulk total comes from the stored value',
+    bulk(total: 62430).totalWeight == 62430,
+  );
+  check(
+    'bulk bag count comes from the stored value',
+    bulk(bags: 1250).numberOfBags == 1250,
+  );
   check('bulk has no bag weights', bulk(bags: 1250).bagWeights.isEmpty);
   check(
     'weights are never distributed across invented bags',

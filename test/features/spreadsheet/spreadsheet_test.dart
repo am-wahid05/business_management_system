@@ -123,10 +123,8 @@ void main() {
   });
 
   /// Every delivery the active company can see.
-  Future<List<Delivery>> allDeliveries() => deliveryRepository.forRange(
-    DateTime(2000),
-    DateTime(2100),
-  );
+  Future<List<Delivery>> allDeliveries() =>
+      deliveryRepository.forRange(DateTime(2000), DateTime(2100));
 
   group('row model', () {
     test('a draft row is new and reports the current date', () {
@@ -158,10 +156,7 @@ void main() {
         bagWeights: [50, 60, 70],
         recordedByUserId: 'u1',
       );
-      final row = SpreadsheetRow.fromDelivery(
-        delivery,
-        recorderName: 'Ama',
-      );
+      final row = SpreadsheetRow.fromDelivery(delivery, recorderName: 'Ama');
       expect(row.weights, '50,60,70');
       expect(row.totalWeight, 180);
       expect(row.numberOfBags, 3);
@@ -193,10 +188,11 @@ void main() {
   });
 
   group('validation', () {
-    SpreadsheetRow validRow() => SpreadsheetRow.draft(date: DateTime(2026, 9, 26))
-      ..supplierName = 'John Mensah'
-      ..productName = 'Cashew'
-      ..weights = '50,60';
+    SpreadsheetRow validRow() =>
+        SpreadsheetRow.draft(date: DateTime(2026, 9, 26))
+          ..supplierName = 'John Mensah'
+          ..productName = 'Cashew'
+          ..weights = '50,60';
 
     test('a complete row is valid', () {
       expect(validateSpreadsheetRow(validRow()).isValid, isTrue);
@@ -225,8 +221,14 @@ void main() {
     });
 
     test('a zero or negative weight is rejected', () {
-      expect(validateSpreadsheetRow(validRow()..weights = '0').isValid, isFalse);
-      expect(validateSpreadsheetRow(validRow()..weights = '-5').isValid, isFalse);
+      expect(
+        validateSpreadsheetRow(validRow()..weights = '0').isValid,
+        isFalse,
+      );
+      expect(
+        validateSpreadsheetRow(validRow()..weights = '-5').isValid,
+        isFalse,
+      );
     });
 
     test('thousands separated weights are accepted', () {
@@ -245,10 +247,8 @@ void main() {
     test('summariseRows counts each state', () {
       final rows = [
         SpreadsheetRow.fromDelivery(_delivery(), recorderName: 'Ama'),
-        SpreadsheetRow.fromDelivery(
-          _delivery(id: 'd-2'),
-          recorderName: 'Ama',
-        )..markEdited(),
+        SpreadsheetRow.fromDelivery(_delivery(id: 'd-2'), recorderName: 'Ama')
+          ..markEdited(),
         SpreadsheetRow.draft(),
       ];
       final summary = summariseRows(rows);
@@ -315,10 +315,7 @@ void main() {
     test('a saved record cannot be removed from the grid', () async {
       final controller = await buildController();
       await deliveryRepository.save(_delivery());
-      await controller.load(
-        from: DateTime(2026),
-        to: DateTime(2027),
-      );
+      await controller.load(from: DateTime(2026), to: DateTime(2027));
       expect(controller.rows, hasLength(1));
       expect(controller.removeDraft(controller.rows.single), isFalse);
       expect(controller.rows.single.isRemoved, isFalse);

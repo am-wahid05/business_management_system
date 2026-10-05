@@ -52,15 +52,18 @@ void main() {
       expect(weights, hasLength(30));
     });
 
-    test('unused empty weight boxes are accepted, not treated as zero bags', () {
-      // 5 entered bags, boxes 6-30 empty.
-      final weights = parseEnteredBagWeights(
-        weightBoxes([48.5, 51.2, 49.8, 50.1, 52.0]),
-      );
-      expect(weights, hasLength(5));
-      expect(weights.any((weight) => weight == 0), isFalse);
-      expect(weights.every((weight) => weight > 0), isTrue);
-    });
+    test(
+      'unused empty weight boxes are accepted, not treated as zero bags',
+      () {
+        // 5 entered bags, boxes 6-30 empty.
+        final weights = parseEnteredBagWeights(
+          weightBoxes([48.5, 51.2, 49.8, 50.1, 52.0]),
+        );
+        expect(weights, hasLength(5));
+        expect(weights.any((weight) => weight == 0), isFalse);
+        expect(weights.every((weight) => weight > 0), isTrue);
+      },
+    );
 
     test('a gap after the entered bags is still accepted', () {
       final boxes = List<String>.filled(30, '');

@@ -1,4 +1,4 @@
-﻿import 'package:flutter_application_2/features/receiving/sms_receipt_service.dart';
+import 'package:flutter_application_2/features/receiving/sms_receipt_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Phase 3 section 28D/28E: the existing supplier contact is the pre-filled
@@ -53,7 +53,11 @@ void main() {
 
   group('duplicate detection (28E)', () {
     test('the same number entered twice counts once', () {
-      final list = SmsRecipientList.build(['0241234567', '0559876543', '0241234567']);
+      final list = SmsRecipientList.build([
+        '0241234567',
+        '0559876543',
+        '0241234567',
+      ]);
       expect(list.uniqueCount, 2);
       expect(list.hasDuplicates, isTrue);
       expect(list.duplicates, ['233241234567']);
@@ -66,10 +70,7 @@ void main() {
         '0559876543',
         '0241234567',
       ]);
-      final allUnique = SmsRecipientList.build([
-        '0241234567',
-        '0559876543',
-      ]);
+      final allUnique = SmsRecipientList.build(['0241234567', '0559876543']);
       expect(withDuplicate.uniqueCount, allUnique.uniqueCount);
       expect(withDuplicate.uniqueCount, 2);
     });
@@ -110,10 +111,11 @@ void main() {
         '0241234567',
         '0559876543',
       ]);
-      expect(
-        list.unique.map((recipient) => recipient.normalized).toList(),
-        ['233201112222', '233241234567', '233559876543'],
-      );
+      expect(list.unique.map((recipient) => recipient.normalized).toList(), [
+        '233201112222',
+        '233241234567',
+        '233559876543',
+      ]);
     });
   });
 
@@ -131,11 +133,8 @@ void main() {
 
     test('3 unique recipients require 3 credits', () {
       expect(
-        SmsRecipientList.build([
-          '0241234567',
-          '0559876543',
-          '0201112222',
-        ]).uniqueCount,
+        SmsRecipientList.build(['0241234567', '0559876543', '0201112222'])
+            .uniqueCount,
         3,
       );
     });
@@ -151,4 +150,3 @@ void main() {
     });
   });
 }
-

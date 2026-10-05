@@ -1,0 +1,8 @@
+﻿login_role_test.dart:55: roleMismatchMessage(
+login_role_test.dart:66: roleMismatchMessage(
+login_role_test.dart:76: final message = roleMismatchMessage(
+login_role_test.dart:83: expect(message, contains('not authorized to log in as Admin'));
+login_role_test.dart:89: final message = roleMismatchMessage(
+login_role_test.dart:94: expect(message, contains('not authorized to log in as Secretary'));
+login_role_test.dart:99: final message = roleMismatchMessage(
+supabase_login_wiring_test.dart:69: expect(find.text('Login as Admin'), findsNothing);

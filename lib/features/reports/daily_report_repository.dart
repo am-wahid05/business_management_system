@@ -7,6 +7,9 @@ class DailyReportRepository {
   final DeliveryRepository deliveryRepository;
 
   Future<DailyReport> forDate(DateTime date) async {
-    return DailyReport(date: date, deliveries: await deliveryRepository.forDate(date));
+    return DailyReport(
+      date: date,
+      deliveries: await deliveryRepository.forDate(date),
+    );
   }
 }

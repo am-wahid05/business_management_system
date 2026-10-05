@@ -134,7 +134,9 @@ class MergeManager {
         'These cells are not merged.',
       );
     }
-    _merges = _merges.where((m) => !existing.contains(m)).toList(growable: true);
+    _merges = _merges
+        .where((m) => !existing.contains(m))
+        .toList(growable: true);
     return MergeResult.ok(existing.first);
   }
 
@@ -144,7 +146,10 @@ class MergeManager {
     for (final merge in _merges) {
       final box = bounds(merge, rowKeys);
       if (box == null) continue;
-      if (row >= box.$1 && row <= box.$3 && column >= box.$2 && column <= box.$4) {
+      if (row >= box.$1 &&
+          row <= box.$3 &&
+          column >= box.$2 &&
+          column <= box.$4) {
         return merge;
       }
     }

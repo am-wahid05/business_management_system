@@ -1,0 +1,9 @@
+﻿04bab28 Remove duplicate nested Flutter project
+19f2cb7 Resolve merge conflicts
+e99e697 fixed bug
+4570459 Rename project from al_bnc_management_system to business_management_system
+db5c0ad microsoft
+81bafa4 database
+14f62b8 before ai
+798a480 code before Ai
+fbacb7f Initial commit

@@ -1,0 +1,31 @@
+﻿lib\features\auth\auth_form_parts.dart:157: class AuthLinks extends StatelessWidget {
+lib\features\auth\auth_form_parts.dart:158: const AuthLinks({
+lib\features\auth\auth_form_parts.dart:186: TextButton(
+lib\features\auth\auth_form_parts.dart:191: TextButton(onPressed: onSignUp, child: const Text('Create account')),
+lib\features\auth\change_password_screen.dart:158: TextButton(
+lib\features\auth\forgot_password_screen.dart:189: TextButton(
+lib\features\auth\login_screen.dart:300: AuthLinks(
+lib\features\auth\password_widgets.dart:143: child: TextButton.icon(
+lib\features\auth\password_widgets.dart:147: style: TextButton.styleFrom(
+lib\features\auth\reset_password_screen.dart:167: TextButton(
+lib\features\auth\sign_up_screen.dart:330: TextButton(
+lib\features\auth\user_management_screen.dart:236: TextButton(
+lib\features\credits\sms_top_up_dialog.dart:144: TextButton(
+lib\features\credits\sms_top_up_dialog.dart:192: TextButton(
+lib\features\imports\supplier_import_dialog.dart:230: TextButton(
+lib\features\imports\supplier_import_dialog.dart:236: TextButton(
+lib\features\imports\supplier_import_dialog.dart:297: TextButton(
+lib\features\management\excel_import_screen.dart:153: TextButton(
+lib\features\management\settings_screen.dart:217: TextButton(
+lib\features\management\settings_screen.dart:394: TextButton.icon(
+lib\features\secretary\delivery_detail_screen.dart:304: TextButton(
+lib\features\secretary\delivery_detail_screen.dart:557: TextButton(
+lib\features\secretary\secretary_print_records_screen.dart:199: TextButton(
+lib\features\secretary\todays_records_screen.dart:365: TextButton(
+lib\features\spreadsheet\spreadsheet_screen.dart:427: TextButton(
+lib\features\spreadsheet\spreadsheet_screen.dart:502: TextButton(
+lib\features\spreadsheet\spreadsheet_screen.dart:830: TextButton(
+lib\features\spreadsheet\spreadsheet_screen.dart:961: TextButton(
+lib\features\spreadsheet\spreadsheet_screen.dart:966: TextButton(
+lib\features\subscriptions\subscription_ui.dart:108: TextButton(
+lib\features\suppliers\supplier_profile_screen.dart:283: TextButton(

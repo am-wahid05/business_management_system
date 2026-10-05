@@ -1,0 +1,42 @@
+﻿local_auth_repository_test.dart:44: await repository.createUser(username: 'secretary', displayName: 'Secretary', role: UserRole.secretary, password: 'secure-pass');
+local_auth_repository_test.dart:45: final user = await repository.signIn('secretary', 'secure-pass');
+login_role_test.dart:55: roleMismatchMessage(
+login_role_test.dart:63: test('a secretary signing in as Secretary is allowed', () async {
+login_role_test.dart:64: final user = await createUser('secretary', UserRole.secretary);
+login_role_test.dart:66: roleMismatchMessage(
+login_role_test.dart:67: selected: UserRole.secretary,
+login_role_test.dart:74: test('a secretary selecting Admin is refused with a clear message', () async {
+login_role_test.dart:75: final user = await createUser('secretary', UserRole.secretary);
+login_role_test.dart:76: final message = roleMismatchMessage(
+login_role_test.dart:83: expect(message, contains('not authorized to log in as Admin'));
+login_role_test.dart:84: expect(message, contains('registered as a Secretary'));
+login_role_test.dart:87: test('an admin selecting Secretary is refused with a clear message', () async {
+login_role_test.dart:89: final message = roleMismatchMessage(
+login_role_test.dart:90: selected: UserRole.secretary,
+login_role_test.dart:94: expect(message, contains('not authorized to log in as Secretary'));
+login_role_test.dart:99: final message = roleMismatchMessage(
+login_role_test.dart:101: actual: UserRole.secretary,
+login_role_test.dart:112: test('a secretary account stays a secretary after any sign in', () async {
+login_role_test.dart:113: await createUser('secretary', UserRole.secretary);
+login_role_test.dart:116: final user = await repository.signIn('secretary', 'secure-pass');
+login_role_test.dart:117: expect(user!.role, UserRole.secretary);
+login_role_test.dart:144: test('a signed in secretary is the current user with a secretary role',
+login_role_test.dart:146: await createUser('secretary', UserRole.secretary);
+login_role_test.dart:147: await repository.signIn('secretary', 'secure-pass');
+login_role_test.dart:148: expect(repository.currentUser?.role, UserRole.secretary);
+password_and_about_test.dart:448: testWidgets('admin and secretary reach the identical screen', (
+password_and_about_test.dart:463: // a subscription, which would lock a secretary out of their own account.
+supabase_login_wiring_test.dart:128: companyId: 'company-secretary',
+supabase_login_wiring_test.dart:129: companyName: 'Secretary Company',
+supabase_login_wiring_test.dart:130: role: UserRole.secretary,
+supabase_login_wiring_test.dart:142: '/secretary': (_) => const Text('Secretary dashboard'),
+supabase_login_wiring_test.dart:153: await tester.tap(find.text('Secretary Company'));
+supabase_login_wiring_test.dart:156: expect(repository.selectedCompanyId, 'company-secretary');
+supabase_login_wiring_test.dart:157: expect(authenticatedUser?.role, UserRole.secretary);
+supabase_login_wiring_test.dart:158: expect(authenticatedUser?.companyId, 'company-secretary');
+supabase_login_wiring_test.dart:159: expect(find.text('Secretary dashboard'), findsOneWidget);
+user_management_screen_test.dart:79: 'add user dialog labels the field Email and keeps secretary default',
+user_management_screen_test.dart:87: expect(find.text('secretary'), findsOneWidget);
+user_management_screen_test.dart:138: await tester.enterText(find.byType(TextFormField), 'secretary@example.com');
+user_management_screen_test.dart:143: expect(repository.createdEmail, 'secretary@example.com');
+user_management_screen_test.dart:144: expect(repository.createdRole, UserRole.secretary);

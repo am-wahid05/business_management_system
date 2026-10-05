@@ -51,18 +51,20 @@ const AppUser secretaryUser = AppUser(
 );
 
 Widget host(EntitlementService service, AppUser? user) => MaterialApp(
-      home: AdminSubscriptionGate(
-        entitlements: service,
-        user: user,
-        onRenew: () {},
-        builder: (_) => const Scaffold(body: Text('ADMIN SCREEN')),
-      ),
-    );
+  home: AdminSubscriptionGate(
+    entitlements: service,
+    user: user,
+    onRenew: () {},
+    builder: (_) => const Scaffold(body: Text('ADMIN SCREEN')),
+  ),
+);
 
 void main() {
   group('the admin lock is enforced for an admin', () {
     testWidgets('a trial admin sees the real screen', (tester) async {
-      await tester.pumpWidget(host(SeededEntitlementService(entitlementsWith()), adminUser));
+      await tester.pumpWidget(
+        host(SeededEntitlementService(entitlementsWith()), adminUser),
+      );
       expect(find.text('ADMIN SCREEN'), findsOneWidget);
       expect(find.text('Subscription expired'), findsNothing);
     });
@@ -283,9 +285,7 @@ void main() {
       expect(find.textContaining('expired'), findsOneWidget);
     });
 
-    testWidgets('an expired banner also says the data is safe', (
-      tester,
-    ) async {
+    testWidgets('an expired banner also says the data is safe', (tester) async {
       await pumpBanner(
         tester,
         entitlementsWith(status: 'EXPIRED', canAccessAdmin: false),
@@ -295,9 +295,7 @@ void main() {
       expect(find.textContaining('safe'), findsOneWidget);
     });
 
-    testWidgets('a paused company is told everything is kept', (
-      tester,
-    ) async {
+    testWidgets('a paused company is told everything is kept', (tester) async {
       await pumpBanner(
         tester,
         entitlementsWith(
@@ -355,5 +353,3 @@ void main() {
     });
   });
 }
-
-

@@ -1,0 +1,29 @@
+00:00 +0: loading C:/Projects/flutter_application_2/test/app/role_navigation_test.dart
+00:00 +0: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation does not offer the Secretary receiving workflow
+00:00 +1: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation does not link to any receiving route
+00:00 +2: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation keeps the legitimate Admin destinations
+00:00 +3: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation offers Excel for exporting records
+00:00 +4: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation keeps Excel separate from Spreadsheet so it lights up on its own
+00:00 +5: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation every Admin destination points at an absolute route
+00:00 +6: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation retains the receiving workflow and Today's Records
+00:00 +7: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation retains Settings and About as secondary destinations
+00:00 +8: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation About reuses the shared About route rather than a duplicate
+00:00 +9: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation does not offer Excel, which is an Admin-only feature
+00:01 +10: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation the Secretary never links to an Admin-only route
+00:01 +11: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: routes are preserved for both roles the receiving routes still exist
+00:01 +12: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: routes are preserved for both roles the shared About and account settings routes still exist
+00:01 +13: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: destination matching a destination lights up for every route in its family
+00:01 +14: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: destination matching an unknown route highlights nothing
+00:03 +15: loading C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart
+00:10 +15: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role an admin signing in as Admin is allowed
+00:17 +16: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role a secretary signing in as Secretary is allowed
+00:20 +17: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role a secretary selecting Admin is refused with a clear message
+00:22 +18: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role an admin selecting Secretary is refused with a clear message
+00:25 +19: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role the rejection reveals nothing about other companies or members
+00:25 +20: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: the role selection cannot bypass authorization a secretary account stays a secretary after any sign in
+00:30 +21: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: the role selection cannot bypass authorization an admin account keeps its admin permissions
+00:34 +22: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: session lifecycle a signed in admin is the current user with an admin role
+00:40 +23: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: session lifecycle a signed in secretary is the current user with a secretary role
+00:45 +24: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: logout signing out clears the session and requires signing in again
+00:48 +25: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: logout after logout the same account can sign in again
+00:53 +26: All tests passed!

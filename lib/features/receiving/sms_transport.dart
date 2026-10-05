@@ -101,8 +101,7 @@ class SupabaseEdgeFunctionSmsTransport implements SmsTransport {
     'SMS_CREDITS_INSUFFICIENT' =>
       'You do not have enough SMS credits for all the recipients on this list. '
           'No SMS was sent and no credits were used.',
-    'SENDER_ID_NOT_ACCEPTABLE' =>
-      'The sender ID cannot be chosen manually. It is set by the company administrator.',
+    'SENDER_ID_NOT_ACCEPTABLE' => 'The sender ID cannot be chosen manually. It is set by the company administrator.',
     'SMS_PROVIDER_REJECTED_CREDENTIALS' =>
       'SMS is temporarily unavailable. Please contact your administrator.',
     'SMS_PROVIDER_RATE_LIMITED' =>

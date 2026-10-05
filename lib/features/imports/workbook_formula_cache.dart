@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -126,9 +126,7 @@ class WorkbookFormulaCache {
   /// Parses an A1 reference into a zero-based `row#column` key.
   static String? _position(String? reference) {
     if (reference == null) return null;
-    final match = RegExp(
-      r'^([A-Za-z]+)(\d+)$',
-    ).firstMatch(reference.trim());
+    final match = RegExp(r'^([A-Za-z]+)(\d+)$').firstMatch(reference.trim());
     if (match == null) return null;
     var column = 0;
     for (final code in match.group(1)!.toUpperCase().codeUnits) {

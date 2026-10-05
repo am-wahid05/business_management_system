@@ -20,6 +20,17 @@ abstract final class AppBreakpoints {
   /// At or above this, three or more dashboard columns are comfortable.
   static const double expanded = 1240;
 
+  /// The narrowest width at which a persistent application sidebar is used.
+  ///
+  /// This is deliberately lower than [expanded]. A 1366x768 Windows window -
+  /// one of the most common office laptops - reports roughly 1350px of client
+  /// width, which sits just under [expanded]. Keying the sidebar to [expanded]
+  /// therefore made the navigation appear and disappear as the window was
+  /// resized or the taskbar moved, which is exactly the "the sidebar
+  /// disappeared" behaviour a shell must never have. At 1100px a collapsed
+  /// 76px sidebar still leaves over 1000px of content, which is comfortable.
+  static const double sidebar = 1100;
+
   /// The comfortable reading width for forms and prose.
   ///
   /// A form that stretches across a 2560px monitor is hard to read and easy to
@@ -118,9 +129,7 @@ class AppResponsive extends StatelessWidget {
           vertical: vertical,
         );
         final content = Padding(
-          padding: padding == null
-              ? horizontal
-              : horizontal.add(padding!),
+          padding: padding == null ? horizontal : horizontal.add(padding!),
           child: builder(context, size),
         );
         if (!centre) return content;

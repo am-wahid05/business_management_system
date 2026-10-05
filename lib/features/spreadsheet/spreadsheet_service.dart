@@ -54,10 +54,7 @@ class SpreadsheetService {
         .map(
           (delivery) => SpreadsheetRow.fromDelivery(
             delivery,
-            recorderName: recorderDisplayName(
-              delivery.recordedByUserId,
-              names,
-            ),
+            recorderName: recorderDisplayName(delivery.recordedByUserId, names),
           ),
         )
         .toList(growable: false);
@@ -150,7 +147,8 @@ class SpreadsheetService {
     // weights, so none are ever derived from the total.
     final isBulk = row.recordType == DeliveryRecordType.bulk;
     final delivery = Delivery(
-      id: 'sheet-${DateTime.now().microsecondsSinceEpoch}-'
+      id:
+          'sheet-${DateTime.now().microsecondsSinceEpoch}-'
           '${row.supplierName.hashCode.abs()}',
       supplier: Supplier(
         id: row.supplierId,
@@ -164,7 +162,9 @@ class SpreadsheetService {
       recordedAt: recordedAt,
       bagWeights: isBulk ? const <double>[] : row.parsedWeights!,
       recordedByUserId: userIdProvider?.call(),
-      recordType: isBulk ? DeliveryRecordType.bulk : DeliveryRecordType.individual,
+      recordType: isBulk
+          ? DeliveryRecordType.bulk
+          : DeliveryRecordType.individual,
       bulkTotalWeight: isBulk ? row.totalWeight : null,
       bulkBagCount: isBulk ? row.bagCount : null,
       notes: row.notes,

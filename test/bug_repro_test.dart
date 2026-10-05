@@ -11,11 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
-  Future<void> typeInto(
-    WidgetTester tester,
-    Finder field,
-    String text,
-  ) async {
+  Future<void> typeInto(WidgetTester tester, Finder field, String text) async {
     var typed = '';
     for (final ch in text.split('')) {
       typed += ch;
@@ -25,8 +21,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('GhanaLocationFields char-by-char typing keeps every character',
-      (tester) async {
+  testWidgets('GhanaLocationFields char-by-char typing keeps every character', (
+    tester,
+  ) async {
     final town = TextEditingController();
     await tester.pumpWidget(
       MaterialApp(
@@ -52,9 +49,7 @@ void main() {
 
   testWidgets('admin supplier form district accepts Techiman', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: SupplierFormScreen(repository: SupplierRepository()),
-      ),
+      MaterialApp(home: SupplierFormScreen(repository: SupplierRepository())),
     );
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
@@ -71,8 +66,9 @@ void main() {
     );
   });
 
-  testWidgets('secretary receiving form district accepts Techiman',
-      (tester) async {
+  testWidgets('secretary receiving form district accepts Techiman', (
+    tester,
+  ) async {
     sqfliteFfiInit();
     final database = await ProductDatabase.open(
       databasePath: inMemoryDatabasePath,

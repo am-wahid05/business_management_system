@@ -1,0 +1,44 @@
+﻿lib\app\albnc_app.dart:14: import '../features/about/about_screen.dart';
+lib\app\albnc_app.dart:573: // About is read-only application information, so it is available to
+lib\app\albnc_app.dart:576: AppRoutes.about: (_) =>
+lib\app\albnc_app.dart:577: _protected(_adminShell(const AboutScreen()), role: UserRole.admin),
+lib\app\albnc_app.dart:578: AppRoutes.aboutScreen: (_) =>
+lib\app\albnc_app.dart:579: _protected(_roleShell(const AboutScreen())),
+lib\app\app_info.dart:3: /// Everything here is about the application itself, not about any company. It is
+lib\app\app_info.dart:14: /// The product name shown in the About page and the window title.
+lib\app\app_info.dart:20: /// means nothing to a user, so the About page shows the plain 1.0.0.
+lib\app\app_info.dart:29: /// the About page renders the "Website" row with no destination and no
+lib\app\app_info.dart:39: /// in the app, so the About page cannot display it by accident.
+lib\app\app_navigation.dart:141: static const about = AppNavDestination(
+lib\app\app_navigation.dart:142: label: 'About',
+lib\app\app_navigation.dart:144: routes: [AppRoutes.about, AppRoutes.aboutScreen],
+lib\app\app_navigation.dart:165: destinations: [billing, users, settings, about],
+lib\app\app_navigation.dart:318: /// For a screen a Secretary and an Admin can both reach (About, Settings, a
+lib\app\app_navigation.dart:1251: label: 'About',
+lib\app\app_navigation.dart:1255: navigator.pushNamed(AppRoutes.aboutScreen);
+lib\app\app_routes.dart:37: static const about = '/admin/about';
+lib\app\app_routes.dart:50: static const aboutScreen = '/about';
+lib\features\about\about_row.dart:3: /// One labelled, optionally tappable row on the About page.
+lib\features\about\about_screen.dart:9: /// Information about the SOFTWARE itself.
+lib\features\about\about_screen.dart:18: class AboutScreen extends StatelessWidget {
+lib\features\about\about_screen.dart:19: const AboutScreen({super.key});
+lib\features\about\about_screen.dart:27: title: const Text('About'),
+lib\features\assistant\business_assistant_screen.dart:20: 'Business Assistant is offline and using local SQLite data. Ask about receiving, suppliers, products, analytics, reports, or Excel.',
+lib\features\assistant\business_assistant_screen.dart:116: labelText: 'Ask about your business',
+lib\features\assistant\business_assistant_service.dart:12: return 'Ask me about receiving, suppliers, products, analytics, reports, or Excel.';
+lib\features\auth\account_service.dart:101: /// nothing about accounts other than the one being created.
+lib\features\auth\account_service.dart:116: // about the address the user just typed, not a way to enumerate accounts.
+lib\features\auth\account_service.dart:278: /// late is replayed the current value rather than being told only about future
+lib\features\auth\account_service.dart:317: // Deliberately vague about which half was wrong.
+lib\features\auth\forgot_password_screen.dart:9: /// The wording is fixed and says nothing about whether a match was found, so
+lib\features\auth\login_screen.dart:205: // Before the account check finishes there is nothing to say about the form
+lib\features\auth\login_screen.dart:356: /// role their own account has. It reveals nothing about other accounts, other
+lib\features\auth\password_policy.dart:19: /// the user is told about a short password before being told it is also
+lib\features\imports\import_models.dart:179: /// about new suppliers as well as imported records.
+lib\features\imports\workbook_formula_cache.dart:7: /// What a worksheet's XML actually says about one formula cell.
+lib\features\imports\workbook_formula_cache.dart:34: /// `<v>` result for each. Everything else about a cell is still read by the
+lib\features\imports\workbook_grid_model.dart:428: /// returned unchanged: a formula that is slightly wrong about its position is
+lib\features\imports\workbook_grid_store.dart:125: /// about the stored format changes and no migration is involved.
+lib\features\secretary\delivery_detail_screen.dart:129: // Keep the last known balance. The dialog remains honest about payment.
+lib\features\spreadsheet\spreadsheet_formula.dart:71: /// The grid supplies this so the formula engine never needs to know about
+lib\features\spreadsheet\spreadsheet_row.dart:180: /// about the existing behaviour changes. For a bulk row it is the stored

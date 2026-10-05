@@ -10,7 +10,12 @@ abstract interface class AuthRepository {
   Future<AppUser?> signIn(String identifier, String password);
   Future<List<CompanyMembership>> companiesForCurrentUser();
   Future<void> selectCompany(String companyId);
-  Future<AppUser> createUser({required String username, required String displayName, required UserRole role, required String password});
+  Future<AppUser> createUser({
+    required String username,
+    required String displayName,
+    required UserRole role,
+    required String password,
+  });
   Future<List<AppUser>> allUsers();
   Future<void> signOut();
 }

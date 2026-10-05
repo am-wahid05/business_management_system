@@ -1,0 +1,64 @@
+    routes: [AppRoutes.secretarySmsCredits],
+  );
+
+  static const destinations = <AppNavDestination>[
+    dashboard,
+    receiving,
+    todaysRecords,
+    printRecords,
+    smsCredits,
+  ];
+}
+
+// -----------------------------------------------------------------------------
+// Shell scope
+// -----------------------------------------------------------------------------
+
+/// Everything a screen needs to build its own navigation, published by the
+/// shell that owns it.
+///
+/// Screens keep their own [Scaffold] so they keep control of their own AppBar,
+/// body and FABs. Rather than making every screen reconstruct a drawer, the
+/// shell publishes the already-correct one here and screens attach it with
+/// [adminDrawerFor] / [secretaryDrawerFor].
+///
+/// The scope also records whether a persistent sidebar is already on screen, so
+/// a screen can suppress the duplicate AppBar hamburger on wide layouts and
+/// keep it on narrow ones.
+class AppShellScope extends InheritedWidget {
+  const AppShellScope({
+    required this.role,
+    required this.persistentSidebar,
+    this.drawer,
+    required super.child,
+    super.key,
+  });
+
+  /// Which shell published this scope.
+  final UserRole role;
+
+  /// True when a persistent sidebar is part of the layout.
+  ///
+  /// When true, the attached drawer is suppressed so the user is never given
+  /// two controls that do the same thing.
+  final bool persistentSidebar;
+
+  /// The drawer for this role, or null when the shell has nothing to offer.
+  final Widget? drawer;
+
+  static AppShellScope? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppShellScope>();
+
+  /// True when a persistent sidebar is already on screen.
+  ///
+  /// This single bit is what stops a second hamburger appearing next to the
+  /// real navigation.
+  static bool hasPersistentSidebar(BuildContext context) =>
+      of(context)?.persistentSidebar ?? false;
+
+  @override
+  bool updateShouldNotify(AppShellScope oldWidget) =>
+      role != oldWidget.role ||
+      persistentSidebar != oldWidget.persistentSidebar ||
+      drawer != oldWidget.drawer;
+}

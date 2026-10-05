@@ -17,8 +17,10 @@ void main() {
     });
 
     test('AI is unavailable after the trial without a paid entitlement', () {
-      final entitlements =
-          entitlementsWith(aiStatus: 'EXPIRED', canUseAI: false);
+      final entitlements = entitlementsWith(
+        aiStatus: 'EXPIRED',
+        canUseAI: false,
+      );
       expect(entitlements.canUseAI, isFalse);
       expect(entitlements.aiStatus, AiEntitlementStatus.expired);
     });
@@ -92,16 +94,17 @@ void main() {
     });
 
     test('an expired subscription locks admin but not the secretary', () {
-      final entitlements =
-          entitlementsWith(status: 'EXPIRED', canAccessAdmin: false);
+      final entitlements = entitlementsWith(
+        status: 'EXPIRED',
+        canAccessAdmin: false,
+      );
       // This is the key rule: the admin side locks, operations continue.
       expect(entitlements.canAccessAdmin, isFalse);
       expect(entitlements.canRecordAsSecretary, isTrue);
     });
 
     test('renewal restores admin access', () {
-      final locked =
-          entitlementsWith(status: 'EXPIRED', canAccessAdmin: false);
+      final locked = entitlementsWith(status: 'EXPIRED', canAccessAdmin: false);
       final renewed = entitlementsWith(
         status: 'ACTIVE',
         hasActiveSoftwareSubscription: true,
@@ -137,8 +140,9 @@ void main() {
       final entitlements = entitlementsWith(
         status: 'ACTIVE',
         hasActiveSoftwareSubscription: true,
-        currentPeriodEnd:
-            DateTime.now().add(const Duration(days: 2, hours: 12)),
+        currentPeriodEnd: DateTime.now().add(
+          const Duration(days: 2, hours: 12),
+        ),
       );
       expect(
         SubscriptionMessages.renewalNotice(entitlements),
@@ -165,8 +169,7 @@ void main() {
       final entitlements = entitlementsWith(
         status: 'GRACE_PERIOD',
         isInGracePeriod: true,
-        gracePeriodEnd:
-            DateTime.now().add(const Duration(days: 5, hours: 12)),
+        gracePeriodEnd: DateTime.now().add(const Duration(days: 5, hours: 12)),
       );
       final notice = SubscriptionMessages.renewalNotice(entitlements);
       expect(notice, contains('grace period'));
@@ -289,4 +292,3 @@ void main() {
     });
   });
 }
-

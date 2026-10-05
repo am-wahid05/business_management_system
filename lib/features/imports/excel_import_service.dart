@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
@@ -19,7 +19,6 @@ import 'workbook_formula_cache.dart';
 import 'workbook_grid_model.dart';
 
 export 'import_models.dart';
-
 
 class ExcelImportService {
   ExcelImportService({
@@ -155,9 +154,7 @@ class ExcelImportService {
                 : ParsedCell(
                     // The expression is the cell's real content; the cached
                     // result is kept beside it rather than replacing it.
-                    text: parsed.isFormula
-                        ? '=${parts.formula}'
-                        : parsed.text,
+                    text: parsed.isFormula ? '=${parts.formula}' : parsed.text,
                     number: parsed.number,
                     date: parsed.date,
                     isFormula: true,
@@ -268,9 +265,7 @@ class ExcelImportService {
 
   /// Parses an A1-style reference into a zero-based (row, column) pair.
   static (int, int)? _parseAddress(String address) {
-    final match = RegExp(
-      r'^([A-Za-z]+)(\d+)$',
-    ).firstMatch(address.trim());
+    final match = RegExp(r'^([A-Za-z]+)(\d+)$').firstMatch(address.trim());
     if (match == null) return null;
     var column = 0;
     for (final unit in match.group(1)!.toUpperCase().codeUnits) {
@@ -297,11 +292,7 @@ class ExcelImportService {
       name: 'Sheet1',
       sourceFilename: filename,
       cells: splitCsvLines(text)
-          .map(
-            (line) => line
-                .map((value) => ParsedCell(text: value))
-                .toList(),
-          )
+          .map((line) => line.map((value) => ParsedCell(text: value)).toList())
           .toList(),
     );
   }
@@ -335,12 +326,28 @@ class ExcelImportService {
         ImportDraft(
           rowNumber: rowNumber,
           cells: row,
-          supplierName: _value(sheet, row, mapping.column(ImportField.supplierName)),
-          productName: _value(sheet, row, mapping.column(ImportField.productName)),
+          supplierName: _value(
+            sheet,
+            row,
+            mapping.column(ImportField.supplierName),
+          ),
+          productName: _value(
+            sheet,
+            row,
+            mapping.column(ImportField.productName),
+          ),
           productId: _value(sheet, row, mapping.column(ImportField.productId)),
           date: _value(sheet, row, mapping.column(ImportField.date)),
-          totalWeight: _value(sheet, row, mapping.column(ImportField.totalWeight)),
-          bagWeights: _value(sheet, row, mapping.column(ImportField.bagWeights)),
+          totalWeight: _value(
+            sheet,
+            row,
+            mapping.column(ImportField.totalWeight),
+          ),
+          bagWeights: _value(
+            sheet,
+            row,
+            mapping.column(ImportField.bagWeights),
+          ),
           recordType: parseImportRecordType(
             _value(sheet, row, mapping.column(ImportField.recordType)),
           ),
@@ -370,7 +377,8 @@ class ExcelImportService {
     // files that only carry a product name still import.
     var productId = draft.productId.trim();
     if (productId.isEmpty) {
-      productId = inferProductId(productName, await _catalogue()) ?? productName;
+      productId =
+          inferProductId(productName, await _catalogue()) ?? productName;
     }
 
     // A bulk row is one weighing-bridge transaction: it stores the scale total
@@ -378,9 +386,11 @@ class ExcelImportService {
     // distributed across invented bags. Every other row keeps the original
     // individual behaviour exactly.
     final supplierType =
-        _value(sheet, draft.cells, mapping.column(ImportField.supplierType))
-            .toLowerCase()
-            .contains('aggreg')
+        _value(
+          sheet,
+          draft.cells,
+          mapping.column(ImportField.supplierType),
+        ).toLowerCase().contains('aggreg')
         ? SupplierType.aggregator
         : SupplierType.farmer;
     final isBulk = draft.recordType == DeliveryRecordType.bulk;
@@ -393,7 +403,11 @@ class ExcelImportService {
       return Delivery(
         id: 'import-${draft.rowNumber}-${DateTime.now().microsecondsSinceEpoch}',
         supplier: Supplier(
-          id: _value(sheet, draft.cells, mapping.column(ImportField.supplierId)),
+          id: _value(
+            sheet,
+            draft.cells,
+            mapping.column(ImportField.supplierId),
+          ),
           name: supplierName,
           type: supplierType,
           town: _value(sheet, draft.cells, mapping.column(ImportField.town)),
@@ -402,7 +416,11 @@ class ExcelImportService {
             draft.cells,
             mapping.column(ImportField.district),
           ),
-          region: _value(sheet, draft.cells, mapping.column(ImportField.region)),
+          region: _value(
+            sheet,
+            draft.cells,
+            mapping.column(ImportField.region),
+          ),
         ),
         product: Product(id: productId, name: productName),
         recordedAt: date,
@@ -425,7 +443,11 @@ class ExcelImportService {
         name: supplierName,
         type: supplierType,
         town: _value(sheet, draft.cells, mapping.column(ImportField.town)),
-        district: _value(sheet, draft.cells, mapping.column(ImportField.district)),
+        district: _value(
+          sheet,
+          draft.cells,
+          mapping.column(ImportField.district),
+        ),
         region: _value(sheet, draft.cells, mapping.column(ImportField.region)),
       ),
       product: Product(id: productId, name: productName),
@@ -652,4 +674,3 @@ class ExcelImportService {
     );
   }
 }
-

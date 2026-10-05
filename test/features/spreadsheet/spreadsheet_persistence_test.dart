@@ -101,7 +101,10 @@ void main() {
       final second = openController();
       await second.load(from: DateTime(2026), to: DateTime(2027));
 
-      expect(second.formatAt(second.rows.first, 1).background, CellColor.yellow);
+      expect(
+        second.formatAt(second.rows.first, 1).background,
+        CellColor.yellow,
+      );
     });
 
     test('bold, italic and alignment survive reopening', () async {
@@ -229,22 +232,25 @@ void main() {
       );
     });
 
-    test('a malformed formula produces the same error after reopening', () async {
-      await seed('d-1');
-      final first = openController();
-      await first.load(from: DateTime(2026), to: DateTime(2027));
+    test(
+      'a malformed formula produces the same error after reopening',
+      () async {
+        await seed('d-1');
+        final first = openController();
+        await first.load(from: DateTime(2026), to: DateTime(2027));
 
-      first.setFormula(first.rows.first, 3, '=SUM(');
-      await first.saveState();
+        first.setFormula(first.rows.first, 3, '=SUM(');
+        await first.saveState();
 
-      final second = openController();
-      await second.load(from: DateTime(2026), to: DateTime(2027));
-      final result = second.evaluateFormula(
-        second.formulaAt(second.rows.first, 3)!,
-      );
-      expect(result.isFailure, isTrue);
-      expect(result.error, FormulaError.malformed);
-    });
+        final second = openController();
+        await second.load(from: DateTime(2026), to: DateTime(2027));
+        final result = second.evaluateFormula(
+          second.formulaAt(second.rows.first, 3)!,
+        );
+        expect(result.isFailure, isTrue);
+        expect(result.error, FormulaError.malformed);
+      },
+    );
 
     test('a formula over a non-numeric cell keeps notANumber after reopening', () async {
       await seed('d-1', name: 'Ibrahim');
@@ -303,10 +309,7 @@ void main() {
       // format is never returned to it even though the fixture's repository
       // still reads Company A's rows.
       expect(b.formats, isEmpty);
-      expect(
-        b.formatAt(b.rows.first, 1).background,
-        CellColor.none,
-      );
+      expect(b.formatAt(b.rows.first, 1).background, CellColor.none);
     });
 
     test('company B cannot see company A formulas', () async {

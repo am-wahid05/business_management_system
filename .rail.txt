@@ -1,0 +1,188 @@
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SecretaryRail(
+                  activeCompanyContext: widget.activeCompanyContext,
+                  brandingService: widget.brandingService,
+                ),
+                const VerticalDivider(width: 1),
+                Expanded(child: widget.child),
+              ],
+            ),
+          );
+        }
+        return AppShellScope(
+          role: UserRole.secretary,
+          persistentSidebar: false,
+          drawer: drawer,
+          child: Scaffold(
+            body: widget.child,
+            bottomNavigationBar: const _SecretaryNavigationBar(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SecretaryRail extends StatelessWidget {
+  const _SecretaryRail({this.activeCompanyContext, this.brandingService});
+
+  final ActiveCompanyContext? activeCompanyContext;
+  final CompanyBrandingService? brandingService;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final route = ModalRoute.of(context)?.settings.name;
+    final selected = SecretaryNav.destinations.indexWhere(
+      (destination) => destination.matches(route),
+    );
+    return Container(
+      width: 96,
+      color: scheme.surface,
+      child: SafeArea(
+        right: false,
+        child: Column(
+          children: [
+            Container(
+              height: 72,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: scheme.outlineVariant),
+                ),
+              ),
+              child: activeCompanyContext == null
+                  ? const _BrandGlyph()
+                  : CompanyBrandMark(
+                      context: activeCompanyContext!,
+                      service: brandingService,
+                      logoSize: 38,
+                      // The rail shows only icons, so the name is collapsed to a
+                      // hairline rather than allowed to wrap into the tile.
+                      nameStyle: const TextStyle(fontSize: 1, height: 0.1),
+                    ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                children: [
+                  for (
+                    var index = 0;
+                    index < SecretaryNav.destinations.length;
+                    index++
+                  )
+                    _RailTile(
+                      destination: SecretaryNav.destinations[index],
+                      selected: selected == index,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RailTile extends StatelessWidget {
+  const _RailTile({required this.destination, required this.selected});
+
+  final AppNavDestination destination;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: destination.label,
+      waitDuration: const Duration(milliseconds: 400),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 3, 10, 3),
+        child: Material(
+          color: selected ? scheme.primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            onTap: () {
+              if (selected) return;
+              Navigator.of(context).pushReplacementNamed(destination.route);
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    destination.icon,
+                    size: 22,
+                    color: selected ? scheme.primary : scheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: 5),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Text(
+                      destination.label,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        height: 1.15,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: selected
+                            ? scheme.primary
+                            : scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SecretaryNavigationBar extends StatelessWidget {
+  const _SecretaryNavigationBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final route = ModalRoute.of(context)?.settings.name;
+    var selected = SecretaryNav.destinations.indexWhere(
+      (destination) => destination.matches(route),
+    );
+    // A detail screen pushed on top of a Secretary destination still shows the
+    // bar, so fall back to the first destination rather than leaving the
+    // selection pointing at nothing.
+    if (selected < 0) selected = 0;
+    return NavigationBar(
+      height: 68,
+      selectedIndex: selected,
+      onDestinationSelected: (index) {
+        final destination = SecretaryNav.destinations[index];
+        if (destination.matches(route)) return;
+        Navigator.of(context).pushReplacementNamed(destination.route);
+      },
+      destinations: SecretaryNav.destinations
+          .map(
+            (destination) => NavigationDestination(
+              icon: Icon(destination.icon),
+              selectedIcon: Icon(destination.icon),
+              // Five destinations will not fit as full words on a narrow phone,
+              // so the longest label is shortened rather than truncated.
+              label: destination == SecretaryNav.todaysRecords
+                  ? 'Today'
+                  : destination.label,
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+}

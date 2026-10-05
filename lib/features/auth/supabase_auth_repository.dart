@@ -5,21 +5,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'active_company_context.dart';
 import 'auth_models.dart';
 import 'auth_repository.dart';
+import 'supabase_auth_link_handler.dart';
+import '../receiving/print_settings_service.dart';
 
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(
     this.client, {
     ActiveCompanyContext? activeCompanyContext,
+    this.authLinkHandler,
     this.readSelectedCompanyId,
     this.writeSelectedCompanyId,
   }) : _activeCompanyContext = activeCompanyContext ?? ActiveCompanyContext() {
     _authStateSubscription = client.auth.onAuthStateChange.listen(
       _onAuthStateChange,
+      onError: _onAuthStreamError,
     );
   }
 
   final SupabaseClient client;
   final ActiveCompanyContext _activeCompanyContext;
+  final SupabaseAuthLinkHandler? authLinkHandler;
   final Future<String?> Function()? readSelectedCompanyId;
   final Future<void> Function(String companyId)? writeSelectedCompanyId;
   late final StreamSubscription<AuthState> _authStateSubscription;
@@ -39,15 +44,25 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> restoreSession() async {
     final user = client.auth.currentUser;
     if (user == null) {
+      PrintPreferences.clear();
       _activeCompanyContext.value = null;
       return;
+    }
+    if (currentUser?.id != null && currentUser?.id != user.id) {
+      PrintPreferences.clear();
     }
     await _loadAuthenticatedUser(user);
   }
 
   void _onAuthStateChange(AuthState state) {
     final session = state.session;
+    if (state.event == AuthChangeEvent.signedIn ||
+        state.event == AuthChangeEvent.passwordRecovery ||
+        state.event == AuthChangeEvent.signedOut) {
+      authLinkHandler?.clearExpectedFlow();
+    }
     if (state.event == AuthChangeEvent.signedOut || session == null) {
+      PrintPreferences.clear();
       _activeCompanyContext.value = null;
       return;
     }
@@ -56,14 +71,20 @@ class SupabaseAuthRepository implements AuthRepository {
       return;
     }
     if (currentUser?.id != session.user.id) {
+      PrintPreferences.clear();
       _activeCompanyContext.value = null;
     }
     unawaited(
       _loadAuthenticatedUser(session.user).catchError((Object _) {
+        PrintPreferences.clear();
         _activeCompanyContext.value = null;
         return null;
       }),
     );
+  }
+
+  void _onAuthStreamError(Object error, StackTrace stackTrace) {
+    authLinkHandler?.handleAuthStreamError(error, stackTrace);
   }
 
   @override
@@ -72,9 +93,15 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<AppUser?> signIn(String identifier, String password) async {
     try {
-      final response = await client.auth.signInWithPassword(email: identifier.trim(), password: password);
+      final response = await client.auth.signInWithPassword(
+        email: identifier.trim(),
+        password: password,
+      );
       final sessionUser = response.user;
       if (sessionUser == null) return null;
+      if (currentUser?.id != null && currentUser?.id != sessionUser.id) {
+        PrintPreferences.clear();
+      }
       final user = await _loadAuthenticatedUser(sessionUser);
       if (user == null) await signOut();
       return user;
@@ -84,7 +111,10 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   Future<AppUser?> _loadAuthenticatedUser(User sessionUser) async {
-    if (client.auth.currentUser?.id != sessionUser.id) return null;
+    if (client.auth.currentUser?.id != sessionUser.id) {
+      PrintPreferences.clear();
+      return null;
+    }
     final profile = await client
         .from('profiles')
         .select('display_name, is_active')
@@ -93,17 +123,22 @@ class SupabaseAuthRepository implements AuthRepository {
     if (client.auth.currentUser?.id != sessionUser.id ||
         profile == null ||
         profile['is_active'] != true) {
+      PrintPreferences.clear();
       _activeCompanyContext.value = null;
       return null;
     }
 
     final memberships = await _loadMemberships(sessionUser.id);
     if (memberships.isEmpty || client.auth.currentUser?.id != sessionUser.id) {
+      PrintPreferences.clear();
       _activeCompanyContext.value = null;
       return null;
     }
     final preferredId = await readSelectedCompanyId?.call();
-    if (client.auth.currentUser?.id != sessionUser.id) return null;
+    if (client.auth.currentUser?.id != sessionUser.id) {
+      PrintPreferences.clear();
+      return null;
+    }
     final selected = memberships.firstWhere(
       (membership) => membership.companyId == preferredId,
       orElse: () => memberships.first,
@@ -146,10 +181,14 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> selectCompany(String companyId) async {
     final current = currentUser;
-    if (current == null) throw StateError('Sign in before selecting a company.');
+    if (current == null) {
+      throw StateError('Sign in before selecting a company.');
+    }
     final memberships = await companiesForCurrentUser();
     final selected = memberships.where((item) => item.companyId == companyId);
-    if (selected.isEmpty) throw StateError('You do not belong to that company.');
+    if (selected.isEmpty) {
+      throw StateError('You do not belong to that company.');
+    }
     final membership = selected.first;
     final updated = current.copyWith(
       role: membership.role,
@@ -165,8 +204,15 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AppUser> createUser({required String username, required String displayName, required UserRole role, required String password}) async {
-    throw StateError('Create Supabase users from the secured admin provisioning flow, not directly from the client.');
+  Future<AppUser> createUser({
+    required String username,
+    required String displayName,
+    required UserRole role,
+    required String password,
+  }) async {
+    throw StateError(
+      'Create Supabase users from the secured admin provisioning flow, not directly from the client.',
+    );
   }
 
   @override
@@ -178,26 +224,32 @@ class SupabaseAuthRepository implements AuthRepository {
         .select('role, is_active, profiles(id, email, display_name, is_active)')
         .eq('company_id', companyId)
         .order('created_at');
-    return (rows as List).map((item) {
-      final row = item['profiles'] as Map<String, dynamic>;
-      final role = item['role'] as String;
-      return AppUser(
-        id: row['id'] as String,
-        username: row['email'] as String? ?? '',
-        displayName: row['display_name'] as String,
-        role: role == 'secretary' ? UserRole.secretary : UserRole.admin,
-        isActive: item['is_active'] == true && row['is_active'] == true,
-        companyId: companyId,
-        companyName: currentUser?.companyName,
-        companyLogoPath: currentUser?.companyLogoPath,
-      );
-    }).toList(growable: false);
+    return (rows as List)
+        .map((item) {
+          final row = item['profiles'] as Map<String, dynamic>;
+          final role = item['role'] as String;
+          return AppUser(
+            id: row['id'] as String,
+            username: row['email'] as String? ?? '',
+            displayName: row['display_name'] as String,
+            role: role == 'secretary' ? UserRole.secretary : UserRole.admin,
+            isActive: item['is_active'] == true && row['is_active'] == true,
+            companyId: companyId,
+            companyName: currentUser?.companyName,
+            companyLogoPath: currentUser?.companyLogoPath,
+          );
+        })
+        .toList(growable: false);
   }
 
   @override
   Future<void> signOut() async {
-    await client.auth.signOut();
-    _activeCompanyContext.value = null;
+    try {
+      await client.auth.signOut();
+    } finally {
+      PrintPreferences.clear();
+      _activeCompanyContext.value = null;
+    }
   }
 
   static CompanyMembership _membershipFromRow(dynamic raw) {

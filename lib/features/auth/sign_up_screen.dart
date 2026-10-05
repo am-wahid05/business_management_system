@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../app/app_routes.dart';
+import '../../app/app_ui.dart';
 import '../auth/auth_models.dart';
 import '../auth/auth_repository.dart';
+import 'auth_form_parts.dart';
 import 'account_service.dart';
 import 'password_policy.dart';
 import 'password_widgets.dart';
@@ -51,7 +53,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _awaitingConfirmation = false;
 
   @override
+  void initState() {
+    super.initState();
+    widget.authRepository.activeCompanyContext.addListener(
+      _onAuthenticatedAfterConfirmation,
+    );
+  }
+
+  @override
   void dispose() {
+    widget.authRepository.activeCompanyContext.removeListener(
+      _onAuthenticatedAfterConfirmation,
+    );
     _emailController.dispose();
     _nameController.dispose();
     _companyController.dispose();
@@ -59,7 +72,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _confirmController.dispose();
     super.dispose();
   }
+
+  void _onAuthenticatedAfterConfirmation() {
+    if (!_awaitingConfirmation || !mounted) return;
+    final user = widget.authRepository.currentUser;
+    if (user == null) return;
+    setState(() => _awaitingConfirmation = false);
+    Navigator.of(context).pushReplacementNamed(
+      user.role == UserRole.admin
+          ? AppRoutes.adminDashboard
+          : AppRoutes.secretaryDashboard,
+    );
+  }
+
   Future<void> _submit() async {
+    // Guard before validation and before the first await. A rapid double tap or
+    // an Enter key event must not create two independent Supabase requests.
+    if (_working || _awaitingConfirmation) return;
     final password = _passwordController.text;
     final company = _companyController.text.trim();
     setState(() {
@@ -99,7 +128,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
       if (user == null) {
         setState(() {
-          _formError = 'Your account was created, but no company is available '
+          _formError =
+              'Your account was created, but no company is available '
               'for it yet. Please sign in again in a moment.';
         });
         return;
@@ -115,158 +145,192 @@ class _SignUpScreenState extends State<SignUpScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(
-        () => _formError = 'We could not create your account. '
+        () => _formError =
+            'We could not create your account. '
             'Check your connection and try again.',
       );
     } finally {
       if (mounted) setState(() => _working = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
+    // No AppBar here on purpose. The brand panel is already a full-height
+    // layout, so an AppBar above it produced two stacked headers and pushed
+    // the form below the fold. The form carries its own heading and the
+    // brand panel carries the identity.
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Account')),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
-              child: _awaitingConfirmation
-                  ? _buildConfirmationNotice()
-                  : _buildForm(),
-            ),
-          ),
+        child: AppAuthBrandPanel(
+          supportingText:
+              'Create a company workspace, then invite your secretaries.',
+          child: _awaitingConfirmation
+              ? _buildConfirmationNotice()
+              : _buildForm(),
         ),
       ),
     );
   }
 
   Widget _buildConfirmationNotice() {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(
-          Icons.mark_email_read_outlined,
-          size: 48,
-          color: Theme.of(context).colorScheme.primary,
+        const AppAuthHeader(
+          title: 'Check your email',
+          subtitle:
+              'Open the confirmation link we sent to finish activating your '
+              'account, then sign in.',
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Check your email',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headlineSmall,
+        const SizedBox(height: 26),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.mail_outline, size: 20, color: scheme.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  _emailController.text.trim(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          'We sent a confirmation link to '
-          '${_emailController.text.trim()}. Open it to activate your account, '
-          'then sign in.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Back to Sign In'),
+        const SizedBox(height: 26),
+        SizedBox(
+          height: 50,
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Back to sign in'),
+          ),
         ),
       ],
     );
   }
+
   Widget _buildForm() {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Create your company account',
-            style: Theme.of(context).textTheme.headlineSmall,
+          const AppAuthHeader(
+            title: 'Create your account',
+            subtitle:
+                'Registering a company name makes you its owner. Leave it blank '
+                'to join a company that already exists.',
           ),
-          const SizedBox(height: 8),
-          Text(
-            'The first person to register a company name becomes its owner. '
-            'You can add secretaries afterwards.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 24),
-          TextFormField(
-            controller: _companyController,
-            enabled: !_working,
-            decoration: InputDecoration(
-              labelText: 'Company name',
-              helperText: 'Leave blank if you are joining an existing company.',
-              errorText: _companyError,
+          const SizedBox(height: 26),
+          AuthLabeledField(
+            label: 'Company name',
+            child: TextFormField(
+              controller: _companyController,
+              enabled: !_working,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                hintText: 'Optional for existing companies',
+                errorText: _companyError,
+              ),
+              validator: (value) => (value?.trim().length ?? 0) > 120
+                  ? 'That company name is too long.'
+                  : null,
             ),
-            validator: (value) => (value?.trim().length ?? 0) > 120
-                ? 'That company name is too long.'
-                : null,
           ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _nameController,
-            enabled: !_working,
-            autofillHints: const [AutofillHints.name],
-            decoration: const InputDecoration(labelText: 'Your name'),
-            validator: (value) => (value?.trim().length ?? 0) > 120
-                ? 'That name is too long.'
-                : null,
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _emailController,
-            enabled: !_working,
-            keyboardType: TextInputType.emailAddress,
-            autofillHints: const [AutofillHints.email],
-            decoration: InputDecoration(
-              labelText: 'Email address',
-              errorText: _emailError,
+          const SizedBox(height: 18),
+          AuthLabeledField(
+            label: 'Your name',
+            child: TextFormField(
+              controller: _nameController,
+              enabled: !_working,
+              autofillHints: const [AutofillHints.name],
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(hintText: 'Full name'),
+              validator: (value) => (value?.trim().length ?? 0) > 120
+                  ? 'That name is too long.'
+                  : null,
             ),
-            validator: (value) {
-              final text = value?.trim() ?? '';
-              if (text.isEmpty) return 'Enter your email address.';
-              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text)) {
-                return 'Enter a valid email address.';
-              }
-              return null;
-            },
           ),
-          const SizedBox(height: 16),
-          AppPasswordField(
-            controller: _passwordController,
+          const SizedBox(height: 18),
+          AuthLabeledField(
+            label: 'Email address',
+            child: TextFormField(
+              controller: _emailController,
+              enabled: !_working,
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                hintText: 'you@company.com',
+                errorText: _emailError,
+              ),
+              validator: (value) {
+                final text = value?.trim() ?? '';
+                if (text.isEmpty) return 'Enter your email address.';
+                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text)) {
+                  return 'Enter a valid email address.';
+                }
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(height: 18),
+          AuthLabeledField(
             label: 'Password',
-            helperText: PasswordPolicy.requirementText,
-            errorText: _passwordError,
-            autofillHints: const [AutofillHints.newPassword],
-            enabled: !_working,
+            child: AppPasswordField(
+              controller: _passwordController,
+              helperText: PasswordPolicy.requirementText,
+              errorText: _passwordError,
+              autofillHints: const [AutofillHints.newPassword],
+              enabled: !_working,
+            ),
           ),
-          const SizedBox(height: 16),
-          AppPasswordField(
-            controller: _confirmController,
+          const SizedBox(height: 18),
+          AuthLabeledField(
             label: 'Confirm password',
-            errorText: _confirmError,
-            autofillHints: const [AutofillHints.newPassword],
-            enabled: !_working,
-            onSubmitted: (_) => _submit(),
+            child: AppPasswordField(
+              controller: _confirmController,
+              errorText: _confirmError,
+              autofillHints: const [AutofillHints.newPassword],
+              enabled: !_working,
+              onSubmitted: (_) => _submit(),
+            ),
           ),
           if (_formError != null) ...[
-            const SizedBox(height: 16),
-            PasswordErrorText(_formError!),
+            const SizedBox(height: 18),
+            AppAuthError(_formError!),
           ],
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _working ? null : _submit,
-            icon: _working
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(),
-                  )
-                : const Icon(Icons.person_add_outlined),
-            label: const Text('Create account'),
+          const SizedBox(height: 26),
+          SizedBox(
+            height: 50,
+            child: FilledButton(
+              onPressed: _working ? null : _submit,
+              child: _working
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    )
+                  : const Text('Create account'),
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           TextButton(
             onPressed: _working ? null : () => Navigator.of(context).pop(),
-            child: const Text('Back to Sign In'),
+            style: authLinkStyle(context),
+            child: const Text('Back to sign in'),
           ),
         ],
       ),

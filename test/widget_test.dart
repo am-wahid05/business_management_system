@@ -14,10 +14,12 @@ void main() {
 
   setUp(() async {
     sqfliteFfiInit();
-    database = await databaseFactoryFfi.openDatabase(':memory:', options: OpenDatabaseOptions(
-      version: 1,
-      onCreate: (database, version) async {
-        await database.execute('''
+    database = await databaseFactoryFfi.openDatabase(
+      ':memory:',
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (database, version) async {
+          await database.execute('''
           CREATE TABLE products (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL COLLATE NOCASE UNIQUE,
@@ -26,7 +28,7 @@ void main() {
             updated_at TEXT NOT NULL
           )
         ''');
-        await database.execute('''
+          await database.execute('''
           CREATE TABLE deliveries (
             id TEXT PRIMARY KEY,
             supplier_id TEXT NOT NULL,
@@ -42,7 +44,7 @@ void main() {
             updated_at TEXT NOT NULL
           )
         ''');
-        await database.execute('''
+          await database.execute('''
           CREATE TABLE delivery_bag_weights (
             delivery_id TEXT NOT NULL,
             bag_number INTEGER NOT NULL,
@@ -50,7 +52,7 @@ void main() {
             PRIMARY KEY (delivery_id, bag_number)
           )
         ''');
-        await database.execute('''
+          await database.execute('''
           CREATE TABLE users (
             id TEXT PRIMARY KEY,
             username TEXT NOT NULL COLLATE NOCASE UNIQUE,
@@ -63,8 +65,9 @@ void main() {
             updated_at TEXT NOT NULL
           )
         ''');
-      },
-    ));
+        },
+      ),
+    );
     productRepository = ProductRepository(database);
     deliveryRepository = DeliveryRepository(database);
     authRepository = LocalAuthRepository(database);
@@ -74,7 +77,13 @@ void main() {
   tearDown(() => database.close());
 
   testWidgets('opens the branded login shell', (WidgetTester tester) async {
-    await tester.pumpWidget(AlbncApp(productRepository: productRepository, deliveryRepository: deliveryRepository, authRepository: authRepository));
+    await tester.pumpWidget(
+      AlbncApp(
+        productRepository: productRepository,
+        deliveryRepository: deliveryRepository,
+        authRepository: authRepository,
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
@@ -83,8 +92,16 @@ void main() {
     expect(find.text('Open Owner / Admin App'), findsNothing);
   });
 
-  testWidgets('does not expose dashboard shortcuts before authentication', (WidgetTester tester) async {
-    await tester.pumpWidget(AlbncApp(productRepository: productRepository, deliveryRepository: deliveryRepository, authRepository: authRepository));
+  testWidgets('does not expose dashboard shortcuts before authentication', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      AlbncApp(
+        productRepository: productRepository,
+        deliveryRepository: deliveryRepository,
+        authRepository: authRepository,
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 

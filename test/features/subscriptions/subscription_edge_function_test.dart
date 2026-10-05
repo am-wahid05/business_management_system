@@ -17,8 +17,12 @@ void main() {
       .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
       .replaceAll(RegExp(r'^\s*//.*$', multiLine: true), '');
 
-  final createPayment = code(read('supabase/functions/create-payment/index.ts'));
-  final verifyPayment = code(read('supabase/functions/verify-payment/index.ts'));
+  final createPayment = code(
+    read('supabase/functions/create-payment/index.ts'),
+  );
+  final verifyPayment = code(
+    read('supabase/functions/verify-payment/index.ts'),
+  );
   final status = code(read('supabase/functions/subscription-status/index.ts'));
   final manage = code(read('supabase/functions/subscription-manage/index.ts'));
   final provider = code(read('supabase/functions/_shared/payment_provider.ts'));
@@ -131,8 +135,9 @@ void main() {
     test('no Hubtel endpoint or credential name is guessed', () {
       // Only the class name may appear. Any URL, header or secret name for
       // Hubtel would be a fabrication, since the account is unverified.
-      final hubtel =
-          provider.substring(provider.indexOf('HubtelPaymentProvider'));
+      final hubtel = provider.substring(
+        provider.indexOf('HubtelPaymentProvider'),
+      );
       expect(hubtel, isNot(contains('https://')));
       expect(hubtel, isNot(contains('Authorization')));
       expect(hubtel.toLowerCase(), isNot(contains('api_key')));
@@ -225,4 +230,3 @@ void main() {
     });
   });
 }
-

@@ -52,7 +52,7 @@ class SubscriptionMessages {
           return days == 0
               ? 'Your free trial ends today.'
               : 'Your free trial ends in $days '
-                  '${days == 1 ? 'day' : 'days'}.';
+                    '${days == 1 ? 'day' : 'days'}.';
         }
         return null;
 
@@ -62,7 +62,7 @@ class SubscriptionMessages {
           return days == 0
               ? 'Your subscription expires today.'
               : 'Your subscription expires in $days '
-                  '${days == 1 ? 'day' : 'days'}.';
+                    '${days == 1 ? 'day' : 'days'}.';
         }
         return null;
     }
@@ -92,14 +92,15 @@ enum RenewalUrgency { none, warning, critical }
 class AiAccessMessages {
   const AiAccessMessages._();
 
-  static String forEntitlements(Entitlements entitlements) =>
-      switch (entitlements.aiStatus) {
-        AiEntitlementStatus.none =>
-          'The AI Assistant is a premium add-on. Ask your administrator to '
-              'add AI to your subscription to use it.',
-        AiEntitlementStatus.expired =>
-          'Your AI Assistant trial has ended. Add the AI Assistant to your '
-              'subscription to keep using it.',
-        _ => 'The AI Assistant is not available right now. Please try again later.',
-      };
+  static String forEntitlements(
+    Entitlements entitlements,
+  ) => switch (entitlements.aiStatus) {
+    AiEntitlementStatus.none =>
+      'The AI Assistant is a premium add-on. Ask your administrator to '
+          'add AI to your subscription to use it.',
+    AiEntitlementStatus.expired =>
+      'Your AI Assistant trial has ended. Add the AI Assistant to your '
+          'subscription to keep using it.',
+    _ => 'The AI Assistant is not available right now. Please try again later.',
+  };
 }

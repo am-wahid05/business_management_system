@@ -1,4 +1,4 @@
-﻿import 'package:flutter_application_2/domain/models/delivery.dart';
+import 'package:flutter_application_2/domain/models/delivery.dart';
 import 'package:flutter_application_2/domain/models/product.dart';
 import 'package:flutter_application_2/domain/models/supplier.dart';
 import 'package:flutter_application_2/features/receiving/bulk_receiving_input.dart';
@@ -46,7 +46,7 @@ void main() {
     recordType: DeliveryRecordType.bulk,
     bulkTotalWeight: total == missing ? null : (total as num?)?.toDouble(),
     bulkBagCount: bags == missing ? null : (bags as num?)?.toInt(),
-      );
+  );
 
   group('record type', () {
     test('a plain delivery is individual by default', () {
@@ -62,7 +62,10 @@ void main() {
 
     test('an unknown or missing stored value reads as individual', () {
       expect(DeliveryRecordType.parse(null), DeliveryRecordType.individual);
-      expect(DeliveryRecordType.parse('nonsense'), DeliveryRecordType.individual);
+      expect(
+        DeliveryRecordType.parse('nonsense'),
+        DeliveryRecordType.individual,
+      );
       expect(DeliveryRecordType.parse('bulk'), DeliveryRecordType.bulk);
     });
   });
@@ -227,6 +230,3 @@ void main() {
     });
   });
 }
-
-
-

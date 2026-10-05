@@ -61,10 +61,18 @@ void main() {
   test('includes the end date and excludes other suppliers', () async {
     final supplier = _supplier('supplier-a', 'Ibrahim Mensah');
     final otherSupplier = _supplier('supplier-b', 'Other Supplier');
-    await repository.save(_delivery('before', supplier, DateTime(2026, 1, 1), [50]));
-    await repository.save(_delivery('on-end', supplier, DateTime(2026, 9, 20), [80, 70]));
-    await repository.save(_delivery('other', otherSupplier, DateTime(2026, 9, 20), [100]));
-    await repository.save(_delivery('after', supplier, DateTime(2026, 9, 21), [90]));
+    await repository.save(
+      _delivery('before', supplier, DateTime(2026, 1, 1), [50]),
+    );
+    await repository.save(
+      _delivery('on-end', supplier, DateTime(2026, 9, 20), [80, 70]),
+    );
+    await repository.save(
+      _delivery('other', otherSupplier, DateTime(2026, 9, 20), [100]),
+    );
+    await repository.save(
+      _delivery('after', supplier, DateTime(2026, 9, 21), [90]),
+    );
 
     final statement = await service.build(
       supplier: supplier,
@@ -72,7 +80,10 @@ void main() {
       to: DateTime(2026, 9, 20),
     );
 
-    expect(statement.deliveries.map((delivery) => delivery.id), ['on-end', 'before']);
+    expect(statement.deliveries.map((delivery) => delivery.id), [
+      'on-end',
+      'before',
+    ]);
     expect(statement.totalBags, 3);
     expect(statement.totalWeight, 200);
   });
@@ -90,19 +101,24 @@ void main() {
 }
 
 Supplier _supplier(String id, String name) => Supplier(
-      id: id,
-      name: name,
-      type: SupplierType.farmer,
-      town: 'Techiman',
-      district: 'Techiman Municipal',
-      region: 'Bono East',
-    );
+  id: id,
+  name: name,
+  type: SupplierType.farmer,
+  town: 'Techiman',
+  district: 'Techiman Municipal',
+  region: 'Bono East',
+);
 
-Delivery _delivery(String id, Supplier supplier, DateTime recordedAt, List<double> weights) => Delivery(
-      id: id,
-      supplier: supplier,
-      product: Product.cashew,
-      recordedAt: recordedAt,
-      bagWeights: weights,
-      recordedByUserId: 'admin',
-    );
+Delivery _delivery(
+  String id,
+  Supplier supplier,
+  DateTime recordedAt,
+  List<double> weights,
+) => Delivery(
+  id: id,
+  supplier: supplier,
+  product: Product.cashew,
+  recordedAt: recordedAt,
+  bagWeights: weights,
+  recordedByUserId: 'admin',
+);

@@ -1,5 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
+import '../../app/app_navigation.dart';
+import '../../app/app_ui.dart';
 import '../credits/sms_credit_service.dart';
 import 'billing_widgets.dart';
 import 'entitlement_service.dart';
@@ -59,7 +61,14 @@ class _BillingScreenState extends State<BillingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Billing & Subscription')),
+      appBar: AppBar(
+        title: const Text('Billing & Subscription'),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
+      ),
+      drawer: adminDrawerFor(context),
       body: AnimatedBuilder(
         animation: widget.entitlements,
         builder: (context, _) {
@@ -68,6 +77,19 @@ class _BillingScreenState extends State<BillingScreen> {
           final config = entitlements.config;
           final notice = SubscriptionMessages.renewalNotice(entitlements);
           final urgency = SubscriptionMessages.urgency(entitlements);
+
+          if (service.isLoading) {
+            return ListView(
+              padding: EdgeInsets.all(24),
+              children: [
+                AppSkeleton(width: 250, height: 28),
+                SizedBox(height: 12),
+                AppSkeleton(width: 360, height: 16),
+                SizedBox(height: 24),
+                AppBillingSkeleton(),
+              ],
+            );
+          }
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -79,7 +101,8 @@ class _BillingScreenState extends State<BillingScreen> {
                 ),
               if (service.isOffline)
                 const Notice(
-                  message: 'Showing your last known subscription status. '
+                  message:
+                      'Showing your last known subscription status. '
                       'Connect to the internet to refresh it.',
                 ),
               const SizedBox(height: 16),
@@ -170,7 +193,8 @@ class _BillingScreenState extends State<BillingScreen> {
           const SizedBox(height: 12),
           PayButton(
             label: 'Renew software subscription',
-            note: 'Online payment is not available yet. Nothing will be charged '
+            note:
+                'Online payment is not available yet. Nothing will be charged '
                 'until payment is connected.',
             onPressed: _explainNotConnected,
           ),
@@ -207,7 +231,8 @@ class _BillingScreenState extends State<BillingScreen> {
           const SizedBox(height: 12),
           PayButton(
             label: 'Add the AI Assistant',
-            note: 'The AI Assistant is billed separately from your software '
+            note:
+                'The AI Assistant is billed separately from your software '
                 'subscription.',
             onPressed: _explainNotConnected,
           ),
@@ -240,14 +265,18 @@ class _BillingScreenState extends State<BillingScreen> {
                   creditError,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 )
+              else if (snapshot.connectionState != ConnectionState.done)
+                const Row(
+                  children: [
+                    AppSkeleton(width: 140, height: 16),
+                    Spacer(),
+                    AppSkeleton(width: 100, height: 16),
+                  ],
+                )
               else
                 DetailRow(
                   'Current balance',
-                  snapshot.connectionState != ConnectionState.done
-                      ? 'Loading…'
-                      : balance == null
-                          ? 'Unavailable'
-                          : '$balance credits',
+                  balance == null ? 'Unavailable' : '$balance credits',
                 ),
               const SizedBox(height: 4),
               Text(
@@ -259,7 +288,8 @@ class _BillingScreenState extends State<BillingScreen> {
               const SizedBox(height: 12),
               PayButton(
                 label: 'Buy SMS Credits',
-                note: 'SMS credit top up is not available yet. No credits have '
+                note:
+                    'SMS credit top up is not available yet. No credits have '
                     'been added to your account.',
                 onPressed: _explainNotConnected,
               ),
@@ -281,11 +311,11 @@ class _BillingScreenState extends State<BillingScreen> {
           Text(
             paused
                 ? 'This subscription is paused for the season. Nothing has been '
-                    'deleted: your users, records, suppliers, products and '
-                    'reports are all safe.'
+                      'deleted: your users, records, suppliers, products and '
+                      'reports are all safe.'
                 : 'If your business stops for a season, you can pause your '
-                    'subscription instead of letting it expire. Everything is '
-                    'kept, and you can reactivate whenever you are ready.',
+                      'subscription instead of letting it expire. Everything is '
+                      'kept, and you can reactivate whenever you are ready.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),
@@ -303,11 +333,11 @@ class _BillingScreenState extends State<BillingScreen> {
                   content: Text(
                     message
                         ? (paused
-                            ? 'Your subscription is active again.'
-                            : 'Your subscription is paused. All your data is '
-                                'safe.')
+                              ? 'Your subscription is active again.'
+                              : 'Your subscription is paused. All your data is '
+                                    'safe.')
                         : 'Could not update the subscription. Please try again '
-                            'while connected to the internet.',
+                              'while connected to the internet.',
                   ),
                 ),
               );
@@ -323,20 +353,85 @@ class _BillingScreenState extends State<BillingScreen> {
   }
 }
 
-String statusLabel(SubscriptionStatus status) => switch (status) {
-      SubscriptionStatus.trial => 'Trial',
-      SubscriptionStatus.active => 'Active',
-      SubscriptionStatus.gracePeriod => 'Grace Period',
-      SubscriptionStatus.expired => 'Expired',
-      SubscriptionStatus.paused => 'Paused',
-    };
+class AppBillingSkeleton extends StatelessWidget {
+  const AppBillingSkeleton({super.key});
 
-String aiStatusLabel(AiEntitlementStatus status) => switch (status) {
-      AiEntitlementStatus.trial => 'Trial',
-      AiEntitlementStatus.active => 'Active',
-      AiEntitlementStatus.expired => 'Expired',
-      AiEntitlementStatus.none => 'Not included',
-    };
+  @override
+  Widget build(BuildContext context) => const Column(
+    children: [
+      AppPanel(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppSkeleton(width: 190, height: 18),
+            SizedBox(height: 18),
+            AppSkeleton(width: double.infinity, height: 16),
+            SizedBox(height: 12),
+            AppSkeleton(width: double.infinity, height: 16),
+            SizedBox(height: 12),
+            AppSkeleton(width: 230, height: 16),
+            SizedBox(height: 20),
+            AppSkeleton(width: 150, height: 46, radius: 10),
+          ],
+        ),
+      ),
+      SizedBox(height: 16),
+      AppPanel(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppSkeleton(width: 140, height: 18),
+            SizedBox(height: 18),
+            AppSkeleton(width: double.infinity, height: 16),
+            SizedBox(height: 12),
+            AppSkeleton(width: 210, height: 16),
+          ],
+        ),
+      ),
+      SizedBox(height: 16),
+      AppPanel(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppSkeleton(width: 120, height: 18),
+            SizedBox(height: 18),
+            AppSkeleton(width: double.infinity, height: 16),
+            SizedBox(height: 12),
+            AppSkeleton(width: 260, height: 16),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+String statusLabel(SubscriptionStatus status) {
+  switch (status) {
+    case SubscriptionStatus.trial:
+      return 'Trial';
+    case SubscriptionStatus.active:
+      return 'Active';
+    case SubscriptionStatus.gracePeriod:
+      return 'Grace Period';
+    case SubscriptionStatus.expired:
+      return 'Expired';
+    case SubscriptionStatus.paused:
+      return 'Paused';
+  }
+}
+
+String aiStatusLabel(AiEntitlementStatus status) {
+  switch (status) {
+    case AiEntitlementStatus.trial:
+      return 'Trial';
+    case AiEntitlementStatus.active:
+      return 'Active';
+    case AiEntitlementStatus.expired:
+      return 'Expired';
+    case AiEntitlementStatus.none:
+      return 'Not included';
+  }
+}
 
 String formatDay(DateTime value) =>
     '${value.day.toString().padLeft(2, '0')}/'

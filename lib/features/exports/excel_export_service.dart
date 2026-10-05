@@ -111,14 +111,60 @@ class ExcelExportService implements SupplierStatementExporter {
     );
   }
 
+  /// Records for one product, or for every product when [productId] is blank.
+  ///
+  /// A blank filter used to be forwarded as `product_id = ''`, which matched
+  /// nothing and produced an empty workbook while looking like a successful
+  /// export. Treating a blank id as "no product filter" means the Admin can ask
+  /// for all product records without having to know an id first.
   Future<File> exportProductReport(String productId, String productName) async {
+    final hasProduct = productId.trim().isNotEmpty;
     return _write(
-      '${_companyPrefix}_Product_${_safeName(productName)}.xlsx',
+      hasProduct
+          ? '${_companyPrefix}_Product_${_safeName(productName)}.xlsx'
+          // No product chosen: name the file for the products as a whole and
+          // cover the full history, because there is no single product's dates.
+          : '${_companyPrefix}_Products.xlsx',
       await deliveryRepository.forRange(
         DateTime(2000),
         DateTime(2100),
-        productId: productId,
+        productId: hasProduct ? productId.trim() : null,
       ),
+    );
+  }
+
+  /// Records for several products at once, within a date range.
+  ///
+  /// As with [exportSuppliersRange], the products are merged into one workbook
+  /// and de-duplicated by delivery id, so an export of several products stays a
+  /// single filterable document instead of one file per product.
+  Future<File> exportProductsRange(
+    List<String> productIds,
+    DateTime from,
+    DateTime to,
+  ) async {
+    final start = DateTime(from.year, from.month, from.day);
+    final end = DateTime(
+      to.year,
+      to.month,
+      to.day,
+    ).add(const Duration(days: 1));
+    final seen = <String>{};
+    final deliveries = <Delivery>[];
+    for (final productId in productIds) {
+      final rows = await deliveryRepository.forRange(
+        start,
+        end,
+        productId: productId,
+      );
+      for (final delivery in rows) {
+        if (seen.add(delivery.id)) deliveries.add(delivery);
+      }
+    }
+    deliveries.sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    return _write(
+      '${_companyPrefix}_Products_${_datePart(start)}_to_${_datePart(to)}.xlsx',
+      deliveries,
     );
   }
 
@@ -141,19 +187,21 @@ class ExcelExportService implements SupplierStatementExporter {
   Future<File> exportGrid(List<ExcelExportRow> rows) {
     final workbook = Excel.createExcel();
     final sheet = workbook['Spreadsheet'];
-    sheet.appendRow([
-      'Record Type',
-      'Date',
-      'Supplier ID',
-      'Supplier Name',
-      'Product ID',
-      'Product',
-      'Number of Bags',
-      'Total Weight',
-      'Recorded By',
-      'Status',
-      'Notes',
-    ].map(TextCellValue.new).toList());
+    sheet.appendRow(
+      [
+        'Record Type',
+        'Date',
+        'Supplier ID',
+        'Supplier Name',
+        'Product ID',
+        'Product',
+        'Number of Bags',
+        'Total Weight',
+        'Recorded By',
+        'Status',
+        'Notes',
+      ].map(TextCellValue.new).toList(),
+    );
     for (final row in rows) {
       sheet.appendRow([
         TextCellValue(excelRecordTypeLabel(row.recordType)),
@@ -162,8 +210,14 @@ class ExcelExportService implements SupplierStatementExporter {
         TextCellValue(row.supplierName),
         TextCellValue(row.productId),
         TextCellValue(row.productName),
-        if (row.numberOfBags == null) TextCellValue('') else IntCellValue(row.numberOfBags!),
-        if (row.totalWeight == null) TextCellValue('') else DoubleCellValue(row.totalWeight!),
+        if (row.numberOfBags == null)
+          TextCellValue('')
+        else
+          IntCellValue(row.numberOfBags!),
+        if (row.totalWeight == null)
+          TextCellValue('')
+        else
+          DoubleCellValue(row.totalWeight!),
         TextCellValue(row.recordedBy),
         TextCellValue(row.status),
         TextCellValue(row.notes ?? ''),
@@ -175,7 +229,109 @@ class ExcelExportService implements SupplierStatementExporter {
     );
   }
 
+  /// Every receiving record in an arbitrary date range, for the active company.
+  ///
+  /// [to] is inclusive by date: a range ending 30/09/2026 includes everything
+  /// recorded on that day. The underlying repository takes an exclusive end, so
+  /// the extra day is added here rather than being left to the caller, which is
+  /// what stops the last day of a range being silently dropped.
+  ///
+  /// The data still comes from [deliveryRepository], which is already scoped to
+  /// the active company, so there is no path by which another company's records
+  /// can reach this workbook.
+  Future<File> exportRange(DateTime from, DateTime to) async {
+    final start = DateTime(from.year, from.month, from.day);
+    final end = DateTime(
+      to.year,
+      to.month,
+      to.day,
+    ).add(const Duration(days: 1));
+    return _write(
+      '${_companyPrefix}_Records_${_datePart(start)}_to_${_datePart(to)}.xlsx',
+      await deliveryRepository.forRange(start, end),
+    );
+  }
+
+  /// Records for one supplier within a date range.
+  Future<File> exportSupplierRange(
+    String supplierId,
+    String supplierName,
+    DateTime from,
+    DateTime to,
+  ) async {
+    final start = DateTime(from.year, from.month, from.day);
+    final end = DateTime(
+      to.year,
+      to.month,
+      to.day,
+    ).add(const Duration(days: 1));
+    return _write(
+      '${_companyPrefix}_Supplier_${_safeName(supplierName)}_${_datePart(start)}_to_${_datePart(to)}.xlsx',
+      await deliveryRepository.forRange(start, end, supplierId: supplierId),
+    );
+  }
+
+  /// Records for several suppliers at once, within a date range.
+  ///
+  /// The suppliers are merged into one workbook rather than producing a file per
+  /// supplier, so an Admin exporting a set gets a single document that can still
+  /// be filtered by the Supplier ID column. Duplicates are possible if one
+  /// delivery matches more than one selected supplier, so the combined rows are
+  /// de-duplicated by delivery id.
+  Future<File> exportSuppliersRange(
+    Map<String, String> suppliersById,
+    DateTime from,
+    DateTime to,
+  ) async {
+    final start = DateTime(from.year, from.month, from.day);
+    final end = DateTime(
+      to.year,
+      to.month,
+      to.day,
+    ).add(const Duration(days: 1));
+    final seen = <String>{};
+    final deliveries = <Delivery>[];
+    for (final entry in suppliersById.entries) {
+      final rows = await deliveryRepository.forRange(
+        start,
+        end,
+        supplierId: entry.key,
+      );
+      for (final delivery in rows) {
+        if (seen.add(delivery.id)) deliveries.add(delivery);
+      }
+    }
+    // Newest first, matching the order every other export uses.
+    deliveries.sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    return _write(
+      '${_companyPrefix}_Suppliers_${_datePart(start)}_to_${_datePart(to)}.xlsx',
+      deliveries,
+    );
+  }
+
+  /// The file name an export would use, so the save dialog can offer it as the
+  /// default while still letting the Admin change it.
+  String suggestFileName(String label, DateTime from, DateTime to) =>
+      '${_companyPrefix}_${_safeName(label)}_${_datePart(from)}_to_${_datePart(to)}.xlsx';
+
+  /// The file name for a single-day export.
+  ///
+  /// A one-day export should not read `2026-01-01_to_2026-01-01`, so the
+  /// range form is used only when the two dates differ.
+  String suggestDailyFileName(DateTime date) =>
+      '${_companyPrefix}_Daily_Report_${_datePart(date)}.xlsx';
+
   Future<File> _write(String filename, List<Delivery> deliveries) async {
+    final workbook = await _buildReceivingWorkbook(deliveries);
+    return _saveWorkbook(filename, workbook);
+  }
+
+  /// Builds the receiving workbook.
+  ///
+  /// Shared by every export that writes receiving records, so the default-folder
+  /// export and the user-chosen-location export cannot drift into two different
+  /// column layouts.
+  Future<Excel> _buildReceivingWorkbook(List<Delivery> deliveries) async {
     final recorderNames = await recorderNamesProvider?.call() ?? const {};
     final workbook = Excel.createExcel();
     final sheet = workbook['Receiving'];
@@ -248,17 +404,7 @@ class ExcelExportService implements SupplierStatementExporter {
         ],
       ]);
     }
-    final bytes = workbook.encode();
-    if (bytes == null || bytes.isEmpty) {
-      throw StateError('Excel workbook could not be encoded');
-    }
-    final directory = await _directoryProvider();
-    try {
-      final file = File(path.join(directory.path, filename));
-      return await file.writeAsBytes(bytes, flush: true);
-    } on FileSystemException catch (error) {
-      throw StateError('Excel file could not be written: ${error.message}');
-    }
+    return workbook;
   }
 
   Future<File> _writeStatement(
@@ -311,12 +457,36 @@ class ExcelExportService implements SupplierStatementExporter {
     return _saveWorkbook(filename, workbook);
   }
 
+  /// Where the user asked for exports to be written, via the platform save
+  /// dialog.
+  ///
+  /// When null, exports keep their previous behaviour and land in the default
+  /// folder. Setting this is how "choose where to save" reaches every export
+  /// method at once, so the user-chosen location applies to the daily, monthly,
+  /// yearly, supplier, product and range exports alike instead of only to some
+  /// of them.
+  String? destinationPath;
+
+  /// Set once the save dialog has been used, so the UI can say where files are
+  /// going and offer to change it.
+  String get effectiveDestinationPath =>
+      destinationPath ?? 'the default folder';
+
   Future<File> _saveWorkbook(String filename, Excel workbook) async {
     final bytes = workbook.encode();
     if (bytes == null || bytes.isEmpty) {
       throw StateError('Excel workbook could not be encoded');
     }
-    final directory = await _directoryProvider();
+    // A location the user picked in the save dialog wins over the default
+    // folder, so nothing is ever written somewhere they did not ask for.
+    final directory = destinationPath != null
+        ? Directory(destinationPath!)
+        : await _directoryProvider();
+    if (!await directory.exists()) {
+      throw StateError(
+        'The chosen folder is no longer available: ${directory.path}',
+      );
+    }
     try {
       final file = File(path.join(directory.path, filename));
       return await file.writeAsBytes(bytes, flush: true);

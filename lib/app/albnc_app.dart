@@ -20,6 +20,8 @@ import '../features/management/suppliers_screen.dart';
 import '../features/secretary/new_receiving_screen.dart';
 import '../features/secretary/secretary_dashboard_screen.dart';
 import '../features/secretary/todays_records_screen.dart';
+import '../features/secretary/secretary_print_records_screen.dart';
+import '../features/secretary/secretary_sms_credits_screen.dart';
 import '../features/sync/sync_coordinator.dart';
 import '../features/sync/sync_status_repository.dart';
 import '../features/suppliers/supplier_repository.dart';
@@ -47,7 +49,9 @@ import '../features/assistant/business_assistant_screen.dart';
 import '../features/assistant/business_assistant_service.dart';
 import 'app_routes.dart';
 import 'app_theme.dart';
+import 'app_navigation.dart';
 import 'password_recovery_gate.dart';
+import '../features/auth/supabase_auth_link_handler.dart';
 
 class AlbncApp extends StatelessWidget {
   AlbncApp({
@@ -55,6 +59,7 @@ class AlbncApp extends StatelessWidget {
     required this.deliveryRepository,
     required this.authRepository,
     this.accountService,
+    this.authLinkHandler,
     this.brandingService,
     this.subscriptionClient,
     this.onAuthenticated,
@@ -116,6 +121,7 @@ class AlbncApp extends StatelessWidget {
   final AnalyticsRepository analyticsRepository;
   final AuthRepository authRepository;
   final AccountService? accountService;
+  final SupabaseAuthLinkHandler? authLinkHandler;
   final CompanyBrandingService? brandingService;
   final SupabaseClient? subscriptionClient;
   final Future<void> Function(AppUser user)? onAuthenticated;
@@ -137,6 +143,26 @@ class AlbncApp extends StatelessWidget {
     return screen;
   }
 
+  Widget _adminShell(Widget screen) => AdminShell(
+    onLogout: authRepository.signOut,
+    activeCompanyContext: authRepository.activeCompanyContext,
+    brandingService: brandingService,
+    child: screen,
+  );
+
+  Widget _secretaryShell(Widget screen) => SecretaryShell(
+    onLogout: authRepository.signOut,
+    activeCompanyContext: authRepository.activeCompanyContext,
+    brandingService: brandingService,
+    child: screen,
+  );
+
+  Widget _roleShell(Widget screen) {
+    return authRepository.currentUser?.role == UserRole.admin
+        ? _adminShell(screen)
+        : _secretaryShell(screen);
+  }
+
   @override
   Widget build(BuildContext context) {
     // The active company scope for every repository below. This mirrors the
@@ -145,32 +171,40 @@ class AlbncApp extends StatelessWidget {
     final String? Function()? companyIdProvider = authRepository.isRemote
         ? () => authRepository.activeCompanyContext.companyId
         : null;
-    return PasswordRecoveryGate(
-      accountService: accountService,
-      child: MaterialApp(
-        title: 'Business Management System',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        initialRoute: AppRoutes.login,
-        routes: {
-          AppRoutes.login: (_) => LoginScreen(
-            authRepository: authRepository,
-            accountService: accountService,
-            activeCompanyContext: authRepository.activeCompanyContext,
-            brandingService: brandingService,
-            onAuthenticated: onAuthenticated,
-            // Registration only exists when there is a remote identity
-            // provider. In the local setup the accounts are seeded, so no
-            // sign-up link is offered at all.
-            signUpService: subscriptionClient == null
-                ? null
-                : SupabaseSignUpService(subscriptionClient!),
-          ),
-          AppRoutes.resetPassword: (_) => accountService == null
-              ? const NoAccessScreen()
-              : ResetPasswordScreen(accountService: accountService!),
-          AppRoutes.secretaryDashboard: (_) => _protected(
+    return MaterialApp(
+      title: 'Business Management System',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      builder: (context, child) => PasswordRecoveryGate(
+        accountService: accountService,
+        authLinkHandler: authLinkHandler,
+        child: child,
+      ),
+      initialRoute: AppRoutes.login,
+      routes: {
+        AppRoutes.login: (_) => LoginScreen(
+          authRepository: authRepository,
+          accountService: accountService,
+          activeCompanyContext: authRepository.activeCompanyContext,
+          brandingService: brandingService,
+          onAuthenticated: onAuthenticated,
+          // Registration only exists when there is a remote identity
+          // provider. In the local setup the accounts are seeded, so no
+          // sign-up link is offered at all.
+          signUpService: subscriptionClient == null
+              ? null
+              : SupabaseSignUpService(
+                  subscriptionClient!,
+                  authLinkHandler: authLinkHandler,
+                ),
+        ),
+        AppRoutes.resetPassword: (_) => accountService == null
+            ? const NoAccessScreen()
+            : ResetPasswordScreen(accountService: accountService!),
+        AppRoutes.secretaryDashboard: (_) => _protected(
+          _secretaryShell(
             SecretaryDashboardScreen(
+              deliveryRepository: deliveryRepository,
               statusRepository: syncStatusRepository,
               onLogout: authRepository.signOut,
               coordinator: syncCoordinator,
@@ -194,18 +228,22 @@ class AlbncApp extends StatelessWidget {
                 }
               },
             ),
-            permission: AppPermission.viewTodaysRecords,
           ),
-          AppRoutes.newReceiving: (_) => _protected(
+          permission: AppPermission.viewTodaysRecords,
+        ),
+        AppRoutes.newReceiving: (_) => _protected(
+          _secretaryShell(
             NewReceivingScreen(
               repository: repository,
               productRepository: productRepository,
               deliveryRepository: deliveryRepository,
               receivingService: receivingService,
             ),
-            permission: AppPermission.receiveDeliveries,
           ),
-          AppRoutes.todaysRecords: (_) => _protected(
+          permission: AppPermission.receiveDeliveries,
+        ),
+        AppRoutes.todaysRecords: (_) => _protected(
+          _secretaryShell(
             TodaysRecordsScreen(
               repository: deliveryRepository,
               statusRepository: syncStatusRepository,
@@ -218,9 +256,33 @@ class AlbncApp extends StatelessWidget {
                   ? null
                   : SmsCreditService(subscriptionClient!),
             ),
-            permission: AppPermission.viewTodaysRecords,
           ),
-          AppRoutes.adminDashboard: (_) => _protected(
+          permission: AppPermission.viewTodaysRecords,
+        ),
+        AppRoutes.secretaryPrintRecords: (_) => _protected(
+          _secretaryShell(
+            SecretaryPrintRecordsScreen(
+              repository: deliveryRepository,
+              brandingService: brandingService,
+              activeCompanyContext: authRepository.activeCompanyContext,
+            ),
+          ),
+          role: UserRole.secretary,
+        ),
+        AppRoutes.secretarySmsCredits: (_) => _protected(
+          _secretaryShell(
+            SecretarySmsCreditsScreen(
+              service: subscriptionClient == null
+                  ? null
+                  : SmsCreditService(subscriptionClient!),
+              activeCompanyContext: authRepository.activeCompanyContext,
+              brandingService: brandingService,
+            ),
+          ),
+          role: UserRole.secretary,
+        ),
+        AppRoutes.adminDashboard: (_) => _protected(
+          _adminShell(
             AdminDashboardScreen(
               repository: deliveryRepository,
               analyticsRepository: analyticsRepository,
@@ -246,22 +308,26 @@ class AlbncApp extends StatelessWidget {
                 }
               },
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.suppliers: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.suppliers: (_) => _protected(
+          _adminShell(
             SuppliersScreen(
               repository: repository,
               deliveryRepository: deliveryRepository,
               activeCompanyContext: authRepository.activeCompanyContext,
               onLogout: authRepository.signOut,
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.products: (_) => _protected(
-            ProductsScreen(repository: productRepository),
-            role: UserRole.admin,
-          ),
-          AppRoutes.reports: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.products: (_) => _protected(
+          _adminShell(ProductsScreen(repository: productRepository)),
+          role: UserRole.admin,
+        ),
+        AppRoutes.reports: (_) => _protected(
+          _adminShell(
             AnalyticsReportScreen(
               repository: analyticsRepository,
               productRepository: productRepository,
@@ -271,9 +337,11 @@ class AlbncApp extends StatelessWidget {
               initialFrom: DateTime.now(),
               initialTo: DateTime.now(),
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.analytics: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.analytics: (_) => _protected(
+          _adminShell(
             AnalyticsReportScreen(
               repository: analyticsRepository,
               productRepository: productRepository,
@@ -281,9 +349,22 @@ class AlbncApp extends StatelessWidget {
               title: 'Analytics',
               initialTrend: AnalyticsTrend.monthly,
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.deliveries: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.adminReceiving: (_) => _protected(
+          _adminShell(
+            NewReceivingScreen(
+              repository: repository,
+              productRepository: productRepository,
+              deliveryRepository: deliveryRepository,
+              receivingService: receivingService,
+            ),
+          ),
+          permission: AppPermission.receiveDeliveries,
+        ),
+        AppRoutes.deliveries: (_) => _protected(
+          _adminShell(
             TodaysRecordsScreen(
               repository: deliveryRepository,
               statusRepository: syncStatusRepository,
@@ -294,9 +375,11 @@ class AlbncApp extends StatelessWidget {
                   ? null
                   : SmsCreditService(subscriptionClient!),
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.monthlyReports: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.monthlyReports: (_) => _protected(
+          _adminShell(
             AnalyticsReportScreen(
               repository: analyticsRepository,
               productRepository: productRepository,
@@ -310,9 +393,11 @@ class AlbncApp extends StatelessWidget {
               ),
               initialTo: DateTime.now(),
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.yearlyReports: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.yearlyReports: (_) => _protected(
+          _adminShell(
             AnalyticsReportScreen(
               repository: analyticsRepository,
               productRepository: productRepository,
@@ -320,20 +405,32 @@ class AlbncApp extends StatelessWidget {
               title: 'Yearly Report',
               initialTrend: AnalyticsTrend.yearly,
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.statements: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.statements: (_) => _protected(
+          _adminShell(
             SupplierStatementsScreen(
               repository: repository,
               deliveryRepository: deliveryRepository,
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.excel: (_) => _protected(
-            ExcelExportScreen(service: ExcelExportService(deliveryRepository)),
-            role: UserRole.admin,
+          role: UserRole.admin,
+        ),
+        AppRoutes.excel: (_) => _protected(
+          _adminShell(
+            ExcelExportScreen(
+              service: ExcelExportService(deliveryRepository),
+              // The picker lists and searches only the active company's
+              // suppliers, because this repository is the company-scoped one.
+              supplierRepository: repository,
+              productRepository: productRepository,
+            ),
           ),
-          AppRoutes.excelImport: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.excelImport: (_) => _protected(
+          _adminShell(
             ExcelImportScreen(
               service: ExcelImportService(
                 database: deliveryRepository.database,
@@ -358,11 +455,13 @@ class AlbncApp extends StatelessWidget {
               // saved sheets are scoped to.
               currentUser: () => authRepository.currentUser,
             ),
-            role: UserRole.admin,
           ),
-          // The spreadsheet itself. This sits under the existing Excel area rather
-          // than as a new top-level section, so the import screen stays the way in.
-          AppRoutes.workbookGrid: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        // The spreadsheet itself. This sits under the existing Excel area rather
+        // than as a new top-level section, so the import screen stays the way in.
+        AppRoutes.workbookGrid: (_) => _protected(
+          _adminShell(
             WorkbookGridScreen(
               service: ExcelImportService(
                 database: deliveryRepository.database,
@@ -377,13 +476,15 @@ class AlbncApp extends StatelessWidget {
               currentUser: () => authRepository.currentUser,
               supplierRepository: repository,
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.users: (_) => _protected(
-            UserManagementScreen(repository: authRepository),
-            permission: AppPermission.manageUsers,
-          ),
-          AppRoutes.settings: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.users: (_) => _protected(
+          _adminShell(UserManagementScreen(repository: authRepository)),
+          permission: AppPermission.manageUsers,
+        ),
+        AppRoutes.settings: (_) => _protected(
+          _adminShell(
             SettingsScreen(
               backupService: BackupService(
                 deliveryRepository.database,
@@ -395,15 +496,19 @@ class AlbncApp extends StatelessWidget {
               brandingService: brandingService,
               activeCompanyContext: authRepository.activeCompanyContext,
             ),
-            permission: AppPermission.configureSystem,
           ),
-          AppRoutes.assistant: (_) => _protected(
+          permission: AppPermission.configureSystem,
+        ),
+        AppRoutes.assistant: (_) => _protected(
+          _adminShell(
             BusinessAssistantScreen(
               service: BusinessAssistantService(analyticsRepository),
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.spreadsheet: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.spreadsheet: (_) => _protected(
+          _adminShell(
             SpreadsheetScreen(
               controller: SpreadsheetController(
                 SpreadsheetService(
@@ -459,27 +564,31 @@ class AlbncApp extends StatelessWidget {
                 return 'Spreadsheet exported: ${file.path}';
               },
             ),
-            role: UserRole.admin,
           ),
-          AppRoutes.billing: (_) => _protected(
+          role: UserRole.admin,
+        ),
+        AppRoutes.billing: (_) => _protected(
+          _adminShell(
             _AdminBillingRoute(
               client: subscriptionClient,
               companyId: () => authRepository.activeCompanyContext.companyId,
             ),
-            role: UserRole.admin,
           ),
-          // About is read-only application information, so it is available to
-          // every signed-in role rather than being gated behind admin. It
-          // exposes no company-management controls.
-          AppRoutes.about: (_) =>
-              _protected(const AboutScreen(), role: UserRole.admin),
-          AppRoutes.aboutScreen: (_) => _protected(const AboutScreen()),
-          // Account-level settings. Any signed-in user may change their own
-          // password; this grants no company-management permission.
-          AppRoutes.accountSettings: (_) =>
-              _protected(AccountSettingsScreen(accountService: accountService)),
-        },
-      ),
+          role: UserRole.admin,
+        ),
+        // About is read-only application information, so it is available to
+        // every signed-in role rather than being gated behind admin. It
+        // exposes no company-management controls.
+        AppRoutes.about: (_) =>
+            _protected(_adminShell(const AboutScreen()), role: UserRole.admin),
+        AppRoutes.aboutScreen: (_) =>
+            _protected(_roleShell(const AboutScreen())),
+        // Account-level settings. Any signed-in user may change their own
+        // password; this grants no company-management permission.
+        AppRoutes.accountSettings: (_) => _protected(
+          _roleShell(AccountSettingsScreen(accountService: accountService)),
+        ),
+      },
     );
   }
 }

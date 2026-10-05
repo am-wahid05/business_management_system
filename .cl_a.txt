@@ -1,0 +1,102 @@
+
+  @override
+  Widget build(BuildContext context) {
+    final setup = !_remote && !_hasUsers;
+
+    // Before the account check finishes there is nothing to say about the form
+    // itself, so a skeleton holds the layout rather than a spinner over a blank
+    // panel.
+    if (_loading && !_hasUsers) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: SafeArea(
+          child: AppAuthBrandPanel(
+            companyName: widget.activeCompanyContext?.companyName,
+            child: const AuthFormSkeleton(),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
+        child: AppAuthBrandPanel(
+          companyName: widget.activeCompanyContext?.companyName,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppAuthHeader(
+                  title: setup ? 'Create your owner account' : 'Sign in',
+                  subtitle: setup
+                      ? 'This installation has no accounts yet. Create the '
+                            'first owner account to get started.'
+                      : 'Use the email address and password for your company '
+                            'account.',
+                ),
+                const SizedBox(height: 28),
+                // A remote sign-in must ask for an email and nothing else, so
+                // the role choice is not rendered at all there rather than
+                // being shown and then ignored.
+                if (!setup && !_remote) ...[
+                  AuthRoleSelector(
+                    selected: _selectedRole,
+                    enabled: !_loading,
+                    onSelected: _selectRole,
+                  ),
+                  const SizedBox(height: 22),
+                ],
+                AuthLabeledField(
+                  label: _remote ? 'Email address' : 'Username',
+                  child: TextFormField(
+                    controller: _usernameController,
+                    enabled: !_loading,
+                    autofillHints: const [AutofillHints.username],
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      hintText: _remote
+                          ? 'you@company.com'
+                          : 'Enter your username',
+                    ),
+                    validator: (value) => (value?.trim().isEmpty ?? true)
+                        ? (_remote ? 'Enter your email address' : 'Required')
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                AuthLabeledField(
+                  label: 'Password',
+                  child: AppPasswordField(
+                    controller: _passwordController,
+                    enabled: !_loading,
+                    autofillHints: const [AutofillHints.password],
+                    // The password is required too. Without this the form would
+                    // send an empty password to the server instead of
+                    // explaining the problem here.
+                    validator: (value) =>
+                        (value?.isEmpty ?? true) ? 'Required' : null,
+                    onSubmitted: (_) => _loading ? null : _submit(),
+                  ),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 18),
+                  AppAuthError(_error!),
+                ],
+                const SizedBox(height: 26),
+                SizedBox(
+                  height: 50,
+                  child: FilledButton(
+                    onPressed: _loading ? null : _submit,
+                    child: _loading && !_choosingCompany
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
+                          )
+                        : Text(setup ? 'Create owner account' : 'Sign In'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AuthLinks(
+                  showSignUp: _remote && widget.signUpService != null,

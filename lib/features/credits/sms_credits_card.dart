@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_ui.dart';
 import 'sms_credit_pricing.dart';
 import 'sms_credit_service.dart';
 import 'sms_top_up_dialog.dart';
@@ -112,7 +113,7 @@ class _SmsCreditsCardState extends State<SmsCreditsCard> {
                   Text('SMS Credits', style: theme.textTheme.labelLarge),
                   const SizedBox(height: 4),
                   if (_loading)
-                    const Text('Loading...')
+                    const AppSkeleton(width: 110, height: 28)
                   else
                     Text(
                       _formatBalance(_balance),

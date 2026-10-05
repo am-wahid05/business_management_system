@@ -1,0 +1,16 @@
+﻿
+  +            selected: controller.onlyInvalid,
+  +            onSelected: (value) =>
+  +                setState(() => controller.showOnlyInvalid(value)),
+  +          ),
+  +          DropdownButton<SpreadsheetSort>(
+  +            value: controller.sort,
+> +            underline: const SizedBox.shrink(),
+  +            items: const [
+  +              DropdownMenuItem(
+  +                value: SpreadsheetSort.none,
+  +                child: Text('Sort: saved order'),
+  +              ),
+  +              DropdownMenuItem(
+
+

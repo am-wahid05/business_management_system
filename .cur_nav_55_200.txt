@@ -1,0 +1,146 @@
+/// and is already registered in the route table.
+abstract final class AdminNav {
+  static const dashboard = AppNavDestination(
+    label: 'Dashboard',
+    icon: Icons.dashboard_outlined,
+    routes: [AppRoutes.adminDashboard],
+  );
+
+  static const suppliers = AppNavDestination(
+    label: 'Suppliers',
+    icon: Icons.people_outline,
+    routes: [AppRoutes.suppliers],
+  );
+
+  /// Recording a new delivery.
+  static const receiving = AppNavDestination(
+    label: 'Receiving',
+    icon: Icons.add_box_outlined,
+    routes: [AppRoutes.adminReceiving, AppRoutes.newReceiving],
+  );
+
+  /// Reviewing what has already been recorded today.
+  static const todaysReceivings = AppNavDestination(
+    label: "Today's Receivings",
+    icon: Icons.today_outlined,
+    routes: [AppRoutes.deliveries, AppRoutes.todaysRecords],
+  );
+
+  static const products = AppNavDestination(
+    label: 'Products',
+    icon: Icons.inventory_2_outlined,
+    routes: [AppRoutes.products],
+  );
+
+  static const reports = AppNavDestination(
+    label: 'Reports',
+    icon: Icons.assessment_outlined,
+    routes: [
+      AppRoutes.reports,
+      AppRoutes.monthlyReports,
+      AppRoutes.yearlyReports,
+    ],
+  );
+
+  static const analytics = AppNavDestination(
+    label: 'Analytics',
+    icon: Icons.insights_outlined,
+    routes: [AppRoutes.analytics],
+  );
+
+  static const statements = AppNavDestination(
+    label: 'Statements',
+    icon: Icons.receipt_long_outlined,
+    routes: [AppRoutes.statements],
+  );
+
+  static const spreadsheet = AppNavDestination(
+    label: 'Spreadsheet',
+    icon: Icons.grid_on_outlined,
+    routes: [AppRoutes.spreadsheet, AppRoutes.workbookGrid, AppRoutes.excel],
+  );
+
+  static const assistant = AppNavDestination(
+    label: 'Business Assistant',
+    icon: Icons.auto_awesome_outlined,
+    routes: [AppRoutes.assistant],
+  );
+
+  static const billing = AppNavDestination(
+    label: 'Billing & SMS',
+    icon: Icons.payments_outlined,
+    routes: [AppRoutes.billing, AppRoutes.secretarySmsCredits],
+  );
+
+  static const users = AppNavDestination(
+    label: 'Users',
+    icon: Icons.manage_accounts_outlined,
+    routes: [AppRoutes.users],
+  );
+
+  static const settings = AppNavDestination(
+    label: 'Settings',
+    icon: Icons.settings_outlined,
+    routes: [AppRoutes.settings, AppRoutes.accountSettings],
+  );
+
+  static const about = AppNavDestination(
+    label: 'About',
+    icon: Icons.info_outline,
+    routes: [AppRoutes.about, AppRoutes.aboutScreen],
+  );
+
+  static const sections = <AppNavSection>[
+    AppNavSection(
+      title: 'Workspace',
+      destinations: [
+        dashboard,
+        suppliers,
+        receiving,
+        todaysReceivings,
+        products,
+      ],
+    ),
+    AppNavSection(
+      title: 'Insight',
+      destinations: [reports, analytics, statements],
+    ),
+    AppNavSection(title: 'Tools', destinations: [spreadsheet, assistant]),
+    AppNavSection(
+      title: 'Company',
+      destinations: [billing, users, settings, about],
+    ),
+  ];
+}
+
+/// Every Secretary destination, shared by the rail, the navigation bar and the
+/// compact drawer so a touch device gets the same set of places.
+abstract final class SecretaryNav {
+  static const dashboard = AppNavDestination(
+    label: 'Dashboard',
+    icon: Icons.dashboard_outlined,
+    routes: [AppRoutes.secretaryDashboard],
+  );
+
+  static const receiving = AppNavDestination(
+    label: 'Receiving',
+    icon: Icons.add_box_outlined,
+    routes: [AppRoutes.newReceiving],
+  );
+
+  static const todaysRecords = AppNavDestination(
+    label: "Today's Records",
+    icon: Icons.today_outlined,
+    routes: [AppRoutes.todaysRecords, AppRoutes.deliveries],
+  );
+
+  static const printRecords = AppNavDestination(
+    label: 'Print',
+    icon: Icons.print_outlined,
+    routes: [AppRoutes.secretaryPrintRecords],
+  );
+
+  static const smsCredits = AppNavDestination(
+    label: 'SMS Credits',
+    icon: Icons.sms_outlined,
+    routes: [AppRoutes.secretarySmsCredits],

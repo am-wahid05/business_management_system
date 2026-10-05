@@ -86,11 +86,10 @@ void main() {
   tearDown(() async => database.close());
 
   /// Reads the external workbook and returns its first sheet.
-  WorkbookGrid loadGrid() =>
-      service
-          .readWorkbookGrids(buildExternalWorkbook(), 'accounts.xlsx')
-          .sheets
-          .first;
+  WorkbookGrid loadGrid() => service
+      .readWorkbookGrids(buildExternalWorkbook(), 'accounts.xlsx')
+      .sheets
+      .first;
 
   group('column letters', () {
     test('run from A to Z and continue past it', () {
@@ -337,10 +336,9 @@ void main() {
           ),
         );
       }
-      final sheets = await store.savedSheets(
-        companyId: company,
-        filename: 'accounts.xlsx',
-      )..sort();
+      final sheets =
+          await store.savedSheets(companyId: company, filename: 'accounts.xlsx')
+            ..sort();
       expect(sheets, ['One', 'Two']);
     });
 
@@ -365,10 +363,7 @@ void main() {
           name: 'S',
           cells: [
             for (var r = 0; r < rows; r++)
-              [
-                for (var c = 0; c < columns; c++)
-                  ParsedCell(text: 'r${r}c$c'),
-              ],
+              [for (var c = 0; c < columns; c++) ParsedCell(text: 'r${r}c$c')],
           ],
           merges: [merge],
         );
@@ -471,12 +466,7 @@ void main() {
         ],
       );
       final clip = grid.copyRange(
-        const CellRange(
-          startColumn: 0,
-          startRow: 0,
-          endColumn: 3,
-          endRow: 0,
-        ),
+        const CellRange(startColumn: 0, startRow: 0, endColumn: 3, endRow: 0),
       );
       expect(clip.cells[0][0].text, 'Heading');
       expect(clip.cells[0][1].isBlank, isTrue);
@@ -509,12 +499,7 @@ void main() {
 
     test('a range copy pastes every cell', () {
       final clip = grid.copyRange(
-        const CellRange(
-          startColumn: 0,
-          startRow: 0,
-          endColumn: 1,
-          endRow: 0,
-        ),
+        const CellRange(startColumn: 0, startRow: 0, endColumn: 1, endRow: 0),
       );
       grid.pasteClipboard(clip, 3, 0);
       expect(grid.cellAt(3, 0).text, 'Item');
@@ -530,11 +515,7 @@ void main() {
     });
 
     test('an absolute reference does not move', () {
-      grid.setCell(
-        0,
-        0,
-        const ParsedCell(text: '=\$B\$2+B2', isFormula: true),
-      );
+      grid.setCell(0, 0, const ParsedCell(text: '=\$B\$2+B2', isFormula: true));
       // A pure two-column move along the same row, so only the column part of
       // the relative reference can change.
       final clip = grid.copyRange(const CellRange.single(0, 0));
@@ -543,11 +524,7 @@ void main() {
     });
 
     test('a pasted formula moves in both directions', () {
-      grid.setCell(
-        0,
-        0,
-        const ParsedCell(text: '=B2', isFormula: true),
-      );
+      grid.setCell(0, 0, const ParsedCell(text: '=B2', isFormula: true));
       final clip = grid.copyRange(const CellRange.single(0, 0));
       // Copied from A1 to B2, which is one row down and one column right.
       grid.pasteClipboard(clip, 1, 1);
@@ -562,12 +539,7 @@ void main() {
 
     test('the block exports as tab separated text for the clipboard', () {
       final clip = grid.copyRange(
-        const CellRange(
-          startColumn: 0,
-          startRow: 0,
-          endColumn: 1,
-          endRow: 0,
-        ),
+        const CellRange(startColumn: 0, startRow: 0, endColumn: 1, endRow: 0),
       );
       expect(clip.toText, 'Item\t1000000');
     });
@@ -748,11 +720,7 @@ void main() {
   group('formatting read from the workbook', () {
     test('bold, italic and alignment reach the grid', () {
       final grid = loadGrid();
-      grid.setStyle(
-        1,
-        0,
-        const WorkbookCellStyle(bold: true, italic: true),
-      );
+      grid.setStyle(1, 0, const WorkbookCellStyle(bold: true, italic: true));
       final style = grid.styleAt(1, 0);
       expect(style!.bold, isTrue);
       expect(style.italic, isTrue);
@@ -808,10 +776,7 @@ void main() {
       sheet.appendRow([TextCellValue(''), TextCellValue('Amount')]);
       sheet.appendRow([TextCellValue(''), IntCellValue(30)]);
       sheet.appendRow([TextCellValue(''), IntCellValue(95)]);
-      sheet.appendRow([
-        TextCellValue('Total'),
-        FormulaCellValue('SUM(B2:B3)'),
-      ]);
+      sheet.appendRow([TextCellValue('Total'), FormulaCellValue('SUM(B2:B3)')]);
       sheet.appendRow([
         TextCellValue('Lookup'),
         FormulaCellValue('VLOOKUP(A1,B:B,2,FALSE)'),
@@ -914,13 +879,13 @@ void main() {
       // the XML and kept alongside it.
       final excel = Excel.createExcel();
       final sheet = excel['Data'];
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
-          const FormulaCellValue('CONCAT("Shea"," Nuts")');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+          .value = const FormulaCellValue(
+        'CONCAT("Shea"," Nuts")',
+      );
       final grid = service
-          .readWorkbookGrids(
-            Uint8List.fromList(excel.encode()!),
-            'text.xlsx',
-          )
+          .readWorkbookGrids(Uint8List.fromList(excel.encode()!), 'text.xlsx')
           .sheets
           .first;
       final cell = grid.cellAt(0, 0);

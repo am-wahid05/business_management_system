@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 /// A titled card holding one product's details on the billing screen.
 class Section extends StatelessWidget {
@@ -45,7 +45,9 @@ class DetailRow extends StatelessWidget {
         children: [
           Expanded(child: Text(label, style: style)),
           const SizedBox(width: 12),
-          Flexible(child: Text(value, style: style, textAlign: TextAlign.end)),
+          Flexible(
+            child: Text(value, style: style, textAlign: TextAlign.end),
+          ),
         ],
       ),
     );

@@ -128,10 +128,7 @@ class SpreadsheetClipboard {
       _formats[position] ?? const CellFormat();
 
   /// Applies a format to every cell in a range.
-  void format(
-    CellRange range,
-    CellFormat Function(CellFormat current) change,
-  ) {
+  void format(CellRange range, CellFormat Function(CellFormat current) change) {
     for (var row = range.startRow; row <= range.endRow; row++) {
       for (
         var column = range.startColumn;

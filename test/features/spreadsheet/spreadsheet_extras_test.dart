@@ -62,8 +62,7 @@ void main() {
     final evaluator = FormulaEvaluator(grid);
 
     double? value(String formula) => evaluator.evaluate(formula).value;
-    FormulaError? errorOf(String formula) =>
-        evaluator.evaluate(formula).error;
+    FormulaError? errorOf(String formula) => evaluator.evaluate(formula).error;
 
     test('SUM adds a range', () {
       expect(value('=SUM(D1:D3)'), 60);
@@ -222,12 +221,7 @@ void main() {
 
     test('a copied block only keeps the copied rectangle', () {
       final block = ClipboardBlock.of(
-        const CellRange(
-          startColumn: 1,
-          startRow: 1,
-          endColumn: 2,
-          endRow: 1,
-        ),
+        const CellRange(startColumn: 1, startRow: 1, endColumn: 2, endRow: 1),
         [
           ['row0a', 'row0b'],
           ['a', 'b', 'c', 'd'],
@@ -243,12 +237,7 @@ void main() {
     test('formatting is applied across a range', () {
       final clipboard = SpreadsheetClipboard();
       clipboard.format(
-        const CellRange(
-          startColumn: 0,
-          startRow: 0,
-          endColumn: 1,
-          endRow: 1,
-        ),
+        const CellRange(startColumn: 0, startRow: 0, endColumn: 1, endRow: 1),
         (current) => current.copyWith(background: CellColor.yellow),
       );
       expect(

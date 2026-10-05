@@ -11,6 +11,7 @@ import 'features/auth/auth_models.dart';
 import 'features/auth/auth_repository.dart';
 import 'features/auth/local_auth_repository.dart';
 import 'features/auth/supabase_auth_repository.dart';
+import 'features/auth/supabase_auth_link_handler.dart';
 import 'features/company/company_branding.dart';
 import 'features/receiving/receiving_service.dart';
 import 'features/suppliers/supplier_repository.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
   final database = await ProductDatabase.open();
   late final AuthRepository authRepository;
   AccountService? accountService;
+  SupabaseAuthLinkHandler? authLinkHandler;
   CompanyBrandingService? brandingService;
   SupabaseClient? subscriptionClient;
 
@@ -36,15 +38,26 @@ Future<void> main() async {
     }
 
     try {
+      authLinkHandler = SupabaseAuthLinkHandler();
+      // Supabase must remain the first owner of the cold-start stream so its
+      // official PKCE exchange cannot be missed. The observer starts after
+      // initialization and also reads the initial URI for safe error handling.
       final client = await SupabaseConfig.initialize();
       if (client == null) {
         runApp(const _AuthStartupErrorApp());
         return;
       }
-      final repository = SupabaseAuthRepository(client);
+      await authLinkHandler.start();
+      final repository = SupabaseAuthRepository(
+        client,
+        authLinkHandler: authLinkHandler,
+      );
       subscriptionClient = client;
       authRepository = repository;
-      accountService = SupabaseAccountService(client);
+      accountService = SupabaseAccountService(
+        client,
+        authLinkHandler: authLinkHandler,
+      );
       brandingService = CompanyBrandingService(
         client,
         repository.activeCompanyContext,
@@ -103,6 +116,7 @@ Future<void> main() async {
       deliveryRepository: deliveryRepository,
       authRepository: authRepository,
       accountService: accountService,
+      authLinkHandler: authLinkHandler,
       brandingService: brandingService,
       subscriptionClient: subscriptionClient,
       syncCoordinator: syncCoordinator,

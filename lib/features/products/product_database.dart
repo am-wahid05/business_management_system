@@ -442,7 +442,11 @@ abstract final class ProductDatabase {
   static Future<void> _addCompanyColumns(Database database) async {
     await _addColumnIfMissing(database, 'products', 'company_id TEXT');
     await _addColumnIfMissing(database, 'deliveries', 'company_id TEXT');
-    await _addColumnIfMissing(database, 'delivery_bag_weights', 'company_id TEXT');
+    await _addColumnIfMissing(
+      database,
+      'delivery_bag_weights',
+      'company_id TEXT',
+    );
     await _addColumnIfMissing(database, 'receipt_sends', 'company_id TEXT');
     await _addColumnIfMissing(database, 'import_logs', 'company_id TEXT');
     await database.execute(

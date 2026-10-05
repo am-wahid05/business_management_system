@@ -40,8 +40,8 @@ void main() {
 
   tearDown(() => database.close());
 
-  Future<AppUser> createUser(String username, UserRole role) => repository
-      .createUser(
+  Future<AppUser> createUser(String username, UserRole role) =>
+      repository.createUser(
         username: username,
         displayName: username,
         role: role,
@@ -52,10 +52,7 @@ void main() {
     test('an admin signing in as Admin is allowed', () async {
       final user = await createUser('owner', UserRole.admin);
       expect(
-        roleMismatchMessage(
-          selected: UserRole.admin,
-          actual: user.role,
-        ),
+        roleMismatchMessage(selected: UserRole.admin, actual: user.role),
         isNull,
       );
     });
@@ -63,37 +60,40 @@ void main() {
     test('a secretary signing in as Secretary is allowed', () async {
       final user = await createUser('secretary', UserRole.secretary);
       expect(
-        roleMismatchMessage(
-          selected: UserRole.secretary,
-          actual: user.role,
-        ),
+        roleMismatchMessage(selected: UserRole.secretary, actual: user.role),
         isNull,
       );
     });
 
-    test('a secretary selecting Admin is refused with a clear message', () async {
-      final user = await createUser('secretary', UserRole.secretary);
-      final message = roleMismatchMessage(
-        selected: UserRole.admin,
-        actual: user.role,
-      );
-      expect(message, isNotNull);
-      // The message must name the role the user tried to claim, so the rejection
-      // is understandable, and the role their membership actually grants.
-      expect(message, contains('not authorized to log in as Admin'));
-      expect(message, contains('registered as a Secretary'));
-    });
+    test(
+      'a secretary selecting Admin is refused with a clear message',
+      () async {
+        final user = await createUser('secretary', UserRole.secretary);
+        final message = roleMismatchMessage(
+          selected: UserRole.admin,
+          actual: user.role,
+        );
+        expect(message, isNotNull);
+        // The message must name the role the user tried to claim, so the rejection
+        // is understandable, and the role their membership actually grants.
+        expect(message, contains('not authorized to log in as Admin'));
+        expect(message, contains('registered as a Secretary'));
+      },
+    );
 
-    test('an admin selecting Secretary is refused with a clear message', () async {
-      final user = await createUser('owner', UserRole.admin);
-      final message = roleMismatchMessage(
-        selected: UserRole.secretary,
-        actual: user.role,
-      );
-      expect(message, isNotNull);
-      expect(message, contains('not authorized to log in as Secretary'));
-      expect(message, contains('registered as an Admin'));
-    });
+    test(
+      'an admin selecting Secretary is refused with a clear message',
+      () async {
+        final user = await createUser('owner', UserRole.admin);
+        final message = roleMismatchMessage(
+          selected: UserRole.secretary,
+          actual: user.role,
+        );
+        expect(message, isNotNull);
+        expect(message, contains('not authorized to log in as Secretary'));
+        expect(message, contains('registered as an Admin'));
+      },
+    );
 
     test('the rejection reveals nothing about other companies or members', () {
       final message = roleMismatchMessage(
@@ -141,30 +141,35 @@ void main() {
       expect(repository.currentUser?.companyId, isNull);
     });
 
-    test('a signed in secretary is the current user with a secretary role',
-        () async {
-      await createUser('secretary', UserRole.secretary);
-      await repository.signIn('secretary', 'secure-pass');
-      expect(repository.currentUser?.role, UserRole.secretary);
-    });
+    test(
+      'a signed in secretary is the current user with a secretary role',
+      () async {
+        await createUser('secretary', UserRole.secretary);
+        await repository.signIn('secretary', 'secure-pass');
+        expect(repository.currentUser?.role, UserRole.secretary);
+      },
+    );
   });
 
   group('logout', () {
-    test('signing out clears the session and requires signing in again', () async {
-      await createUser('owner', UserRole.admin);
-      expect(repository.currentUser, isNotNull);
+    test(
+      'signing out clears the session and requires signing in again',
+      () async {
+        await createUser('owner', UserRole.admin);
+        expect(repository.currentUser, isNotNull);
 
-      await repository.signOut();
-      // The current user is cleared, so nothing can read the previous user's
-      // role or company after a logout.
-      expect(repository.currentUser, isNull);
+        await repository.signOut();
+        // The current user is cleared, so nothing can read the previous user's
+        // role or company after a logout.
+        expect(repository.currentUser, isNull);
 
-      // A fresh repository over the same database also has no session, so
-      // reopening the app after a logout requires signing in again.
-      final reopened = LocalAuthRepository(database);
-      await reopened.restoreSession();
-      expect(reopened.currentUser, isNull);
-    });
+        // A fresh repository over the same database also has no session, so
+        // reopening the app after a logout requires signing in again.
+        final reopened = LocalAuthRepository(database);
+        await reopened.restoreSession();
+        expect(reopened.currentUser, isNull);
+      },
+    );
 
     test('after logout the same account can sign in again', () async {
       await createUser('owner', UserRole.admin);

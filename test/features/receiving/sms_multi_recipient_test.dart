@@ -41,6 +41,15 @@ class _FakeCredits implements SmsCreditBalanceReader {
   Future<int?> balanceFor(String companyId) async => balance;
 }
 
+class _CompanyCredits implements SmsCreditBalanceReader {
+  _CompanyCredits(this.balances);
+
+  final Map<String, int?> balances;
+
+  @override
+  Future<int?> balanceFor(String companyId) async => balances[companyId];
+}
+
 /// Phase 3 sections 28C-28M: sending one receipt to several recipients, with one
 /// SMS credit per unique recipient and an all-or-nothing credit check.
 void main() {
@@ -106,10 +115,8 @@ void main() {
   group('28C/28D one credit per unique recipient', () {
     test('a single recipient sends one message and costs one credit', () async {
       final transport = _RecordingTransport();
-      final summary = await serviceFor(transport).sendToMany(
-        deliveryFor('company-a'),
-        phones: const ['0241234567'],
-      );
+      final summary = await serviceFor(transport)
+          .sendToMany(deliveryFor('company-a'), phones: const ['0241234567']);
 
       expect(transport.phones, ['233241234567']);
       expect(summary.recipientCount, 1);
@@ -210,17 +217,18 @@ void main() {
       expect(summary.creditsRequired, 2);
     });
 
-    test('removing the saved contact leaves only the added recipient', () async {
-      // The contact is simply not passed to the send.
-      final transport = _RecordingTransport();
-      final summary = await serviceFor(transport).sendToMany(
-        deliveryFor('company-a'),
-        phones: const ['0559876543'],
-      );
+    test(
+      'removing the saved contact leaves only the added recipient',
+      () async {
+        // The contact is simply not passed to the send.
+        final transport = _RecordingTransport();
+        final summary = await serviceFor(transport)
+            .sendToMany(deliveryFor('company-a'), phones: const ['0559876543']);
 
-      expect(transport.phones, ['233559876543']);
-      expect(summary.creditsRequired, 1);
-    });
+        expect(transport.phones, ['233559876543']);
+        expect(summary.creditsRequired, 1);
+      },
+    );
 
     test('adding a recipient never modifies the supplier profile', () async {
       final transport = _RecordingTransport();
@@ -410,10 +418,11 @@ void main() {
 
       final rows = await database.query('receipt_sends', orderBy: 'phone');
       expect(rows.length, 3);
-      expect(
-        rows.map((row) => row['phone']),
-        ['233201112222', '233241234567', '233559876543'],
-      );
+      expect(rows.map((row) => row['phone']), [
+        '233201112222',
+        '233241234567',
+        '233559876543',
+      ]);
     });
 
     test('a duplicate recipient is never recorded twice', () async {
@@ -429,10 +438,8 @@ void main() {
 
     test('history keeps the queued status, never delivered', () async {
       final transport = _RecordingTransport();
-      await serviceFor(transport).sendToMany(
-        deliveryFor('company-a'),
-        phones: const ['0241234567'],
-      );
+      await serviceFor(transport)
+          .sendToMany(deliveryFor('company-a'), phones: const ['0241234567']);
 
       final row = (await database.query('receipt_sends')).single;
       expect(row['status'], 'queued');
@@ -455,10 +462,8 @@ void main() {
     test('another company\'s delivery cannot be sent to', () async {
       final transport = _RecordingTransport();
       await expectLater(
-        serviceFor(transport).sendToMany(
-          deliveryFor('company-b'),
-          phones: const ['0241234567'],
-        ),
+        serviceFor(transport)
+            .sendToMany(deliveryFor('company-b'), phones: const ['0241234567']),
         throwsA(isA<SmsReceiptException>()),
       );
       // Nothing reached the provider and no history was written.
@@ -469,10 +474,10 @@ void main() {
     test('a user with no active company cannot send', () async {
       final transport = _RecordingTransport();
       await expectLater(
-        serviceFor(transport, activeCompany: null).sendToMany(
-          deliveryFor(null),
-          phones: const ['0241234567'],
-        ),
+        serviceFor(
+          transport,
+          activeCompany: null,
+        ).sendToMany(deliveryFor(null), phones: const ['0241234567']),
         throwsA(isA<SmsReceiptException>()),
       );
       expect(transport.phones, isEmpty);
@@ -483,10 +488,8 @@ void main() {
     test('an empty list is refused before any send', () async {
       final transport = _RecordingTransport();
       await expectLater(
-        serviceFor(transport).sendToMany(
-          deliveryFor('company-a'),
-          phones: const [],
-        ),
+        serviceFor(transport)
+            .sendToMany(deliveryFor('company-a'), phones: const []),
         throwsA(isA<SmsReceiptException>()),
       );
       expect(transport.phones, isEmpty);
@@ -508,10 +511,9 @@ void main() {
     test('a list of only invalid numbers sends nothing', () async {
       final transport = _RecordingTransport();
       await expectLater(
-        serviceFor(transport).sendToMany(
-          deliveryFor('company-a'),
-          phones: const ['abc', '12345'],
-        ),
+        serviceFor(
+          transport,
+        ).sendToMany(deliveryFor('company-a'), phones: const ['abc', '12345']),
         throwsA(isA<SmsReceiptException>()),
       );
       expect(transport.phones, isEmpty);
@@ -532,24 +534,25 @@ void main() {
 
     test('a single success uses the singular wording', () async {
       final transport = _RecordingTransport();
-      final summary = await serviceFor(transport).sendToMany(
-        deliveryFor('company-a'),
-        phones: const ['0241234567'],
-      );
+      final summary = await serviceFor(transport)
+          .sendToMany(deliveryFor('company-a'), phones: const ['0241234567']);
       expect(summary.message, contains('1 recipient'));
     });
 
-    test('a partial failure says how many failed and were not charged', () async {
-      final transport = _RecordingTransport()..reject.add('233559876543');
-      final summary = await serviceFor(transport).sendToMany(
-        deliveryFor('company-a'),
-        phones: const ['0241234567', '0559876543'],
-      );
+    test(
+      'a partial failure says how many failed and were not charged',
+      () async {
+        final transport = _RecordingTransport()..reject.add('233559876543');
+        final summary = await serviceFor(transport).sendToMany(
+          deliveryFor('company-a'),
+          phones: const ['0241234567', '0559876543'],
+        );
 
-      expect(summary.allSucceeded, isFalse);
-      expect(summary.message, contains('1 of 2'));
-      expect(summary.message, contains('not charged'));
-    });
+        expect(summary.allSucceeded, isFalse);
+        expect(summary.message, contains('1 of 2'));
+        expect(summary.message, contains('not charged'));
+      },
+    );
   });
 
   group('unchanged single-recipient behaviour', () {
@@ -568,17 +571,57 @@ void main() {
       expect(rows.single['phone'], '233241234567');
     });
 
-    test('sendToMany with one number matches the single-recipient path', () async {
-      final transport = _RecordingTransport();
-      final summary = await serviceFor(transport).sendToMany(
-        deliveryFor('company-a'),
-        phones: const ['0241234567'],
-      );
+    test(
+      'sendToMany with one number matches the single-recipient path',
+      () async {
+        final transport = _RecordingTransport();
+        final summary = await serviceFor(transport)
+            .sendToMany(deliveryFor('company-a'), phones: const ['0241234567']);
 
-      expect(transport.phones, ['233241234567']);
-      expect(summary.creditsRequired, 1);
-      expect((await database.query('receipt_sends')).length, 1);
-    });
+        expect(transport.phones, ['233241234567']);
+        expect(summary.creditsRequired, 1);
+        expect((await database.query('receipt_sends')).length, 1);
+      },
+    );
+
+    test(
+      'company A at zero is blocked while company B spends only B credits',
+      () async {
+        final companyCredits = _CompanyCredits({
+          'company-a': 0,
+          'company-b': 5,
+        });
+        final blockedTransport = _RecordingTransport();
+        final blockedService = serviceFor(
+          blockedTransport,
+          credits: companyCredits,
+        );
+
+        await expectLater(
+          blockedService.sendToMany(
+            deliveryFor('company-a'),
+            phones: const ['0241234567'],
+          ),
+          throwsA(isA<SmsReceiptException>()),
+        );
+        expect(blockedTransport.phones, isEmpty);
+
+        final allowedTransport = _RecordingTransport();
+        final allowedService = serviceFor(
+          allowedTransport,
+          activeCompany: 'company-b',
+          credits: companyCredits,
+        );
+        final summary = await allowedService.sendToMany(
+          deliveryFor('company-b'),
+          phones: const ['0241234567'],
+        );
+
+        expect(summary.creditsCharged, 1);
+        expect(allowedTransport.phones, ['233241234567']);
+        expect(companyCredits.balances, {'company-a': 0, 'company-b': 5});
+      },
+    );
 
     test('an already-sent recipient is not re-sent or re-charged', () async {
       // The server owns the duplicate guard. Locally the second send is simply

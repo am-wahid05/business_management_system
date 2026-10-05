@@ -58,7 +58,8 @@ class AccountSettingsScreen extends StatelessWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) => ChangePasswordScreen(accountService: service),
+                    builder: (_) =>
+                        ChangePasswordScreen(accountService: service),
                   ),
                 ),
               ),

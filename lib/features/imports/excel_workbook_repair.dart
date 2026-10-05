@@ -109,7 +109,6 @@ abstract final class ExcelWorkbookRepair {
     return Uint8List.fromList(encoded);
   }
 
-
   /// Returns the styles XML with reserved-range format ids moved above 164, or
   /// the identical string when there is nothing to move.
   static String _renumberReservedFormats(String source) {

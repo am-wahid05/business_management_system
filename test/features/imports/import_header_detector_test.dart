@@ -133,17 +133,11 @@ void main() {
     });
 
     test('matches regardless of case and extra words', () {
-      expect(
-        inferProductId('Cashew Nuts', Product.initialProducts),
-        'cashew',
-      );
+      expect(inferProductId('Cashew Nuts', Product.initialProducts), 'cashew');
     });
 
     test('falls back to a stable slug for an unknown product', () {
-      expect(
-        inferProductId('Shea Nut', Product.initialProducts),
-        'shea_nut',
-      );
+      expect(inferProductId('Shea Nut', Product.initialProducts), 'shea_nut');
     });
 
     test('returns null for an empty name', () {

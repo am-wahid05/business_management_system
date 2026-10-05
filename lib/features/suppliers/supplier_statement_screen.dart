@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_ui.dart';
 import '../../domain/models/supplier.dart';
 import 'supplier_statement.dart';
 
@@ -16,7 +17,8 @@ class SupplierStatementScreen extends StatefulWidget {
   final SupplierStatementExporter exporter;
 
   @override
-  State<SupplierStatementScreen> createState() => _SupplierStatementScreenState();
+  State<SupplierStatementScreen> createState() =>
+      _SupplierStatementScreenState();
 }
 
 class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
@@ -51,37 +53,62 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
         future: _statement,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView(
+              padding: const EdgeInsets.all(24),
+              children: const [
+                AppProfileSkeleton(),
+                SizedBox(height: 20),
+                AppTableSkeleton(rows: 6),
+              ],
+            );
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Could not load statement: ${snapshot.error}'));
+            return AppErrorState(
+              title: 'Statement unavailable',
+              message:
+                  'We could not build the supplier statement for this period.',
+              onRetry: () => setState(_load),
+            );
           }
           final statement = snapshot.data!;
           return ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Text('Supplier statement', style: Theme.of(context).textTheme.headlineMedium),
+              Text(
+                'Supplier statement',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
               const SizedBox(height: 8),
-              Text(statement.supplier.name, style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                statement.supplier.name,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const SizedBox(height: 20),
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 children: [
                   OutlinedButton.icon(
-                    onPressed: _exporting ? null : () => _chooseDate(isFrom: true),
+                    onPressed: _exporting
+                        ? null
+                        : () => _chooseDate(isFrom: true),
                     icon: const Icon(Icons.calendar_month_outlined),
                     label: Text('From: ${_formatDate(_from)}'),
                   ),
                   OutlinedButton.icon(
-                    onPressed: _exporting ? null : () => _chooseDate(isFrom: false),
+                    onPressed: _exporting
+                        ? null
+                        : () => _chooseDate(isFrom: false),
                     icon: const Icon(Icons.calendar_month_outlined),
                     label: Text('To: ${_formatDate(_to)}'),
                   ),
                   FilledButton.icon(
                     onPressed: _exporting ? null : _export,
                     icon: _exporting
-                        ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Icon(Icons.file_download_outlined),
                     label: const Text('Export Excel'),
                   ),
@@ -93,7 +120,11 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
               ],
               const SizedBox(height: 24),
               if (statement.deliveries.isEmpty)
-                const Card(child: Padding(padding: EdgeInsets.all(20), child: Text('No deliveries in this date range.')))
+                const AppEmptyState(
+                  title: 'No deliveries in this period',
+                  message: 'Choose a wider date range to include more records.',
+                  icon: Icons.receipt_long_outlined,
+                )
               else
                 Card(
                   clipBehavior: Clip.antiAlias,
@@ -112,7 +143,11 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
                             DataCell(Text(_formatDate(delivery.recordedAt))),
                             DataCell(Text(delivery.product.name)),
                             DataCell(Text('${delivery.numberOfBags}')),
-                            DataCell(Text('${delivery.totalWeight.toStringAsFixed(1)} kg')),
+                            DataCell(
+                              Text(
+                                '${delivery.totalWeight.toStringAsFixed(1)} kg',
+                              ),
+                            ),
                           ],
                         );
                       }).toList(),
@@ -126,8 +161,14 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _Total(label: 'TOTAL BAGS', value: '${statement.totalBags}'),
-                      _Total(label: 'TOTAL WEIGHT', value: '${statement.totalWeight.toStringAsFixed(1)} kg'),
+                      _Total(
+                        label: 'TOTAL BAGS',
+                        value: '${statement.totalBags}',
+                      ),
+                      _Total(
+                        label: 'TOTAL WEIGHT',
+                        value: '${statement.totalWeight.toStringAsFixed(1)} kg',
+                      ),
                     ],
                   ),
                 ),
@@ -150,7 +191,9 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     final nextFrom = isFrom ? selected : _from;
     final nextTo = isFrom ? _to : selected;
     if (nextTo.isBefore(nextFrom)) {
-      setState(() => _message = 'The To date must not be before the From date.');
+      setState(
+        () => _message = 'The To date must not be before the From date.',
+      );
       return;
     }
     setState(() {
@@ -192,10 +235,10 @@ class _Total extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        children: [
-          Text(label, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 4),
-          Text(value, style: Theme.of(context).textTheme.titleLarge),
-        ],
-      );
+    children: [
+      Text(label, style: Theme.of(context).textTheme.labelLarge),
+      const SizedBox(height: 4),
+      Text(value, style: Theme.of(context).textTheme.titleLarge),
+    ],
+  );
 }

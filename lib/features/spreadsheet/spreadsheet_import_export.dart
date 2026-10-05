@@ -26,7 +26,8 @@ List<SpreadsheetRow> spreadsheetRowsFromSheet(ImportSheet sheet) {
     final totalWeight = text(mapping.column(ImportField.totalWeight));
     final bagWeights = text(mapping.column(ImportField.bagWeights));
     final weights = bagWeights.isNotEmpty ? bagWeights : totalWeight;
-    if (weights.isEmpty && text(mapping.column(ImportField.supplierName)).isEmpty) {
+    if (weights.isEmpty &&
+        text(mapping.column(ImportField.supplierName)).isEmpty) {
       // A completely empty row carries no information.
       continue;
     }
@@ -78,7 +79,9 @@ ImportSheet? spreadsheetSheetFromRows(List<SpreadsheetRow> rows) {
       row.supplierName,
       row.productName,
       '${row.numberOfBags ?? ''}',
-      row.totalWeight == null ? row.weights : formatImportNumber(row.totalWeight!),
+      row.totalWeight == null
+          ? row.weights
+          : formatImportNumber(row.totalWeight!),
       // The individual bag weights are written, so re-importing the file
       // rebuilds the same bags rather than one combined weight. A bulk row
       // writes nothing here, because it has no bag weights.

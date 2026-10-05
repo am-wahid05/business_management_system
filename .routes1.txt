@@ -1,0 +1,61 @@
+                      productId: row.productId ?? '',
+                      productName: row.productName,
+                      numberOfBags: row.numberOfBags,
+                      totalWeight: row.totalWeight,
+                      recordedBy: row.recorderName,
+                      status: row.status,
+                      recordType: row.recordType,
+                      notes: row.notes,
+                    ),
+                  );
+                }
+                final file = await ExcelExportService(
+                  deliveryRepository,
+                  companyNameProvider: () =>
+                      authRepository.activeCompanyContext.companyName ??
+                      'Company',
+                ).exportGrid(exportRows);
+                return 'Spreadsheet exported: ${file.path}';
+              },
+            ),
+          ),
+          role: UserRole.admin,
+        ),
+        AppRoutes.billing: (_) => _protected(
+          _adminShell(
+            _AdminBillingRoute(
+              client: subscriptionClient,
+              companyId: () => authRepository.activeCompanyContext.companyId,
+            ),
+          ),
+          role: UserRole.admin,
+        ),
+        // About is read-only application information, so it is available to
+        // every signed-in role rather than being gated behind admin. It
+        // exposes no company-management controls.
+        AppRoutes.about: (_) =>
+            _protected(_adminShell(const AboutScreen()), role: UserRole.admin),
+        AppRoutes.aboutScreen: (_) =>
+            _protected(_roleShell(const AboutScreen())),
+        // Account-level settings. Any signed-in user may change their own
+        // password; this grants no company-management permission.
+        AppRoutes.accountSettings: (_) => _protected(
+          _roleShell(AccountSettingsScreen(accountService: accountService)),
+        ),
+      },
+    );
+  }
+}
+
+/// Owns the billing services for the lifetime of the route while reusing the
+/// existing BillingScreen and preserving the authenticated active company.
+class _AdminBillingRoute extends StatefulWidget {
+  const _AdminBillingRoute({required this.client, required this.companyId});
+
+  final SupabaseClient? client;
+  final String? Function() companyId;
+
+  @override
+  State<_AdminBillingRoute> createState() => _AdminBillingRouteState();
+}
+

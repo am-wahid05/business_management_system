@@ -1,0 +1,4 @@
+﻿lib\features\secretary\secretary_dashboard_screen.dart:20: required this.onLogout,
+lib\features\secretary\secretary_dashboard_screen.dart:33: final VoidCallback onLogout;
+lib\features\secretary\secretary_dashboard_screen.dart:64: drawer: secretaryDrawerFor(context, onLogout: onLogout),
+lib\features\secretary\secretary_sms_credits_screen.dart:180: icon: Icons.admin_panel_settings_outlined,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/app_info.dart';
+import '../../app/app_navigation.dart';
 import '../../app/app_responsive.dart';
 import 'about_row.dart';
 
@@ -22,7 +23,14 @@ class AboutScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final website = AppInfo.websiteUrl;
     return Scaffold(
-      appBar: AppBar(title: const Text('About')),
+      appBar: AppBar(
+        title: const Text('About'),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
+      ),
+      drawer: shellDrawerFor(context),
       body: SafeArea(
         child: SingleChildScrollView(
           child: AppResponsive(

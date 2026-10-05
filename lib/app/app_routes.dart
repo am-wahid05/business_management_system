@@ -4,9 +4,19 @@ abstract final class AppRoutes {
   static const secretaryDashboard = '/secretary';
   static const newReceiving = '/secretary/new-receiving';
   static const todaysRecords = '/secretary/todays-records';
+  static const secretaryPrintRecords = '/secretary/print-records';
+  static const secretarySmsCredits = '/secretary/sms-credits';
   static const adminDashboard = '/admin';
   static const suppliers = '/admin/suppliers';
   static const deliveries = '/admin/deliveries';
+
+  /// Recording a new delivery from the Admin workspace.
+  ///
+  /// Admin and Secretary record deliveries with the same screen and the same
+  /// service, but each inside its own shell, so neither user ever lands in the
+  /// other one's navigation. The permission check is unchanged: recording a
+  /// delivery still requires `AppPermission.receiveDeliveries`.
+  static const adminReceiving = '/admin/receiving';
   static const products = '/admin/products';
   static const reports = '/admin/reports';
   static const monthlyReports = '/admin/reports/monthly';

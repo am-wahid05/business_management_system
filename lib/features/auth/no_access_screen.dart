@@ -18,9 +18,17 @@ class NoAccessScreen extends StatelessWidget {
               children: [
                 const Icon(Icons.lock_outline, size: 56),
                 const SizedBox(height: 16),
-                Text('You do not have permission to open this area.', style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+                Text(
+                  'You do not have permission to open this area.',
+                  style: Theme.of(context).textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 20),
-                FilledButton(onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.login), child: const Text('Return to Login')),
+                FilledButton(
+                  onPressed: () =>
+                      Navigator.pushReplacementNamed(context, AppRoutes.login),
+                  child: const Text('Return to Login'),
+                ),
               ],
             ),
           ),

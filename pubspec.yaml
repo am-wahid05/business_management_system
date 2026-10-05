@@ -34,6 +34,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  app_links: ^7.2.1
   cryptography: ^2.7.0
   excel: ^4.0.6
   file_picker: ^8.3.7
@@ -43,7 +44,7 @@ dependencies:
   sqflite_common_ffi: ^2.3.6
   supabase_flutter: ^2.17.2
   http: ^1.6.0
-  printing: ^5.14.3
+  printing: ^5.15.1
   pdf: ^3.11.3
   url_launcher: ^6.3.2
 
@@ -72,6 +73,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -99,3 +101,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+dependency_overrides:
+  # printing 5.15.1 requires pdf 3.13.x, which requires xml 7.x. The
+  # existing excel package declares an older upper bound, but its runtime
+  # XML DOM API usage is compatible with xml 7.x.
+  xml: ^7.0.1

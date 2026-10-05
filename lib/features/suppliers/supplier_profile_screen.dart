@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_ui.dart';
 import '../../domain/models/delivery.dart';
 import '../../domain/models/product.dart';
 import '../../domain/models/supplier.dart';
@@ -9,9 +10,17 @@ import 'supplier_statement.dart';
 import 'supplier_statement_screen.dart';
 import '../auth/active_company_context.dart';
 import '../receiving/receipt_service.dart';
+import '../receiving/print_settings_service.dart';
 
 class SupplierProfileScreen extends StatefulWidget {
-  const SupplierProfileScreen({required this.repository, required this.supplier, required this.statementService, required this.statementExporter, this.activeCompanyContext, super.key});
+  const SupplierProfileScreen({
+    required this.repository,
+    required this.supplier,
+    required this.statementService,
+    required this.statementExporter,
+    this.activeCompanyContext,
+    super.key,
+  });
 
   final SupplierRepository repository;
   final Supplier supplier;
@@ -36,7 +45,8 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
   /// from the database together.
   late Future<List<Delivery>> _history;
 
-  Supplier get supplier => widget.repository.findById(widget.supplier.id) ?? widget.supplier;
+  Supplier get supplier =>
+      widget.repository.findById(widget.supplier.id) ?? widget.supplier;
 
   /// Active company name for the printed history, with a neutral fallback.
   String get _companyName {
@@ -63,16 +73,18 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
     final all = await widget.statementService.deliveryRepository.forSupplier(
       supplier.id,
     );
-    return all.where((delivery) {
-      if (_date != null && !_isSameDate(delivery.recordedAt, _date!)) {
-        return false;
-      }
-      if (_product != null && delivery.product.id != _product!.id) {
-        return false;
-      }
-      if (_year != null && delivery.recordedAt.year != _year) return false;
-      return true;
-    }).toList(growable: false);
+    return all
+        .where((delivery) {
+          if (_date != null && !_isSameDate(delivery.recordedAt, _date!)) {
+            return false;
+          }
+          if (_product != null && delivery.product.id != _product!.id) {
+            return false;
+          }
+          if (_year != null && delivery.recordedAt.year != _year) return false;
+          return true;
+        })
+        .toList(growable: false);
   }
 
   void _applyFilter(VoidCallback change) {
@@ -89,23 +101,68 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
       appBar: AppBar(
         title: Text(supplier.name),
         actions: [
-          IconButton(tooltip: 'Print supplier history', onPressed: () async {
-            final history = await widget.statementService.deliveryRepository.forSupplier(supplier.id);
-            if (!mounted) return;
-            if (history.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No delivery history to print.')));
-              return;
-            }
-            try {
-              await _receiptService.printSupplierHistory(supplier, history, companyName: _companyName);
-            } catch (error) {
-              if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open print preview: $error')));
-            }
-          }, icon: const Icon(Icons.print_outlined)),
+          IconButton(
+            tooltip: 'Print supplier history',
+            onPressed: () async {
+              final history = await widget.statementService.deliveryRepository
+                  .forSupplier(supplier.id);
+              if (!context.mounted) return;
+              if (history.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No delivery history to print.'),
+                  ),
+                );
+                return;
+              }
+              try {
+                // The active company's statement paper, read at print time so
+                // switching company switches the paper with no stale cache in
+                // this screen.
+                final profile = await PrintPreferences.current(
+                  context: widget.activeCompanyContext,
+                );
+                if (!context.mounted) return;
+                if (!profile.showPreview) {
+                  await _receiptService.printSupplierHistory(
+                    supplier,
+                    history,
+                    companyName: _companyName,
+                    paper: profile.statementPaper,
+                  );
+                  return;
+                }
+                await _receiptService.previewSupplierHistory(
+                  context,
+                  supplier,
+                  history,
+                  companyName: _companyName,
+                  paper: profile.statementPaper,
+                );
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Could not open print preview: $error'),
+                    ),
+                  );
+                }
+              }
+            },
+            icon: const Icon(Icons.print_outlined),
+          ),
           IconButton(
             tooltip: 'Edit supplier',
             onPressed: () async {
-              await Navigator.push<Supplier>(context, MaterialPageRoute(builder: (_) => SupplierFormScreen(repository: widget.repository, supplier: supplier)));
+              await Navigator.push<Supplier>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SupplierFormScreen(
+                    repository: widget.repository,
+                    supplier: supplier,
+                  ),
+                ),
+              );
               setState(() {});
             },
             icon: const Icon(Icons.edit_outlined),
@@ -118,11 +175,16 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
           _ProfileHeader(supplier: supplier),
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SupplierStatementScreen(
-              supplier: supplier,
-              service: widget.statementService,
-              exporter: widget.statementExporter,
-            ))),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SupplierStatementScreen(
+                  supplier: supplier,
+                  service: widget.statementService,
+                  exporter: widget.statementExporter,
+                ),
+              ),
+            ),
             icon: const Icon(Icons.description_outlined),
             label: const Text('Create supplier statement'),
           ),
@@ -133,27 +195,34 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
             future: _history,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(child: CircularProgressIndicator()),
+                return const Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: AppKpiSkeleton()),
+                        SizedBox(width: 12),
+                        Expanded(child: AppKpiSkeleton()),
+                        SizedBox(width: 12),
+                        Expanded(child: AppKpiSkeleton()),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    AppLoadingList(rows: 5),
+                  ],
                 );
               }
               if (snapshot.hasError) {
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      'Could not load delivery history: ${snapshot.error}',
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                  ),
+                return AppErrorState(
+                  title: 'Delivery history unavailable',
+                  message:
+                      'We could not load this supplier\'s delivery history.',
+                  onRetry: () => setState(() => _history = _loadHistory()),
                 );
               }
               final history = snapshot.data ?? const <Delivery>[];
               final years = {
                 for (final delivery in history) delivery.recordedAt.year,
-              }.toList()
-                ..sort((a, b) => b.compareTo(a));
+              }.toList()..sort((a, b) => b.compareTo(a));
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -161,10 +230,14 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      _TotalCard(label: 'Deliveries', value: '${history.length}'),
+                      _TotalCard(
+                        label: 'Deliveries',
+                        value: '${history.length}',
+                      ),
                       _TotalCard(
                         label: 'Bags',
-                        value: '${history.fold<int>(0, (total, d) => total + d.numberOfBags)}',
+                        value:
+                            '${history.fold<int>(0, (total, d) => total + d.numberOfBags)}',
                       ),
                       _TotalCard(
                         label: 'Total weight',
@@ -205,7 +278,8 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
                             ),
                           ),
                         ],
-                        onChanged: (value) => _applyFilter(() => _product = value),
+                        onChanged: (value) =>
+                            _applyFilter(() => _product = value),
                       ),
                       DropdownButton<int>(
                         hint: const Text('Year'),
@@ -242,14 +316,16 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
                   ),
                   const SizedBox(height: 8),
                   if (history.isEmpty)
-                    const Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text('No delivery history matches these filters.'),
-                      ),
+                    const AppEmptyState(
+                      title: 'No matching deliveries',
+                      message:
+                          'No delivery history matches the selected filters.',
+                      icon: Icons.receipt_long_outlined,
                     )
                   else
-                    ...history.map((delivery) => _DeliveryHistoryTile(delivery: delivery)),
+                    ...history.map(
+                      (delivery) => _DeliveryHistoryTile(delivery: delivery),
+                    ),
                 ],
               );
             },
@@ -260,11 +336,17 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
   }
 
   Future<void> _chooseDate() async {
-    final date = await showDatePicker(context: context, firstDate: DateTime(2020), lastDate: DateTime.now(), initialDate: _date ?? DateTime.now());
+    final date = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDate: _date ?? DateTime.now(),
+    );
     if (date != null) _applyFilter(() => _date = date);
   }
 
-  static String _formatDate(DateTime date) => '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  static String _formatDate(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
 }
 
 /// One row of the supplier's delivery history.
@@ -283,7 +365,9 @@ class _DeliveryHistoryTile extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: Icon(
-          delivery.isBulk ? Icons.scale_outlined : Icons.shopping_basket_outlined,
+          delivery.isBulk
+              ? Icons.scale_outlined
+              : Icons.shopping_basket_outlined,
           color: theme.colorScheme.primary,
         ),
         title: Text(
@@ -321,14 +405,27 @@ class _ProfileHeader extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [Expanded(child: Text(supplier.name, style: Theme.of(context).textTheme.headlineSmall)), Chip(label: Text(supplier.isActive ? 'Active' : 'Inactive'))]),
-          const SizedBox(height: 8),
-          Text('${supplier.id} · $type'),
-          Text('${supplier.town}, ${supplier.district}, ${supplier.region}'),
-          if (supplier.phone != null) Text(supplier.phone!),
-          if (supplier.notes != null) Text(supplier.notes!),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    supplier.name,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                Chip(label: Text(supplier.isActive ? 'Active' : 'Inactive')),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('${supplier.id} · $type'),
+            Text('${supplier.town}, ${supplier.district}, ${supplier.region}'),
+            if (supplier.phone != null) Text(supplier.phone!),
+            if (supplier.notes != null) Text(supplier.notes!),
+          ],
+        ),
       ),
     );
   }
@@ -341,5 +438,17 @@ class _TotalCard extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) => Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label), const SizedBox(height: 4), Text(value, style: Theme.of(context).textTheme.titleLarge)])));
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label),
+          const SizedBox(height: 4),
+          Text(value, style: Theme.of(context).textTheme.titleLarge),
+        ],
+      ),
+    ),
+  );
 }

@@ -10,6 +10,8 @@ import 'package:flutter_application_2/features/auth/supabase_auth_repository.dar
 import 'package:flutter_application_2/features/backup/backup_service.dart';
 import 'package:flutter_application_2/features/company/company_branding.dart';
 import 'package:flutter_application_2/features/management/settings_screen.dart';
+import 'package:flutter_application_2/features/receiving/paper_size.dart';
+import 'package:flutter_application_2/features/receiving/print_settings_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -47,6 +49,42 @@ void main() {
       await repository.dispose();
       await client.dispose();
     });
+
+    test('restoring without a session clears cached print context', () async {
+      final context = ActiveCompanyContext(
+        const AppUser(
+          id: 'user-a',
+          username: 'a@example.com',
+          displayName: 'Company A User',
+          role: UserRole.admin,
+          isActive: true,
+          companyId: 'company-a',
+        ),
+      );
+      final client = SupabaseClient(
+        'https://example.supabase.co',
+        'test-publishable-key',
+      );
+      final repository = SupabaseAuthRepository(
+        client,
+        activeCompanyContext: context,
+      );
+      addTearDown(PrintPreferences.clear);
+      addTearDown(repository.dispose);
+      addTearDown(client.dispose);
+      PrintPreferences.clear();
+      PrintPreferences.remember(
+        'company-a',
+        const CompanyPrintProfile(receiptPaper: PaperSize.thermal58),
+      );
+      PrintPreferences.rememberContext(context);
+
+      await repository.restoreSession();
+
+      expect(context.value, isNull);
+      final profile = await PrintPreferences.current(context: context);
+      expect(profile.receiptPaper, PaperSize.thermal80);
+    });
   });
 
   testWidgets(
@@ -54,13 +92,13 @@ void main() {
     (tester) async {
       final repository = _RemoteAuthRepository();
       await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(
-          useMaterial3: false,
-          splashFactory: InkRipple.splashFactory,
+        MaterialApp(
+          theme: ThemeData(
+            useMaterial3: false,
+            splashFactory: InkRipple.splashFactory,
+          ),
+          home: LoginScreen(authRepository: repository),
         ),
-        home: LoginScreen(authRepository: repository),
-      ),
       );
       await tester.pumpAndSettle();
 
@@ -144,7 +182,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).first, 'user@example.com');
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      'user@example.com',
+    );
     await tester.enterText(find.byType(TextFormField).last, 'Password1');
     await tester.tap(find.text('Sign In'));
     await tester.pumpAndSettle();

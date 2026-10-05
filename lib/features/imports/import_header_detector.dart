@@ -80,11 +80,7 @@ const Map<ImportField, Set<String>> _fieldSynonyms = {
   // plural. The singular "bag weight" was dropped because a numbered column
   // such as "Bag 3 Weight" is one specific bag, not the collection, and the
   // subset scorer would otherwise let it outrank the plain "weight" reading.
-  ImportField.bagWeights: {
-    'bag weights',
-    'weights',
-    'individual weights',
-  },
+  ImportField.bagWeights: {'bag weights', 'weights', 'individual weights'},
 };
 
 /// Normalises a header into lowercase word tokens.
@@ -117,7 +113,11 @@ ImportMapping guessMapping(List<String> headers) {
   for (final header in headers) {
     final field = detectFieldForHeader(header);
     if (field == null) continue;
-    scored.add((field: field, header: header, score: _bestSynonymScore(field, header)));
+    scored.add((
+      field: field,
+      header: header,
+      score: _bestSynonymScore(field, header),
+    ));
   }
   scored.sort((left, right) => right.score.compareTo(left.score));
 

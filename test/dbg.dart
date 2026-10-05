@@ -23,9 +23,7 @@ void main() {
   final decoded = Excel.decodeBytes(external.encode()!);
   final rows = decoded['External'].rows;
   for (var i = 0; i < rows.length; i++) {
-    final texts = rows[i]
-        .map((c) => parseCellValue(c?.value).text)
-        .toList();
+    final texts = rows[i].map((c) => parseCellValue(c?.value).text).toList();
     final recognised = texts
         .where((t) => t.trim().isNotEmpty && detectFieldForHeader(t) != null)
         .length;
@@ -38,5 +36,7 @@ void main() {
       print('    $f');
     }
   }
-  print('detected header row = ${detectHeaderRow(rows.map((r) => r.map((c) => parseCellValue(c?.value).text).toList()).toList())}');
+  print(
+    'detected header row = ${detectHeaderRow(rows.map((r) => r.map((c) => parseCellValue(c?.value).text).toList()).toList())}',
+  );
 }

@@ -10,9 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// client settle a payment, trusts a client-supplied company, or lets a
 /// secretary read billing, this suite fails.
 void main() {
-  final migration = File(
-    'supabase/migrations/202609270001_subscriptions.sql',
-  ).readAsStringSync();
+  final migration = File('supabase/migrations/202609270001_subscriptions.sql')
+      .readAsStringSync();
 
   // Line comments are stripped. Block comments are left alone because the
   // security rules are documented there and the assertions must not be
@@ -27,7 +26,10 @@ void main() {
   String body(String marker) {
     final start = sql.indexOf(marker);
     if (start < 0) return '';
-    final end = sql.indexOf('create or replace function', start + marker.length);
+    final end = sql.indexOf(
+      'create or replace function',
+      start + marker.length,
+    );
     return sql.substring(start, end < 0 ? sql.length : end);
   }
 
@@ -37,10 +39,7 @@ void main() {
       // anything except the service role, so Flutter can never call it.
       expect(sql, contains("auth.jwt() ->> 'role'"));
       expect(sql, contains("<> 'service_role'"));
-      expect(
-        sql,
-        contains('Payments are settled by a trusted server only'),
-      );
+      expect(sql, contains('Payments are settled by a trusted server only'));
     });
 
     test('settlement refuses a payment with no provider reference', () {
@@ -78,14 +77,8 @@ void main() {
       // Companies are created by public.handle_new_user() during sign-up. Until
       // this trigger existed nothing called start_company_trials(), so a brand
       // new company had no subscription row at all.
-      expect(
-        sql,
-        contains('create trigger company_trial_onboarding'),
-      );
-      expect(
-        sql,
-        contains('after insert on public.companies'),
-      );
+      expect(sql, contains('create trigger company_trial_onboarding'));
+      expect(sql, contains('after insert on public.companies'));
     });
 
     test('the trigger calls a dedicated trigger function', () {
@@ -104,17 +97,16 @@ void main() {
 
     test('that trigger function has a valid PostgreSQL trigger signature', () {
       // RETURNS TRIGGER, no parameters, and it returns NEW.
-      final start = sql.indexOf('create or replace function public.grant_company_trial_on_insert()');
+      final start = sql.indexOf(
+        'create or replace function public.grant_company_trial_on_insert()',
+      );
       expect(start, isNot(-1));
       final body = sql.substring(start, sql.indexOf(r'$$;', start));
       expect(body, contains('returns trigger'));
       expect(body, contains('perform public.start_company_trials(new.id);'));
       expect(body, contains('return new;'));
       // A trigger function takes no declared parameters.
-      expect(
-        body,
-        isNot(contains('grant_company_trial_on_insert(uuid)')),
-      );
+      expect(body, isNot(contains('grant_company_trial_on_insert(uuid)')));
     });
 
     test('the trigger is AFTER INSERT only, never on update', () {
@@ -134,7 +126,9 @@ void main() {
       // fires for a brand new company row, and the insert is a no-op when one
       // already exists.
       final trials = body('start_company_trials');
-      final conflicts = 'on conflict (company_id) do nothing'.allMatches(trials);
+      final conflicts = 'on conflict (company_id) do nothing'.allMatches(
+        trials,
+      );
       expect(conflicts.length, 2, reason: 'Both the software and AI trial.');
     });
 
@@ -189,19 +183,24 @@ void main() {
       expect(projection, contains('as sub_status'));
     });
 
-    test('an expired paid period falls into grace even if the sweep has not run', () {
-      final projection = body('company_entitlements');
-      // A stored ACTIVE whose current_period_end has passed must be reported
-      // as GRACE_PERIOD, and its grace end derived from the period end.
-      expect(
-        projection,
-        contains("r.stored_status = 'ACTIVE' and r.current_period_end is not null"),
-      );
-      expect(
-        projection,
-        contains("then 'GRACE_PERIOD'::public.subscription_status"),
-      );
-    });
+    test(
+      'an expired paid period falls into grace even if the sweep has not run',
+      () {
+        final projection = body('company_entitlements');
+        // A stored ACTIVE whose current_period_end has passed must be reported
+        // as GRACE_PERIOD, and its grace end derived from the period end.
+        expect(
+          projection,
+          contains(
+            "r.stored_status = 'ACTIVE' and r.current_period_end is not null",
+          ),
+        );
+        expect(
+          projection,
+          contains("then 'GRACE_PERIOD'::public.subscription_status"),
+        );
+      },
+    );
 
     test('an expired trial also falls into grace without a sweep', () {
       final projection = body('company_entitlements');
@@ -215,7 +214,10 @@ void main() {
       final projection = body('company_entitlements');
       // Once the derived grace end is in the past the status is EXPIRED, and it
       // stays there because the derived end does not move.
-      expect(projection, contains("then 'EXPIRED'::public.subscription_status"));
+      expect(
+        projection,
+        contains("then 'EXPIRED'::public.subscription_status"),
+      );
       expect(projection, contains('coalesce('));
       expect(
         projection,
@@ -232,10 +234,7 @@ void main() {
         ),
       );
       // It must NOT be read from the stored status anywhere.
-      expect(
-        projection,
-        isNot(contains("'canAccessAdmin', r.stored_status")),
-      );
+      expect(projection, isNot(contains("'canAccessAdmin', r.stored_status")));
     });
 
     test('secretary work is still independent of the admin lock', () {
@@ -251,10 +250,12 @@ void main() {
       // PAUSE is explicit and not a function of dates, so it must be the first
       // branch: a paused company is never dragged into grace or expiry.
       final projection = body('company_entitlements');
-      final pausedAt =
-          projection.indexOf("when e.stored_status = 'PAUSED' then 'PAUSED'");
-      final expiredAt =
-          projection.indexOf("then 'EXPIRED'::public.subscription_status");
+      final pausedAt = projection.indexOf(
+        "when e.stored_status = 'PAUSED' then 'PAUSED'",
+      );
+      final expiredAt = projection.indexOf(
+        "then 'EXPIRED'::public.subscription_status",
+      );
       expect(pausedAt, isNot(-1));
       expect(expiredAt, isNot(-1));
       expect(pausedAt < expiredAt, isTrue);
@@ -328,9 +329,9 @@ void main() {
       // Each enum DO block ends with its own `end $$;`. The line ending is
       // matched loosely because this file is CRLF on Windows.
       expect(
-        RegExp(
-          r'exception when duplicate_object then null;\r?\nend \$\$;',
-        ).allMatches(sql).length,
+        RegExp(r'exception when duplicate_object then null;\r?\nend \$\$;')
+            .allMatches(sql)
+            .length,
         4,
       );
     });
@@ -389,7 +390,9 @@ void main() {
     test('company_ai_entitlements carries its full design', () {
       // This table was previously opened here and had its columns left
       // stranded further down the file, which is not valid SQL.
-      final start = sql.indexOf('create table if not exists public.company_ai_entitlements (');
+      final start = sql.indexOf(
+        'create table if not exists public.company_ai_entitlements (',
+      );
       expect(start, isNot(-1));
       final rest = sql.substring(start);
       final body = rest.substring(0, RegExp(r'\r?\n\);').firstMatch(rest)!.end);
@@ -432,8 +435,7 @@ void main() {
 
     test('objects are created before they are used', () {
       // company_subscriptions references the enums, so the enums come first.
-      int before(String a, String b) =>
-          sql.indexOf(a) < sql.indexOf(b) ? 0 : 1;
+      int before(String a, String b) => sql.indexOf(a) < sql.indexOf(b) ? 0 : 1;
 
       expect(
         before(
@@ -614,11 +616,14 @@ void main() {
       );
     });
 
-    test('the allowance is derived from bundles, never stored per secretary', () {
-      expect(sql, contains('maxSecretaries'));
-      expect(sql, contains("coalesce(r.secretary_bundles, 0)"));
-      expect(sql, contains("coalesce(r.secretary_bundle_size, 3)"));
-    });
+    test(
+      'the allowance is derived from bundles, never stored per secretary',
+      () {
+        expect(sql, contains('maxSecretaries'));
+        expect(sql, contains("coalesce(r.secretary_bundles, 0)"));
+        expect(sql, contains("coalesce(r.secretary_bundle_size, 3)"));
+      },
+    );
   });
 
   group('SMS credits stay independent of the subscription', () {
@@ -685,4 +690,3 @@ void main() {
     });
   });
 }
-

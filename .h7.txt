@@ -1,0 +1,74 @@
+﻿-                decoration: BoxDecoration(color: color.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(10)),
++                  decoration: BoxDecoration(
+-      decoration: BoxDecoration(color: tone.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(20)),
++      decoration: BoxDecoration(
++          decoration: BoxDecoration(
++      // decoration without ever competing with the form.
++      decoration: BoxDecoration(
++            decoration: BoxDecoration(
++      decoration: BoxDecoration(
++          decoration: BoxDecoration(
++            decoration: BoxDecoration(
++      decoration: BoxDecoration(
+-                  SizedBox(width: 180, child: DropdownButtonFormField<AnalyticsTrend>(initialValue: _trend, decoration: const InputDecoration(labelText: 'Trend'), items: const [DropdownMenuItem(value: AnalyticsTrend.daily, child: Text('Daily')), DropdownMenuItem(value: AnalyticsTrend.weekly, child: Text('Weekly')), DropdownMenuItem(value: AnalyticsTrend.monthly, child: Text('Monthly')), DropdownMenuItem(value: AnalyticsTrend.yearly, child: Text('Yearly'))], onChanged: (value) { if (value != null) setState(() { _trend = value; _load(); }); })),
+-                  SizedBox(width: 220, child: DropdownButtonFormField<String>(initialValue: _productId, decoration: const InputDecoration(labelText: 'Product'), items: [const DropdownMenuItem<String>(value: null, child: Text('All products')), ...productSnapshot.data!.map((product) => DropdownMenuItem(value: product.id, child: Text(product.name)))], onChanged: (value) => setState(() { _productId = value; _load(); }))),
+-                  SizedBox(width: 240, child: DropdownButtonFormField<String>(initialValue: _supplierId, decoration: const InputDecoration(labelText: 'Supplier'), items: [const DropdownMenuItem<String>(value: null, child: Text('All suppliers')), ...suppliers.map((supplier) => DropdownMenuItem(value: supplier.id, child: Text(supplier.name)))], onChanged: (value) => setState(() { _supplierId = value; _load(); }))),
+-                  SizedBox(width: 180, child: DropdownButtonFormField<String>(initialValue: _supplierType, decoration: const InputDecoration(labelText: 'Type'), items: const [DropdownMenuItem<String>(value: null, child: Text('All types')), DropdownMenuItem(value: 'farmer', child: Text('Farmers')), DropdownMenuItem(value: 'aggregator', child: Text('Aggregators'))], onChanged: (value) => setState(() { _supplierType = value; _load(); }))),
+-                  SizedBox(width: 180, child: TextField(controller: _townController, decoration: const InputDecoration(labelText: 'Town'), onSubmitted: (_) => setState(_load))),
+-                  SizedBox(width: 180, child: TextField(controller: _districtController, decoration: const InputDecoration(labelText: 'District'), onSubmitted: (_) => setState(_load))),
+-                  SizedBox(width: 180, child: TextField(controller: _regionController, decoration: const InputDecoration(labelText: 'Region'), onSubmitted: (_) => setState(_load))),
++                      decoration: const InputDecoration(labelText: 'Trend'),
++                      decoration: const InputDecoration(labelText: 'Product'),
++                      decoration: const InputDecoration(labelText: 'Supplier'),
++                      decoration: const InputDecoration(labelText: 'Type'),
++                      decoration: const InputDecoration(labelText: 'Town'),
++                      decoration: const InputDecoration(labelText: 'District'),
++                      decoration: const InputDecoration(labelText: 'Region'),
+-          return Align(alignment: message.fromUser ? Alignment.centerRight : Alignment.centerLeft, child: Container(margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(12), constraints: const BoxConstraints(maxWidth: 600), decoration: BoxDecoration(color: message.fromUser ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)), child: Text(message.text)));
+-        Padding(padding: const EdgeInsets.all(16), child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Expanded(child: TextField(controller: _controller, minLines: 1, maxLines: 4, textInputAction: TextInputAction.send, onSubmitted: (_) => _ask(), decoration: const InputDecoration(labelText: 'Ask about your business'))), const SizedBox(width: 8), IconButton.filled(tooltip: 'Ask', onPressed: _working ? null : _ask, icon: _working ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.send))])) ,
++                    decoration: BoxDecoration(
++                    decoration: const InputDecoration(
++          decoration: BoxDecoration(
+-            decoration: InputDecoration(
++              decoration: InputDecoration(
++                    decoration: InputDecoration(
+-                            decoration: const InputDecoration(
+-                          decoration: InputDecoration(
+-                          decoration: const InputDecoration(
++          decoration: BoxDecoration(
+-            decoration: InputDecoration(
++              decoration: InputDecoration(
+-            decoration: const InputDecoration(labelText: 'Your name'),
++              decoration: const InputDecoration(hintText: 'Full name'),
+-            decoration: InputDecoration(
++              decoration: InputDecoration(
+-        content: SingleChildScrollView(child: Form(key: _formKey, child: Column(mainAxisSize: MainAxisSize.min, children: [TextField(controller: _displayName, decoration: const InputDecoration(labelText: 'Display name')), TextFormField(controller: _username, keyboardType: TextInputType.emailAddress, autocorrect: false, decoration: const InputDecoration(labelText: 'Email', helperText: "The secretary's real email address. They use it to sign in.", helperMaxLines: 2), validator: _validateEmail), DropdownButtonFormField<UserRole>(initialValue: _role, items: UserRole.values.map((role) => DropdownMenuItem(value: role, child: Text(role.name))).toList(), onChanged: (value) => setState(() => _role = value!)), TextField(controller: _password, obscureText: true, decoration: const InputDecoration(labelText: 'Temporary password'))]))),
++              decoration: const InputDecoration(labelText: 'Display name'),
++              decoration: const InputDecoration(
++              decoration: const InputDecoration(
+-                  decoration: BoxDecoration(
++            decoration: BoxDecoration(
+-            decoration: const InputDecoration(
++                decoration: const InputDecoration(
+-          TextField(controller: bags, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Number of bags')),
+-          TextField(controller: total, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Total weight (kg)')),
+-          TextField(controller: notes, decoration: const InputDecoration(labelText: 'Notes (optional)')),
++              decoration: const InputDecoration(labelText: 'Number of bags'),
++              decoration: const InputDecoration(labelText: 'Total weight (kg)'),
++              decoration: const InputDecoration(labelText: 'Notes (optional)'),
+-      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [if (_error != null) Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)), ...widget.controllers.asMap().entries.map((entry) => Padding(padding: const EdgeInsets.only(bottom: 12), child: TextField(controller: entry.value, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'Bag ${entry.key + 1}', suffixText: 'kg'))))])),
++                  decoration: InputDecoration(
+-                decoration: const InputDecoration(
++                    decoration: const InputDecoration(
+-                  decoration: const InputDecoration(labelText: 'Supplier type'),
+-                  decoration: const InputDecoration(
+-                    decoration: const InputDecoration(
++                      decoration: const InputDecoration(
+-                          decoration: const InputDecoration(
+-                          decoration: const InputDecoration(
++                      decoration: const InputDecoration(
+-                          decoration: const InputDecoration(
++                        decoration: const InputDecoration(
++                              decoration: const InputDecoration(
++                              decoration: const InputDecoration(
++                              decoration: const InputDecoration(

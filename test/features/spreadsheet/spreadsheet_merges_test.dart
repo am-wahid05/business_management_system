@@ -54,10 +54,7 @@ void main() {
 
   tearDown(() => database.close());
 
-  Future<void> saveMerges(
-    String company,
-    MergeManager manager,
-  ) => store.save(
+  Future<void> saveMerges(String company, MergeManager manager) => store.save(
     companyId: company,
     state: SpreadsheetState(merges: manager.merges),
   );
@@ -331,7 +328,10 @@ void main() {
       final reopened = MergeManager(
         (await store.load(companyId: 'company-a')).merges,
       );
-      expect(reopened.unmerge(rowKeys: keys, row: 0, column: 0).isSuccess, isTrue);
+      expect(
+        reopened.unmerge(rowKeys: keys, row: 0, column: 0).isSuccess,
+        isTrue,
+      );
       await saveMerges('company-a', reopened);
 
       final restored = await store.load(companyId: 'company-a');
@@ -351,10 +351,11 @@ void main() {
 
       final restored = await store.load(companyId: 'company-a');
       // The grid is re-sorted so 'r2' is now shown first.
-      final bounds = MergeManager.bounds(
-        restored.merges.single,
-        const ['r2', 'r1', 'r3'],
-      );
+      final bounds = MergeManager.bounds(restored.merges.single, const [
+        'r2',
+        'r1',
+        'r3',
+      ]);
       // Still the same two rows, now occupying visual rows 0 and 1.
       expect(bounds, (0, 0, 1, 0));
       expect(restored.merges.single.anchorRowKey, 'r1');
@@ -376,10 +377,7 @@ void main() {
       expect((await store.load(companyId: 'company-b')).merges, isEmpty);
 
       // And Company B saving does not remove Company A's merge.
-      await store.save(
-        companyId: 'company-b',
-        state: const SpreadsheetState(),
-      );
+      await store.save(companyId: 'company-b', state: const SpreadsheetState());
       expect((await store.load(companyId: 'company-a')).merges.length, 1);
     });
 
@@ -411,10 +409,9 @@ void main() {
         companyId: 'company-a',
         state: SpreadsheetState(
           formats: {
-            SpreadsheetState.cellKey(
-              'r1',
-              0,
-            ): const CellFormat(background: CellColor.yellow),
+            SpreadsheetState.cellKey('r1', 0): const CellFormat(
+              background: CellColor.yellow,
+            ),
           },
           merges: manager.merges,
         ),
@@ -440,9 +437,7 @@ void main() {
       await store.save(
         companyId: 'company-a',
         state: SpreadsheetState(
-          formulas: {
-            SpreadsheetState.cellKey('r3', 3): '=SUM(D1:D3)',
-          },
+          formulas: {SpreadsheetState.cellKey('r3', 3): '=SUM(D1:D3)'},
           merges: manager.merges,
         ),
       );

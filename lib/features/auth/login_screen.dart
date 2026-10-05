@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../app/app_routes.dart';
+import '../../app/app_ui.dart';
 import '../company/company_branding.dart';
 import 'active_company_context.dart';
 import 'account_service.dart';
+import 'auth_form_parts.dart';
 import 'auth_models.dart';
 import 'auth_repository.dart';
 import 'forgot_password_screen.dart';
 import 'local_auth_repository.dart';
+import 'password_widgets.dart';
 import 'sign_up_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -44,7 +47,27 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _hasUsers = true;
   bool _loading = true;
   UserRole _selectedRole = UserRole.admin;
+
+  /// Whether the user has actually touched the role selector.
+  ///
+  /// This is what keeps the earlier remote sign-in bug from returning. The tab
+  /// carries no authority, so an untouched tab must not be treated as a choice:
+  /// when [_roleChosen] is false the selected role is only the initial value the
+  /// control happens to display, and checking it against the real role would
+  /// reject every Secretary who never pressed the Secretary segment. Only once
+  /// the user has genuinely selected a role does the tab mean anything, and only
+  /// then is it worth confirming it against company membership.
+  bool _roleChosen = false;
+
   String? _error;
+
+  /// True while the "choose a company" dialog is open.
+  ///
+  /// The submit spinner is suppressed in this state. A dialog is modal, so the
+  /// form behind it cannot be interacted with, and an endlessly animating
+  /// spinner behind a modal is both misleading and something that never lets
+  /// the UI settle.
+  bool _choosingCompany = false;
 
   bool get _remote => widget.authRepository.isRemote;
 
@@ -111,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
             .companiesForCurrentUser();
         if (memberships.length > 1) {
           if (!mounted) return;
+          _choosingCompany = true;
           final companyId = await showDialog<String>(
             context: context,
             builder: (context) => AlertDialog(
@@ -126,10 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? 'Admin'
                               : 'Secretary',
                         ),
-                        onTap: () => Navigator.pop(
-                          context,
-                          membership.companyId,
-                        ),
+                        onTap: () =>
+                            Navigator.pop(context, membership.companyId),
                       ),
                     )
                     .toList(growable: false),
@@ -144,23 +166,30 @@ class _LoginScreenState extends State<LoginScreen> {
           authenticatedUser = widget.authRepository.currentUser ?? user;
         }
 
-        // The tab is only a UI preference. The authoritative role is the one
-        // company membership gives for the ACTIVE company, so this check runs
-        // after any company selection, never before it. A mismatch signs the
-        // user straight back out: leaving a valid session open behind a
-        // rejected tab would leave the app one tap away from the dashboard the
-        // tab was meant to be guarding.
-        final roleError = roleMismatchMessage(
-          selected: _selectedRole,
-          actual: authenticatedUser.role,
-        );
-        if (roleError != null) {
-          await widget.authRepository.signOut();
-          if (!mounted) return;
-          setState(() => _error = roleError);
-          return;
+        // The role tab is only a UI preference. The authoritative role is the
+        // one company membership gives for the ACTIVE company, so this check
+        // runs after any company selection, never before it.
+        //
+        // It only runs when the user actually chose a role. An untouched tab is
+        // not a claim about the user, so it must never reject a legitimate
+        // sign-in: that was the bug where a remote Secretary was turned away
+        // purely because the control started out displaying Admin. A mismatch
+        // signs the user straight back out, because leaving a valid session open
+        // behind a rejected choice would leave the app one tap away from the
+        // dashboard the choice was meant to be guarding.
+        if (_roleChosen) {
+          final roleError = roleMismatchMessage(
+            selected: _selectedRole,
+            actual: authenticatedUser.role,
+          );
+          if (roleError != null) {
+            await widget.authRepository.signOut();
+            if (!mounted) return;
+            setState(() => _error = roleError);
+            return;
+          }
         }
-      } else {
+      } else if (_roleChosen) {
         final roleError = roleMismatchMessage(
           selected: _selectedRole,
           actual: user.role,
@@ -183,6 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
             : 'Unable to complete sign in. Please try again.';
       });
     } finally {
+      _choosingCompany = false;
       if (mounted) setState(() => _loading = false);
     }
   }
@@ -199,223 +229,139 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final setup = !_remote && !_hasUsers;
+
+    // Before the account check finishes there is nothing to say about the form
+    // itself, so a skeleton holds the layout rather than a spinner over a blank
+    // panel.
+    if (_loading && !_hasUsers) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: SafeArea(
+          child: AppAuthBrandPanel(
+            companyName: widget.activeCompanyContext?.companyName,
+            child: const AuthFormSkeleton(),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (widget.activeCompanyContext
-                            case final activeContext?)
-                          Center(
-                            child: CompanyBrandMark(
-                              context: activeContext,
-                              service: widget.brandingService,
-                              logoSize: 64,
-                              nameStyle: Theme.of(context).textTheme
-                                  .headlineMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
+        child: AppAuthBrandPanel(
+          companyName: widget.activeCompanyContext?.companyName,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppAuthHeader(
+                  title: setup ? 'Create your owner account' : 'Sign in',
+                  subtitle: setup
+                      ? 'This installation has no accounts yet. Create the '
+                            'first owner account to get started.'
+                      : 'Use the email address and password for your company '
+                            'account.',
+                ),
+                const SizedBox(height: 28),
+                // The role choice is offered on a remote sign-in as well as a local
+                // one.
+                //
+                // It is only a UI preference and never a grant: the
+                // authoritative role always comes from the authenticated
+                // user's company membership on the server, and the tab is
+                // checked against it after authentication. Showing it on a
+                // remote sign-in is therefore safe, and it lets a user see up
+                // front which kind of account they are signing in to.
+                if (!setup) ...[
+                  AuthRoleSelector(
+                    selected: _selectedRole,
+                    enabled: !_loading,
+                    onSelected: _selectRole,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Your dashboard is decided by your company role, not by '
+                    'this choice.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                AuthLabeledField(
+                  label: _remote ? 'Email address' : 'Username',
+                  child: TextFormField(
+                    controller: _usernameController,
+                    enabled: !_loading,
+                    autofillHints: const [AutofillHints.username],
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      hintText: _remote
+                          ? 'you@company.com'
+                          : 'Enter your username',
+                    ),
+                    validator: (value) => (value?.trim().isEmpty ?? true)
+                        ? (_remote ? 'Enter your email address' : 'Required')
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                AuthLabeledField(
+                  label: 'Password',
+                  child: AppPasswordField(
+                    controller: _passwordController,
+                    enabled: !_loading,
+                    autofillHints: const [AutofillHints.password],
+                    // The password is required too. Without this the form would
+                    // send an empty password to the server instead of
+                    // explaining the problem here.
+                    validator: (value) =>
+                        (value?.isEmpty ?? true) ? 'Required' : null,
+                    onSubmitted: (_) => _loading ? null : _submit(),
+                  ),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 18),
+                  AppAuthError(_error!),
+                ],
+                const SizedBox(height: 26),
+                SizedBox(
+                  height: 50,
+                  child: FilledButton(
+                    onPressed: _loading ? null : _submit,
+                    child: _loading && !_choosingCompany
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
                           )
-                        else ...[
-                          Icon(
-                            Icons.business_outlined,
-                            size: 64,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Business Management System',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        Text(
-                          setup
-                              ? 'Create the first owner account'
-                              : 'Sign in to continue',
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 28),
-                        // The tabs are shown for remote sign-in too. They are only a UI preference and
-                        // are validated against company membership after
-                        // authentication, so offering them here cannot grant a
-                        // role.
-                        if (!setup) ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _roleButton(
-                                  context,
-                                  UserRole.admin,
-                                  Icons.admin_panel_settings_outlined,
-                                  'Login as Admin',
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _roleButton(
-                                  context,
-                                  UserRole.secretary,
-                                  Icons.badge_outlined,
-                                  'Login as Secretary',
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Your dashboard is decided by your company role, '
-                            'not by this choice.',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                        if (setup) ...[
-                          TextFormField(
-                            controller: _displayNameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Owner name',
-                            ),
-                            validator: (value) =>
-                                value == null || value.trim().isEmpty
-                                ? 'Required'
-                                : null,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        TextFormField(
-                          controller: _usernameController,
-                          keyboardType: _remote
-                              ? TextInputType.emailAddress
-                              : TextInputType.text,
-                          autofillHints: [
-                            _remote
-                                ? AutofillHints.email
-                                : AutofillHints.username,
-                          ],
-                          decoration: InputDecoration(
-                            labelText: _remote ? 'Email address' : 'Username',
-                          ),
-                          validator: (value) =>
-                              value == null || value.trim().isEmpty
-                              ? (_remote
-                                    ? 'Enter your email address'
-                                    : 'Required')
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          autofillHints: const [AutofillHints.password],
-                          decoration: const InputDecoration(
-                            labelText: 'Password',
-                          ),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Enter your password'
-                              : null,
-                          onFieldSubmitted: (_) => _loading ? null : _submit(),
-                        ),
-                        if (!_remote && !setup) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            'LOCAL TEST ADMIN: ${LocalAuthRepository.testUsername} / ${LocalAuthRepository.testPassword}\nLOCAL TEST SECRETARY: ${LocalAuthRepository.testSecretaryUsername} / ${LocalAuthRepository.testSecretaryPassword}',
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                        if (_remote && widget.signUpService != null) ...[
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              onPressed: _loading
-                                  ? null
-                                  : () => Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => SignUpScreen(
-                                          signUpService: widget.signUpService!,
-                                          authRepository: widget.authRepository,
-                                        ),
-                                      ),
-                                    ),
-                              child: const Text('Create a company account'),
-                            ),
-                          ),
-                        ],
-                        if (_remote && widget.accountService != null) ...[
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: _loading
-                                  ? null
-                                  : () => Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => ForgotPasswordScreen(
-                                          accountService:
-                                              widget.accountService!,
-                                        ),
-                                      ),
-                                    ),
-                              child: const Text('Forgot password?'),
-                            ),
-                          ),
-                        ],
-                        if (_error != null) ...[
-                          const SizedBox(height: 16),
-                          Text(
-                            _error!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          height: 52,
-                          child: FilledButton.icon(
-                            onPressed: _loading ? null : _submit,
-                            icon: _loading
-                                ? const SizedBox.square(
-                                    dimension: 20,
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : Icon(
-                                    setup
-                                        ? Icons.person_add_alt_1
-                                        : Icons.login,
-                                  ),
-                            label: Text(
-                              setup ? 'Create Owner Account' : 'Sign In',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          setup
-                              ? 'Choose and remember your password. It will not be stored as plain text.'
-                              : _remote
-                              ? 'Credentials are checked securely by Supabase Auth.'
-                              : 'Passwords are checked locally and never displayed.',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                        : Text(setup ? 'Create owner account' : 'Sign In'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AuthLinks(
+                  showSignUp: _remote && widget.signUpService != null,
+                  showForgotPassword: _remote && widget.accountService != null,
+                  onSignUp: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => SignUpScreen(
+                        signUpService: widget.signUpService!,
+                        authRepository: widget.authRepository,
+                      ),
+                    ),
+                  ),
+                  onForgotPassword: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => ForgotPasswordScreen(
+                        accountService: widget.accountService!,
+                      ),
                     ),
                   ),
                 ),
-              ),
+                if (!_remote && !setup) ...[
+                  const SizedBox(height: 22),
+                  const LocalAccountsHint(),
+                ],
+              ],
             ),
           ),
         ),
@@ -423,38 +369,23 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _roleButton(
-    BuildContext context,
-    UserRole role,
-    IconData icon,
-    String label,
-  ) {
-    final selected = _selectedRole == role;
-    return selected
-        ? FilledButton.icon(
-            onPressed: () {},
-            icon: Icon(icon),
-            label: Text(label, textAlign: TextAlign.center),
-          )
-        : OutlinedButton.icon(
-            onPressed: () {
-              setState(() {
-                _selectedRole = role;
-                _error = null;
-                // Pre-filling the local demo accounts is a convenience for the
-                // offline setup only. On a remote sign-in the identifier must
-                // be the user's real email, so it is left untouched.
-                if (!_remote) {
-                  _usernameController.text = role == UserRole.admin
-                      ? LocalAuthRepository.testUsername
-                      : LocalAuthRepository.testSecretaryUsername;
-                  _passwordController.clear();
-                }
-              });
-            },
-            icon: Icon(icon),
-            label: Text(label, textAlign: TextAlign.center),
-          );
+  void _selectRole(UserRole role) {
+    setState(() {
+      _selectedRole = role;
+      // Record that this is now a real choice rather than the control's initial
+      // display value, so the role gate knows it may act on it.
+      _roleChosen = true;
+      _error = null;
+      // Pre-filling the local demo accounts is a convenience for the offline
+      // setup only. On a remote sign-in the identifier must be the user's real
+      // email, so it is left untouched.
+      if (!_remote) {
+        _usernameController.text = role == UserRole.admin
+            ? LocalAuthRepository.testUsername
+            : LocalAuthRepository.testSecretaryUsername;
+        _passwordController.clear();
+      }
+    });
   }
 }
 

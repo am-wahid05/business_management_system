@@ -1,4 +1,4 @@
-﻿import 'package:excel/excel.dart';
+import 'package:excel/excel.dart';
 import 'package:flutter_application_2/features/imports/excel_cell_parser.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -189,4 +189,3 @@ void main() {
     expect(first.day, 31);
   });
 }
-

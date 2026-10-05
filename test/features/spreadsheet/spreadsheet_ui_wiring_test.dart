@@ -252,27 +252,29 @@ void main() {
       expect(again.merges.merges, isEmpty);
     });
 
-    test('an invalid merge reports the existing message and changes nothing',
-        () async {
-      await seed('d-1');
-      await seed('d-2');
-      final sheet = openController();
-      await sheet.load(from: DateTime(2026), to: DateTime(2027));
+    test(
+      'an invalid merge reports the existing message and changes nothing',
+      () async {
+        await seed('d-1');
+        await seed('d-2');
+        final sheet = openController();
+        await sheet.load(from: DateTime(2026), to: DateTime(2027));
 
-      sheet.mergeRange(
-        const CellRange(startRow: 0, startColumn: 0, endRow: 1, endColumn: 1),
-      );
-      final before = sheet.merges.merges.length;
+        sheet.mergeRange(
+          const CellRange(startRow: 0, startColumn: 0, endRow: 1, endColumn: 1),
+        );
+        final before = sheet.merges.merges.length;
 
-      // An overlapping merge is refused and the message reaches the UI.
-      final result = sheet.mergeRange(
-        const CellRange(startRow: 1, startColumn: 1, endRow: 1, endColumn: 3),
-      );
-      expect(result.isSuccess, isFalse);
-      expect(result.failure, MergeFailure.overlapsExisting);
-      expect(result.message, isNotNull);
-      expect(sheet.merges.merges.length, before);
-    });
+        // An overlapping merge is refused and the message reaches the UI.
+        final result = sheet.mergeRange(
+          const CellRange(startRow: 1, startColumn: 1, endRow: 1, endColumn: 3),
+        );
+        expect(result.isSuccess, isFalse);
+        expect(result.failure, MergeFailure.overlapsExisting);
+        expect(result.message, isNotNull);
+        expect(sheet.merges.merges.length, before);
+      },
+    );
 
     test('merges stay company isolated through the UI path', () async {
       await seed('d-1');

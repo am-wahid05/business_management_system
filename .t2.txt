@@ -1,0 +1,16 @@
+﻿
+  test\features\auth\supabase_login_wiring_test.dart:61:        ),
+  test\features\auth\supabase_login_wiring_test.dart:62:        home: LoginScreen(authRepository: repository),
+  test\features\auth\supabase_login_wiring_test.dart:63:      ),
+  test\features\auth\supabase_login_wiring_test.dart:64:      );
+  test\features\auth\supabase_login_wiring_test.dart:65:      await tester.pumpAndSettle();
+  test\features\auth\supabase_login_wiring_test.dart:66:
+  test\features\auth\supabase_login_wiring_test.dart:67:      expect(find.text('Email address'), findsOneWidget);
+  test\features\auth\supabase_login_wiring_test.dart:68:      expect(find.textContaining('LOCAL TEST'), findsNothing);
+> test\features\auth\supabase_login_wiring_test.dart:69:      expect(find.text('Login as Admin'), findsNothing);
+  test\features\auth\supabase_login_wiring_test.dart:70:
+  test\features\auth\supabase_login_wiring_test.dart:71:      await tester.enterText(find.byType(TextFormField).first, 'localtest');
+  test\features\auth\supabase_login_wiring_test.dart:72:      await tester.enterText(find.byType(TextFormField).last, 'localtest123');
+  test\features\auth\supabase_login_wiring_test.dart:73:      await tester.tap(find.text('Sign In'));
+
+

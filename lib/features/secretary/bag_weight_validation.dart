@@ -39,12 +39,16 @@ List<double> parseEnteredBagWeights(List<String> enteredWeights) {
     }
     final weight = double.tryParse(entry);
     if (weight == null || !weight.isFinite || weight <= 0) {
-      throw const BagWeightValidationException('Bag weights must be numbers greater than zero.');
+      throw const BagWeightValidationException(
+        'Bag weights must be numbers greater than zero.',
+      );
     }
     weights.add(weight);
   }
   if (weights.isEmpty) {
-    throw const BagWeightValidationException('Enter at least one bag weight before saving.');
+    throw const BagWeightValidationException(
+      'Enter at least one bag weight before saving.',
+    );
   }
   return weights;
 }

@@ -1,0 +1,32 @@
+=== change_password_screen.dart : 158
+        TextButton(
+          onPressed: _working ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    );
+  }
+=== forgot_password_screen.dart : 189
+          TextButton(
+            onPressed: _working ? null : () => Navigator.of(context).pop(),
+            child: const Text('Back to Login'),
+          ),
+        ],
+      ),
+    );
+=== sign_up_screen.dart : 330
+          TextButton(
+            onPressed: _working ? null : () => Navigator.of(context).pop(),
+            child: const Text('Back to sign in'),
+          ),
+        ],
+      ),
+    );
+=== reset_password_screen.dart : 167
+        TextButton(
+          onPressed: _working ? null : _returnToLogin,
+          child: const Text('Back to Login'),
+        ),
+      ],
+    );
+  }

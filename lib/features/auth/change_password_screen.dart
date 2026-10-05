@@ -84,7 +84,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(
-        () => _formError = 'We could not change your password. '
+        () => _formError =
+            'We could not change your password. '
             'Check your connection and try again.',
       );
     } finally {
@@ -97,7 +98,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final account = widget.accountService;
     return PasswordFormScaffold(
       title: 'Change Password',
-      heading: 'Update your password',
+      // No heading override: the form's own heading is the screen title, so
+      // "Change Password" stays on screen at every width instead of only
+      // existing as an invisible property of this widget.
       subtitle: account.currentEmail == null
           ? 'Choose a new password for your account.'
           : 'Choose a new password for ${account.currentEmail}.',

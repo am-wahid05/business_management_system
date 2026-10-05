@@ -1,4 +1,4 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:flutter_application_2/domain/models/product.dart';
@@ -37,11 +37,13 @@ ImportSheet readSheet(Excel excel, String sheetName) {
   return buildImportSheet(sheetName, grid)!;
 }
 
-
 void main() {
   // ---- 1. Type aware cell parsing -------------------------------------
   final textCell = parseCellValue(TextCellValue('Ibrahim Mensah'));
-  check('text cell -> text', textCell.text == 'Ibrahim Mensah' && textCell.number == null);
+  check(
+    'text cell -> text',
+    textCell.text == 'Ibrahim Mensah' && textCell.number == null,
+  );
 
   final intCell = parseCellValue(IntCellValue(50240));
   check('int cell -> number', intCell.number == 50240, '${intCell.number}');
@@ -53,7 +55,10 @@ void main() {
     'whole double has no trailing .0',
     parseCellValue(DoubleCellValue(50240)).text == '50240',
   );
-  check('bool cell -> text', parseCellValue(BoolCellValue(true)).text == 'true');
+  check(
+    'bool cell -> text',
+    parseCellValue(BoolCellValue(true)).text == 'true',
+  );
 
   final formula = parseCellValue(FormulaCellValue('250'));
   check(
@@ -88,7 +93,13 @@ void main() {
   sameDate('dd-MM-yyyy', '26-09-2026', 2026, 9, 26);
   sameDate('d/M/yy', '3/9/26', 2026, 9, 3);
   sameDate('ISO', '2026-09-26', 2026, 9, 26);
-  sameDate('ISO with Z does not shift', '2026-09-26T00:00:00.000Z', 2026, 9, 26);
+  sameDate(
+    'ISO with Z does not shift',
+    '2026-09-26T00:00:00.000Z',
+    2026,
+    9,
+    26,
+  );
   sameDate('MM/dd/yyyy unambiguous', '09/26/2026', 2026, 9, 26);
   sameDate('ambiguous reads dd/MM', '03/04/2026', 2026, 4, 3);
   sameDate('dot separated', '26.09.2026', 2026, 9, 26);
@@ -103,7 +114,10 @@ void main() {
   // ---- 4. Numbers ------------------------------------------------------
   check('plain number', parseImportNumber('50240') == 50240);
   check('thousands separated integer', parseImportNumber('50,240') == 50240);
-  check('thousands separated decimal', parseImportNumber('50,240.5') == 50240.5);
+  check(
+    'thousands separated decimal',
+    parseImportNumber('50,240.5') == 50240.5,
+  );
 
   // ---- 5. Header detection --------------------------------------------
   check(
@@ -127,7 +141,10 @@ void main() {
         reordered.column(ImportField.date) == 'Date' &&
         reordered.column(ImportField.supplierName) == 'Supplier Name',
   );
-  check('product ID unmapped when absent', reordered.column(ImportField.productId) == null);
+  check(
+    'product ID unmapped when absent',
+    reordered.column(ImportField.productId) == null,
+  );
   check(
     'product id inferred from name',
     inferProductId('Cashew', Product.initialProducts) == 'cashew' &&
@@ -180,7 +197,11 @@ void main() {
     parsed.headerRowIndex == 2,
     '${parsed.headerRowIndex}',
   );
-  check('three data rows read', parsed.rows.length == 3, '${parsed.rows.length}');
+  check(
+    'three data rows read',
+    parsed.rows.length == 3,
+    '${parsed.rows.length}',
+  );
 
   final mapping = guessMapping(parsed.headers);
   final weightIndex = parsed.headers.indexOf('Total Weight');
@@ -225,11 +246,22 @@ void main() {
   // ---- 7. Round trip of the application's own exported format ---------
   final roundTrip = Excel.createExcel();
   final rt = roundTrip['Receiving'];
-  rt.appendRow([
-    'Date', 'Supplier ID', 'Supplier Name', 'Supplier Type', 'Town', 'District',
-    'Region', 'Product ID', 'Product', 'Number of Bags', 'Total Weight',
-    'Recorded By',
-  ].map(TextCellValue.new).toList());
+  rt.appendRow(
+    [
+      'Date',
+      'Supplier ID',
+      'Supplier Name',
+      'Supplier Type',
+      'Town',
+      'District',
+      'Region',
+      'Product ID',
+      'Product',
+      'Number of Bags',
+      'Total Weight',
+      'Recorded By',
+    ].map(TextCellValue.new).toList(),
+  );
   rt.appendRow([
     DateCellValue.fromDateTime(DateTime(2026, 9, 26)),
     TextCellValue('ALB-ABC-000001'),
@@ -244,7 +276,10 @@ void main() {
     DoubleCellValue(150),
     TextCellValue('Not recorded'),
   ]);
-  final rtSheet = readSheet(Excel.decodeBytes(Uint8List.fromList(roundTrip.encode()!)), 'Receiving');
+  final rtSheet = readSheet(
+    Excel.decodeBytes(Uint8List.fromList(roundTrip.encode()!)),
+    'Receiving',
+  );
   final rtMapping = guessMapping(rtSheet.headers);
   check(
     'Product ID column is detected on re-import',
@@ -270,7 +305,11 @@ void main() {
     'Date,Supplier Name,Product,Total Weight\r\n'
     '26/09/2026,John Mensah,Cashew,"50,240"\r\n',
   )!;
-  check('csv header detected', csvSheet.headers.length == 4, '${csvSheet.headers}');
+  check(
+    'csv header detected',
+    csvSheet.headers.length == 4,
+    '${csvSheet.headers}',
+  );
   check('csv row read', csvSheet.rows.length == 1);
   final csvDate = csvSheet.rows[0][csvSheet.headers.indexOf('Date')].asDate()!;
   check(
@@ -280,7 +319,8 @@ void main() {
   );
   check(
     'csv quoted thousands separated weight read',
-    csvSheet.rows[0][csvSheet.headers.indexOf('Total Weight')].asNumber() == 50240,
+    csvSheet.rows[0][csvSheet.headers.indexOf('Total Weight')].asNumber() ==
+        50240,
   );
 
   print('');

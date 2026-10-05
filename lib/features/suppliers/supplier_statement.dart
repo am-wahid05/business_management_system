@@ -18,10 +18,8 @@ class SupplierStatement {
   int get totalBags =>
       deliveries.fold(0, (total, delivery) => total + delivery.numberOfBags);
 
-  double get totalWeight => deliveries.fold(
-        0,
-        (total, delivery) => total + delivery.totalWeight,
-      );
+  double get totalWeight =>
+      deliveries.fold(0, (total, delivery) => total + delivery.totalWeight);
 }
 
 class SupplierStatementService {
@@ -56,5 +54,3 @@ class SupplierStatementService {
 abstract interface class SupplierStatementExporter {
   Future<Object> export(SupplierStatement statement);
 }
-
-

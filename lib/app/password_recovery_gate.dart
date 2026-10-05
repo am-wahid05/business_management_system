@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../features/auth/account_service.dart';
 import '../features/auth/reset_password_screen.dart';
+import '../features/auth/supabase_auth_link_handler.dart';
 import 'app_routes.dart';
 
 /// Watches for a Supabase password-recovery event and shows the reset screen.
@@ -27,12 +28,14 @@ import 'app_routes.dart';
 class PasswordRecoveryGate extends StatefulWidget {
   const PasswordRecoveryGate({
     required this.accountService,
+    this.authLinkHandler,
     required this.child,
     super.key,
   });
 
   /// Null in the local-only setup, where there is no recovery flow to run.
   final AccountService? accountService;
+  final SupabaseAuthLinkHandler? authLinkHandler;
 
   final Widget? child;
 
@@ -42,6 +45,7 @@ class PasswordRecoveryGate extends StatefulWidget {
 
 class _PasswordRecoveryGateState extends State<PasswordRecoveryGate> {
   StreamSubscription<bool>? _subscription;
+  StreamSubscription<AuthLinkError>? _callbackSubscription;
 
   /// True while a recovery session is being handled.
   ///
@@ -57,12 +61,15 @@ class _PasswordRecoveryGateState extends State<PasswordRecoveryGate> {
   /// Whether the reset screen has already been shown for the current event, so
   /// the same event cannot push the screen twice.
   bool _handled = false;
+  AuthLinkError? _callbackError;
 
   @override
   void initState() {
     super.initState();
     _recovering = widget.accountService?.isRecovering ?? false;
+    _callbackError = widget.authLinkHandler?.latestError;
     _listen();
+    _listenForCallbackErrors();
   }
 
   @override
@@ -76,12 +83,26 @@ class _PasswordRecoveryGateState extends State<PasswordRecoveryGate> {
       _recovering = widget.accountService?.isRecovering ?? false;
       _listen();
     }
+    if (oldWidget.authLinkHandler != widget.authLinkHandler) {
+      _callbackSubscription?.cancel();
+      _callbackError = widget.authLinkHandler?.latestError;
+      _listenForCallbackErrors();
+    }
   }
 
   void _listen() {
     final account = widget.accountService;
     if (account == null) return;
     _subscription = account.recoveryEvents.listen(_onRecoveryEvent);
+  }
+
+  void _listenForCallbackErrors() {
+    final handler = widget.authLinkHandler;
+    if (handler == null) return;
+    _callbackSubscription = handler.errors.listen((error) {
+      if (!mounted) return;
+      setState(() => _callbackError = error);
+    });
   }
 
   void _onRecoveryEvent(bool recovering) {
@@ -97,13 +118,31 @@ class _PasswordRecoveryGateState extends State<PasswordRecoveryGate> {
   @override
   void dispose() {
     _subscription?.cancel();
+    _callbackSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final account = widget.accountService;
-    if (!_recovering || account == null) return widget.child ?? const SizedBox();
+    final callbackError = _callbackError;
+    if (callbackError != null) {
+      return Navigator(
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => _AuthCallbackErrorScreen(
+            error: callbackError,
+            onBack: () {
+              widget.authLinkHandler?.clearError();
+              if (mounted) setState(() => _callbackError = null);
+            },
+          ),
+        ),
+      );
+    }
+    if (!_recovering || account == null) {
+      return widget.child ?? const SizedBox();
+    }
     // The gate deliberately sits above the app's Navigator so that the reset
     // screen replaces whatever was on screen instead of being pushed over it.
     // That placement means there is no Overlay above this widget, and the reset
@@ -139,3 +178,48 @@ class _PasswordRecoveryGateState extends State<PasswordRecoveryGate> {
 /// navigation. It is kept here so the route table and the gate cannot drift
 /// apart.
 const String passwordResetRoute = AppRoutes.resetPassword;
+
+class _AuthCallbackErrorScreen extends StatelessWidget {
+  const _AuthCallbackErrorScreen({required this.error, required this.onBack});
+
+  final AuthLinkError error;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = switch (error.kind) {
+      AuthLinkKind.passwordRecovery => 'Reset link unavailable',
+      AuthLinkKind.emailVerification => 'Verification link unavailable',
+      AuthLinkKind.unknown => 'Email link unavailable',
+    };
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Icon(
+                  Icons.link_off_outlined,
+                  size: 56,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                const SizedBox(height: 16),
+                Text(error.message, textAlign: TextAlign.center),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: onBack,
+                  child: const Text('Return to Sign In'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

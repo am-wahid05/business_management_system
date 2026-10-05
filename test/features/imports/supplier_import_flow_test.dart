@@ -297,9 +297,7 @@ void main() {
   testWidgets('manual column selection skips a generic heading row', (
     tester,
   ) async {
-    final repository = SupplierRepository(
-      companyIdProvider: () => 'company-a',
-    );
+    final repository = SupplierRepository(companyIdProvider: () => 'company-a');
     final book = WorkbookGridBook(
       filename: 'manual.xlsx',
       sheets: [
@@ -333,9 +331,7 @@ void main() {
   testWidgets('multiple sheets can be selected in the import preview', (
     tester,
   ) async {
-    final repository = SupplierRepository(
-      companyIdProvider: () => 'company-a',
-    );
+    final repository = SupplierRepository(companyIdProvider: () => 'company-a');
     final book = WorkbookGridBook(
       filename: 'multi.xlsx',
       sheets: [
@@ -370,9 +366,7 @@ void main() {
   testWidgets('import preview shows the active-company requirement', (
     tester,
   ) async {
-    final repository = SupplierRepository(
-      companyIdProvider: () => null,
-    );
+    final repository = SupplierRepository(companyIdProvider: () => null);
     final book = WorkbookGridBook(
       filename: 'accounts.xlsx',
       sheets: [

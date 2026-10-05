@@ -8,10 +8,12 @@ void main() {
 
   setUp(() async {
     sqfliteFfiInit();
-    database = await databaseFactoryFfi.openDatabase(':memory:', options: OpenDatabaseOptions(
-      version: 1,
-      onCreate: (database, version) async {
-        await database.execute('''
+    database = await databaseFactoryFfi.openDatabase(
+      ':memory:',
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (database, version) async {
+          await database.execute('''
           CREATE TABLE products (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL COLLATE NOCASE UNIQUE,
@@ -20,8 +22,9 @@ void main() {
             updated_at TEXT NOT NULL
           )
         ''');
-      },
-    ));
+        },
+      ),
+    );
     repository = ProductRepository(database);
   });
 
@@ -32,7 +35,10 @@ void main() {
     await repository.seedInitialProducts();
 
     final products = await repository.all();
-    expect(products.map((product) => product.name), containsAll(['Cashew', 'Cocoa', 'Shea Nuts']));
+    expect(
+      products.map((product) => product.name),
+      containsAll(['Cashew', 'Cocoa', 'Shea Nuts']),
+    );
     expect(products.length, 3);
   });
 
@@ -47,14 +53,25 @@ void main() {
 
   test('updates product name and active status without deleting it', () async {
     await repository.seedInitialProducts();
-    final cashew = (await repository.all()).firstWhere((product) => product.id == 'cashew');
+    final cashew = (await repository.all()).firstWhere(
+      (product) => product.id == 'cashew',
+    );
 
     final inactive = await repository.setActive(cashew, false);
     expect(inactive.isActive, isFalse);
-    expect((await repository.all(activeOnly: true)).any((product) => product.id == 'cashew'), isFalse);
-    expect((await repository.all()).any((product) => product.id == 'cashew'), isTrue);
+    expect(
+      (await repository.all(activeOnly: true))
+          .any((product) => product.id == 'cashew'),
+      isFalse,
+    );
+    expect(
+      (await repository.all()).any((product) => product.id == 'cashew'),
+      isTrue,
+    );
 
-    final renamed = await repository.update(inactive.copyWith(name: 'Raw Cashew'));
+    final renamed = await repository.update(
+      inactive.copyWith(name: 'Raw Cashew'),
+    );
     expect(renamed.name, 'Raw Cashew');
     expect(renamed.updatedAt.isAfter(renamed.createdAt), isTrue);
   });

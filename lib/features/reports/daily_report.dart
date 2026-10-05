@@ -7,10 +7,13 @@ class DailyReport {
   final DateTime date;
   final List<Delivery> deliveries;
 
-  int get supplierCount => deliveries.map((delivery) => delivery.supplier.id).toSet().length;
+  int get supplierCount =>
+      deliveries.map((delivery) => delivery.supplier.id).toSet().length;
   int get deliveryCount => deliveries.length;
-  int get totalBags => deliveries.fold(0, (total, delivery) => total + delivery.numberOfBags);
-  double get totalWeight => deliveries.fold(0, (total, delivery) => total + delivery.totalWeight);
+  int get totalBags =>
+      deliveries.fold(0, (total, delivery) => total + delivery.numberOfBags);
+  double get totalWeight =>
+      deliveries.fold(0, (total, delivery) => total + delivery.totalWeight);
 
   List<ProductReportTotal> get productTotals {
     final totals = <String, ProductReportTotal>{};
@@ -23,14 +26,21 @@ class DailyReport {
         totalWeight: (existing?.totalWeight ?? 0) + delivery.totalWeight,
       );
     }
-    return totals.values.toList()..sort((left, right) => left.productName.compareTo(right.productName));
+    return totals.values.toList()
+      ..sort((left, right) => left.productName.compareTo(right.productName));
   }
 
-  static String supplierTypeLabel(SupplierType type) => type == SupplierType.farmer ? 'Farmer' : 'Aggregator';
+  static String supplierTypeLabel(SupplierType type) =>
+      type == SupplierType.farmer ? 'Farmer' : 'Aggregator';
 }
 
 class ProductReportTotal {
-  const ProductReportTotal({required this.productId, required this.productName, required this.bagCount, required this.totalWeight});
+  const ProductReportTotal({
+    required this.productId,
+    required this.productName,
+    required this.bagCount,
+    required this.totalWeight,
+  });
 
   final String productId;
   final String productName;

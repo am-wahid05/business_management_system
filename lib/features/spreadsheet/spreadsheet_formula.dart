@@ -1,4 +1,3 @@
-
 /// Why a cell could not be evaluated.
 ///
 /// Every failure is reported to the user instead of throwing, so a typo in a
@@ -37,8 +36,7 @@ class FormulaResult {
 
   const FormulaResult.number(double value) : this._(value: value);
 
-  const FormulaResult.text(String value)
-    : this._(text: value, isFormula: true);
+  const FormulaResult.text(String value) : this._(text: value, isFormula: true);
 
   const FormulaResult.failure(FormulaError error) : this._(error: error);
 
@@ -127,7 +125,8 @@ class FormulaEvaluator {
     if (text.isEmpty) return FormulaResult.literal('');
     if (!text.startsWith('=')) return FormulaResult.literal(text);
     final body = text.substring(1).trim();
-    if (body.isEmpty) return const FormulaResult.failure(FormulaError.malformed);
+    if (body.isEmpty)
+      return const FormulaResult.failure(FormulaError.malformed);
 
     // A function call such as SUM(D2:D20).
     final call = RegExp(r'^([A-Za-z]+)\((.*)\)$').firstMatch(body);
@@ -234,10 +233,14 @@ class FormulaEvaluator {
       // rather than a broken expression. `=A1-B1` where A1 holds text is
       // therefore reported as "not a number", not as a malformed formula.
       final value = _toNumber(_valueOf(reference));
-      return value == null ? const _Operand.notNumber() : _Operand.number(value);
+      return value == null
+          ? const _Operand.notNumber()
+          : _Operand.number(value);
     }
     final literal = _toNumber(text);
-    return literal == null ? const _Operand.malformed() : _Operand.number(literal);
+    return literal == null
+        ? const _Operand.malformed()
+        : _Operand.number(literal);
   }
 
   /// Reads the values an argument refers to: a cell, a range, a literal, or a
@@ -292,6 +295,7 @@ class FormulaEvaluator {
     return null;
   }
 }
+
 /// One operand of an arithmetic expression.
 ///
 /// This keeps a malformed expression apart from a well formed reference to a

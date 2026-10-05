@@ -1,0 +1,47 @@
+﻿edc8c44 cline checkpoint session=1791107365115_8wymy run=5
+93ec67e untracked files on cline checkpoint
+0ab084c index on main: 04bab28 Remove duplicate nested Flutter project
+af23b5a cline checkpoint session=1791107365115_8wymy run=4
+da19005 untracked files on cline checkpoint
+f17ff92 index on main: 04bab28 Remove duplicate nested Flutter project
+da49440 cline checkpoint session=1791107365115_8wymy run=3
+3d8b537 untracked files on cline checkpoint
+15d7d8d index on main: 04bab28 Remove duplicate nested Flutter project
+f6eadf8 cline checkpoint session=1791107365115_8wymy run=2
+5bae51d untracked files on cline checkpoint
+190b472 index on main: 04bab28 Remove duplicate nested Flutter project
+097b0d0 cline checkpoint session=1791107365115_8wymy run=1
+9b49fb4 untracked files on cline checkpoint
+cdbdcb2 index on main: 04bab28 Remove duplicate nested Flutter project
+d4a99e1 cline checkpoint session=1790969796543_hhghi run=9
+79c4bea untracked files on cline checkpoint
+d692502 index on main: 04bab28 Remove duplicate nested Flutter project
+ad668a0 cline checkpoint session=1790969796543_hhghi run=8
+fe7b026 untracked files on cline checkpoint
+716afc7 index on main: 04bab28 Remove duplicate nested Flutter project
+4120569 cline checkpoint session=1790969796543_hhghi run=7
+5f1dcbc untracked files on cline checkpoint
+5f4659a index on main: 04bab28 Remove duplicate nested Flutter project
+ba22100 cline checkpoint session=1790969796543_hhghi run=6
+5028534 untracked files on cline checkpoint
+a476d19 index on main: 04bab28 Remove duplicate nested Flutter project
+01c74cb cline checkpoint session=1790969796543_hhghi run=5
+533f114 untracked files on cline checkpoint
+9838853 index on main: 04bab28 Remove duplicate nested Flutter project
+d4d3603 cline checkpoint session=1790969796543_hhghi run=4
+6dbc149 untracked files on cline checkpoint
+47f1a33 index on main: 04bab28 Remove duplicate nested Flutter project
+ca598bf cline checkpoint session=1790969796543_hhghi run=3
+ad889a5 untracked files on cline checkpoint
+facbd0d index on main: 04bab28 Remove duplicate nested Flutter project
+004e86a On main: cline checkpoint session=1790969796543_hhghi run=2
+7933b14 index on main: 04bab28 Remove duplicate nested Flutter project
+04bab28 Remove duplicate nested Flutter project
+19f2cb7 Resolve merge conflicts
+e99e697 fixed bug
+4570459 Rename project from al_bnc_management_system to business_management_system
+db5c0ad microsoft
+81bafa4 database
+14f62b8 before ai
+798a480 code before Ai
+fbacb7f Initial commit

@@ -1,4 +1,4 @@
-﻿import 'spreadsheet_clipboard.dart';
+import 'spreadsheet_clipboard.dart';
 import 'spreadsheet_formatting.dart';
 import 'spreadsheet_formula.dart';
 import 'spreadsheet_merges.dart';
@@ -104,7 +104,11 @@ class SpreadsheetController {
   ) {
     for (var row = range.startRow; row <= range.endRow; row++) {
       if (row < 0 || row >= _rows.length) continue;
-      for (var column = range.startColumn; column <= range.endColumn; column++) {
+      for (
+        var column = range.startColumn;
+        column <= range.endColumn;
+        column++
+      ) {
         final target = _rows[row];
         final key = cellKey(target, column);
         final updated = change(formatAt(target, column));
@@ -214,25 +218,24 @@ class SpreadsheetController {
 
   List<SpreadsheetRow> _applySort(List<SpreadsheetRow> input) {
     final sorted = List<SpreadsheetRow>.of(input);
-    sorted.sort((left, right) => switch (_sort) {
-      SpreadsheetSort.date => _compare(
-        left.recordedAt?.millisecondsSinceEpoch,
-        right.recordedAt?.millisecondsSinceEpoch,
-      ),
-      SpreadsheetSort.supplier => _compare(
-        left.supplierName.toLowerCase(),
-        right.supplierName.toLowerCase(),
-      ),
-      SpreadsheetSort.product => _compare(
-        left.productName.toLowerCase(),
-        right.productName.toLowerCase(),
-      ),
-      SpreadsheetSort.weight => _compare(
-        left.totalWeight,
-        right.totalWeight,
-      ),
-      SpreadsheetSort.none => 0,
-    });
+    sorted.sort(
+      (left, right) => switch (_sort) {
+        SpreadsheetSort.date => _compare(
+          left.recordedAt?.millisecondsSinceEpoch,
+          right.recordedAt?.millisecondsSinceEpoch,
+        ),
+        SpreadsheetSort.supplier => _compare(
+          left.supplierName.toLowerCase(),
+          right.supplierName.toLowerCase(),
+        ),
+        SpreadsheetSort.product => _compare(
+          left.productName.toLowerCase(),
+          right.productName.toLowerCase(),
+        ),
+        SpreadsheetSort.weight => _compare(left.totalWeight, right.totalWeight),
+        SpreadsheetSort.none => 0,
+      },
+    );
     return sorted;
   }
 
@@ -289,8 +292,9 @@ class SpreadsheetController {
   };
 
   /// The whole grid as text, used to build and read a copy block.
-  List<List<String>> gridValues() =>
-      _rows.map((row) => List.generate(4, (column) => cellText(row, column))).toList();
+  List<List<String>> gridValues() => _rows
+      .map((row) => List.generate(4, (column) => cellText(row, column)))
+      .toList();
 
   /// Writes one cell, marking the row as edited and revalidating it.
   void setCell(SpreadsheetRow row, int column, String value) {

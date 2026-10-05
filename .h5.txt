@@ -1,0 +1,7 @@
+﻿lib\app\app_navigation.dart:501: border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+lib\app\app_navigation.dart:1059: border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+lib\features\auth\supabase_auth_link_handler.dart:27: this._appLinks,
+lib\features\auth\supabase_auth_link_handler.dart:33: final AppLinks? _appLinks;
+lib\features\auth\supabase_auth_link_handler.dart:82: final appLinks = _appLinks ?? AppLinks();
+lib\features\auth\supabase_auth_link_handler.dart:87: _subscription = appLinks.uriLinkStream.listen(_inspect);
+lib\features\auth\supabase_auth_link_handler.dart:89: final initial = await appLinks.getInitialLink();

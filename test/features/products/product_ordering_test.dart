@@ -30,10 +30,7 @@ void main() {
       await repository.seedInitialProducts();
       final products = await repository.all();
 
-      expect(
-        namesOf(products),
-        ['Cashew', 'Shea Nuts', 'Cocoa'],
-      );
+      expect(namesOf(products), ['Cashew', 'Shea Nuts', 'Cocoa']);
     });
 
     test('the product ids are the existing ones and are not renamed', () async {
@@ -74,25 +71,33 @@ void main() {
       await repository.seedInitialProducts();
       await repository.create('Coffee');
 
-      expect(
-        namesOf(await repository.all()),
-        ['Cashew', 'Shea Nuts', 'Cocoa', 'Coffee'],
-      );
+      expect(namesOf(await repository.all()), [
+        'Cashew',
+        'Shea Nuts',
+        'Cocoa',
+        'Coffee',
+      ]);
     });
 
-    test('several added products are ordered alphabetically after them',
-        () async {
-      final repository = repositoryFor('company-a');
-      await repository.seedInitialProducts();
-      await repository.create('Coffee');
-      await repository.create('Almond');
-      await repository.create('Zinc');
+    test(
+      'several added products are ordered alphabetically after them',
+      () async {
+        final repository = repositoryFor('company-a');
+        await repository.seedInitialProducts();
+        await repository.create('Coffee');
+        await repository.create('Almond');
+        await repository.create('Zinc');
 
-      expect(
-        namesOf(await repository.all()),
-        ['Cashew', 'Shea Nuts', 'Cocoa', 'Almond', 'Coffee', 'Zinc'],
-      );
-    });
+        expect(namesOf(await repository.all()), [
+          'Cashew',
+          'Shea Nuts',
+          'Cocoa',
+          'Almond',
+          'Coffee',
+          'Zinc',
+        ]);
+      },
+    );
 
     test('adding a product does not disturb the three initial ones', () async {
       final repository = repositoryFor('company-a');
@@ -119,10 +124,16 @@ void main() {
       await repositoryFor('company-a').seedInitialProducts();
       await repositoryFor('company-b').seedInitialProducts();
 
-      expect(namesOf(await repositoryFor('company-a').all()),
-          ['Cashew', 'Shea Nuts', 'Cocoa']);
-      expect(namesOf(await repositoryFor('company-b').all()),
-          ['Cashew', 'Shea Nuts', 'Cocoa']);
+      expect(namesOf(await repositoryFor('company-a').all()), [
+        'Cashew',
+        'Shea Nuts',
+        'Cocoa',
+      ]);
+      expect(namesOf(await repositoryFor('company-b').all()), [
+        'Cashew',
+        'Shea Nuts',
+        'Cocoa',
+      ]);
 
       // A product added by one company is invisible to the other.
       await repositoryFor('company-a').create('Coffee');

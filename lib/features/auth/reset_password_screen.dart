@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'account_service.dart';
+import 'auth_form_parts.dart';
 import 'password_policy.dart';
 import 'password_widgets.dart';
 
@@ -70,7 +71,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(
-        () => _formError = 'We could not change your password. '
+        () => _formError =
+            'We could not change your password. '
             'Check your connection and try again.',
       );
     } finally {
@@ -165,6 +167,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         const SizedBox(height: 8),
         TextButton(
           onPressed: _working ? null : _returnToLogin,
+          style: authLinkStyle(context),
           child: const Text('Back to Login'),
         ),
       ],

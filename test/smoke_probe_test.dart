@@ -50,8 +50,10 @@ Delivery _bulk() => Delivery(
 String pdfText(List<int> bytes) {
   final raw = String.fromCharCodes(bytes);
   final recovered = StringBuffer();
-  for (final match
-      in RegExp(r'stream\r?\n(.*?)endstream', dotAll: true).allMatches(raw)) {
+  for (final match in RegExp(
+    r'stream\r?\n(.*?)endstream',
+    dotAll: true,
+  ).allMatches(raw)) {
     final compressed = match.group(1)!.codeUnits;
     try {
       recovered
@@ -65,8 +67,9 @@ String pdfText(List<int> bytes) {
     }
   }
   final strings = <String>[];
-  for (final inner
-      in RegExp(r'\(((?:[^()\\]|\\.)*)\)').allMatches(recovered.toString())) {
+  for (final inner in RegExp(
+    r'\(((?:[^()\\]|\\.)*)\)',
+  ).allMatches(recovered.toString())) {
     strings.add(inner.group(1)!.replaceAll(r'\(', '(').replaceAll(r'\)', ')'));
   }
   // A PDF emits each word as its own text-showing operator, so "25.5 kg" is
@@ -135,10 +138,7 @@ void main() {
         ['', '100'],
       ]) {
         expect(
-          () => parseBulkReceivingInput(
-            bags: entry[0],
-            totalWeight: entry[1],
-          ),
+          () => parseBulkReceivingInput(bags: entry[0], totalWeight: entry[1]),
           throwsA(isA<BulkReceivingValidationException>()),
           reason: 'must reject ${entry.join(' / ')}',
         );
@@ -147,18 +147,21 @@ void main() {
   });
 
   group('Bulk receipt printing', () {
-    test('a bulk receipt shows bulk totals, never an empty bag table', () async {
-      final text = pdfText(
-        await const ReceiptService().buildPdf(
-          _bulk(),
-          companyName: 'Acum Ltd',
-        ),
-      );
-      expect(text, contains('Acum Ltd'));
-      expect(text, contains('1250.5 kg'));
-      expect(text, contains('42'));
-      expect(text.toLowerCase(), contains('weighing-bridge'));
-    });
+    test(
+      'a bulk receipt shows bulk totals, never an empty bag table',
+      () async {
+        final text = pdfText(
+          await const ReceiptService().buildPdf(
+            _bulk(),
+            companyName: 'Acum Ltd',
+          ),
+        );
+        expect(text, contains('Acum Ltd'));
+        expect(text, contains('1250.5 kg'));
+        expect(text, contains('42'));
+        expect(text.toLowerCase(), contains('weighing-bridge'));
+      },
+    );
 
     test('an individual receipt still lists each bag weight', () async {
       final text = pdfText(
@@ -169,8 +172,11 @@ void main() {
       );
       expect(text, contains('25.5 kg'));
       expect(text, contains('30.0 kg'));
-      expect(text, contains('55.5 kg'),
-          reason: 'total weight must still print');
+      expect(
+        text,
+        contains('55.5 kg'),
+        reason: 'total weight must still print',
+      );
     });
   });
 }

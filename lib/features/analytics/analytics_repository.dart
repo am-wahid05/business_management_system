@@ -57,14 +57,16 @@ class AnalyticsRepository {
       ORDER BY total_weight DESC, d.product_name COLLATE NOCASE
     ''', query.arguments);
     return rows
-        .map((row) => ProductAnalyticsTotal(
-              productId: row['product_id']! as String,
-              productName: row['product_name']! as String,
-              deliveryCount: _int(row['delivery_count']),
-              totalBags: _int(row['total_bags']),
-              totalWeight: _double(row['total_weight']),
-              uniqueSuppliers: _int(row['unique_suppliers']),
-            ))
+        .map(
+          (row) => ProductAnalyticsTotal(
+            productId: row['product_id']! as String,
+            productName: row['product_name']! as String,
+            deliveryCount: _int(row['delivery_count']),
+            totalBags: _int(row['total_bags']),
+            totalWeight: _double(row['total_weight']),
+            uniqueSuppliers: _int(row['unique_suppliers']),
+          ),
+        )
         .toList(growable: false);
   }
 
@@ -88,14 +90,16 @@ class AnalyticsRepository {
       ORDER BY total_weight DESC, supplier_name COLLATE NOCASE
     ''', query.arguments);
     return rows
-        .map((row) => SupplierAnalyticsTotal(
-              supplierId: row['supplier_id']! as String,
-              supplierName: row['supplier_name']! as String,
-              supplierType: row['supplier_type']! as String,
-              deliveryCount: _int(row['delivery_count']),
-              totalBags: _int(row['total_bags']),
-              totalWeight: _double(row['total_weight']),
-            ))
+        .map(
+          (row) => SupplierAnalyticsTotal(
+            supplierId: row['supplier_id']! as String,
+            supplierName: row['supplier_name']! as String,
+            supplierType: row['supplier_type']! as String,
+            deliveryCount: _int(row['delivery_count']),
+            totalBags: _int(row['total_bags']),
+            totalWeight: _double(row['total_weight']),
+          ),
+        )
         .toList(growable: false);
   }
 
@@ -124,18 +128,23 @@ class AnalyticsRepository {
       ORDER BY period
     ''', query.arguments);
     return rows
-        .map((row) => AnalyticsTrendTotal(
-              period: row['period']! as String,
-              deliveryCount: _int(row['delivery_count']),
-              totalBags: _int(row['total_bags']),
-              totalWeight: _double(row['total_weight']),
-            ))
+        .map(
+          (row) => AnalyticsTrendTotal(
+            period: row['period']! as String,
+            deliveryCount: _int(row['delivery_count']),
+            totalBags: _int(row['total_bags']),
+            totalWeight: _double(row['total_weight']),
+          ),
+        )
         .toList(growable: false);
   }
 
-  Future<SupplierActivitySummary> supplierActivity(AnalyticsFilters filters) async {
+  Future<SupplierActivitySummary> supplierActivity(
+    AnalyticsFilters filters,
+  ) async {
     final query = _query(filters);
-    final row = (await database.rawQuery('''
+    final row = (await database.rawQuery(
+      '''
       SELECT
         COUNT(DISTINCT CASE WHEN first_delivery.first_recorded_at >= ? AND first_delivery.first_recorded_at < ? THEN d.supplier_id END) AS new_suppliers,
         COUNT(DISTINCT CASE WHEN first_delivery.first_recorded_at < ? THEN d.supplier_id END) AS returning_suppliers
@@ -143,11 +152,24 @@ class AnalyticsRepository {
       LEFT JOIN suppliers s ON s.supplier_id = d.supplier_id
       LEFT JOIN (SELECT supplier_id, MIN(recorded_at) AS first_recorded_at FROM deliveries WHERE status != 'cancelled' GROUP BY supplier_id) first_delivery ON first_delivery.supplier_id = d.supplier_id
       WHERE ${query.where}
-    ''', [query.arguments[0], query.arguments[1], query.arguments[0], ...query.arguments])).single;
-    return SupplierActivitySummary(newSuppliers: _int(row['new_suppliers']), returningSuppliers: _int(row['returning_suppliers']));
+    ''',
+      [
+        query.arguments[0],
+        query.arguments[1],
+        query.arguments[0],
+        ...query.arguments,
+      ],
+    )).single;
+    return SupplierActivitySummary(
+      newSuppliers: _int(row['new_suppliers']),
+      returningSuppliers: _int(row['returning_suppliers']),
+    );
   }
 
-  Future<List<LocationAnalyticsTotal>> locationBreakdown(AnalyticsFilters filters, {String field = 'town'}) async {
+  Future<List<LocationAnalyticsTotal>> locationBreakdown(
+    AnalyticsFilters filters, {
+    String field = 'town',
+  }) async {
     final query = _query(filters);
     final column = switch (field) {
       'district' => 's.district',
@@ -165,7 +187,17 @@ class AnalyticsRepository {
       GROUP BY $column
       ORDER BY total_weight DESC
     ''', query.arguments);
-    return rows.map((row) => LocationAnalyticsTotal(location: row['location']! as String, supplierCount: _int(row['supplier_count']), deliveryCount: _int(row['delivery_count']), totalBags: _int(row['total_bags']), totalWeight: _double(row['total_weight']))).toList(growable: false);
+    return rows
+        .map(
+          (row) => LocationAnalyticsTotal(
+            location: row['location']! as String,
+            supplierCount: _int(row['supplier_count']),
+            deliveryCount: _int(row['delivery_count']),
+            totalBags: _int(row['total_bags']),
+            totalWeight: _double(row['total_weight']),
+          ),
+        )
+        .toList(growable: false);
   }
 
   _AnalyticsQuery _query(AnalyticsFilters filters) {
@@ -197,7 +229,8 @@ class AnalyticsRepository {
     return _AnalyticsQuery(clauses.join(' AND '), arguments);
   }
 
-  static DateTime _startOfDay(DateTime date) => DateTime(date.year, date.month, date.day);
+  static DateTime _startOfDay(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
   static int _int(Object? value) => (value as num?)?.toInt() ?? 0;
   static double _double(Object? value) => (value as num?)?.toDouble() ?? 0;
 }

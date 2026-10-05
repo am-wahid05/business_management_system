@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_ui.dart';
 import 'account_service.dart';
-import 'password_widgets.dart';
+import 'auth_form_parts.dart';
 
 /// The confirmation shown whether or not the address is registered.
 ///
@@ -59,7 +60,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(
-        () => _formError = 'We could not send the reset link. '
+        () => _formError =
+            'We could not send the reset link. '
             'Check your connection and try again.',
       );
     } finally {
@@ -69,50 +71,62 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // No AppBar: the brand panel is already a full-height layout, so one above
+    // it stacked two headers and pushed the form down.
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Password')),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 460),
-                child: _sent ? _buildSent(context) : _buildForm(context),
-              ),
-            ),
-          ),
+        child: AppAuthBrandPanel(
+          supportingText: 'We will email you a link to choose a new password.',
+          child: _sent ? _buildSent(context) : _buildForm(context),
         ),
       ),
     );
   }
 
   Widget _buildSent(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(
-          Icons.mark_email_read_outlined,
-          size: 48,
-          color: Theme.of(context).colorScheme.primary,
+        const AppAuthHeader(
+          title: 'Check your email',
+          subtitle: passwordResetSentMessage,
         ),
-        const SizedBox(height: 16),
-        Text(
-          passwordResetSentMessage,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
+        const SizedBox(height: 26),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.mail_outline, size: 20, color: scheme.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Follow the link in that email to choose a new password. The '
+                  'link can only be used once, and it may expire.',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.5,
+                    color: scheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Follow the link in that email to choose a new password. The link can '
-          'only be used once, and it may expire.',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 24),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Back to Login'),
+        const SizedBox(height: 26),
+        SizedBox(
+          height: 50,
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Back to sign in'),
+          ),
         ),
       ],
     );
@@ -124,55 +138,57 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Forgot your password?',
-            style: Theme.of(context).textTheme.headlineSmall,
+          const AppAuthHeader(
+            title: 'Forgot your password?',
+            subtitle:
+                'Enter the email address you use to sign in and we will send '
+                'you a link to choose a new password.',
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Enter the email address you use to sign in and we will send you a '
-            'link to choose a new password.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 24),
-          TextFormField(
-            controller: _emailController,
-            enabled: !_working,
-            keyboardType: TextInputType.emailAddress,
-            autofillHints: const [AutofillHints.email],
-            decoration: InputDecoration(
-              labelText: 'Email address',
-              border: const OutlineInputBorder(),
-              errorText: _emailError,
+          const SizedBox(height: 26),
+          AuthLabeledField(
+            label: 'Email address',
+            child: TextFormField(
+              controller: _emailController,
+              enabled: !_working,
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                hintText: 'you@company.com',
+                errorText: _emailError,
+              ),
+              validator: (value) {
+                final text = value?.trim() ?? '';
+                if (text.isEmpty) return 'Enter your email address.';
+                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text)) {
+                  return 'Enter a valid email address.';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _submit(),
             ),
-            validator: (value) {
-              final text = value?.trim() ?? '';
-              if (text.isEmpty) return 'Enter your email address.';
-              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text)) {
-                return 'Enter a valid email address.';
-              }
-              return null;
-            },
-            onFieldSubmitted: (_) => _submit(),
           ),
           if (_formError != null) ...[
-            const SizedBox(height: 16),
-            PasswordErrorText(_formError!),
+            const SizedBox(height: 18),
+            AppAuthError(_formError!),
           ],
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _working ? null : _submit,
-            icon: _working
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(),
-                  )
-                : const Icon(Icons.send_outlined),
-            label: const Text('Send Reset Link'),
+          const SizedBox(height: 26),
+          SizedBox(
+            height: 50,
+            child: FilledButton(
+              onPressed: _working ? null : _submit,
+              child: _working
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    )
+                  : const Text('Send Reset Link'),
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           TextButton(
             onPressed: _working ? null : () => Navigator.of(context).pop(),
+            style: authLinkStyle(context),
             child: const Text('Back to Login'),
           ),
         ],

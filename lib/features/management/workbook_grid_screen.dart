@@ -2,6 +2,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../app/app_navigation.dart';
+import '../../app/app_ui.dart';
 import '../auth/auth_models.dart';
 import '../auth/no_access_screen.dart';
 import '../imports/excel_import_service.dart';
@@ -105,12 +107,6 @@ class _WorkbookGridScreenState extends State<WorkbookGridScreen> {
   /// This is a view concern only. Filtering never removes a row from the grid.
   int? _filterColumn;
   bool _sortDescending = false;
-
-  /// The workbooks this company has already saved, offered when the screen is
-  /// opened with nothing open. This is what makes a saved workbook reachable
-  /// after the app is closed, instead of only from the file it came from.
-  final List<SavedWorkbook> _savedWorkbooks = const [];
-  final bool _loadingSaved = false;
 
   /// The currently selected rectangle, always at least one cell.
   CellRange get _selection => _anchor == null
@@ -390,13 +386,26 @@ class _WorkbookGridScreenState extends State<WorkbookGridScreen> {
             icon: const Icon(Icons.content_paste_outlined),
           ),
         ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
       ),
-      body: book == null || grid == null
-          ? Center(
-              child: TextButton.icon(
+      drawer: shellDrawerFor(context),
+      body: _busy && (book == null || grid == null)
+          ? const Padding(
+              padding: EdgeInsets.all(24),
+              child: AppGridSkeleton(rows: 8, columns: 6),
+            )
+          : book == null || grid == null
+          ? AppEmptyState(
+              title: 'No workbook open',
+              message: 'Open an Excel workbook to review and edit its sheets.',
+              icon: Icons.table_chart_outlined,
+              action: FilledButton.icon(
                 onPressed: _busy ? null : _openFile,
-                icon: const Icon(Icons.table_chart_outlined),
-                label: const Text('Open an Excel workbook'),
+                icon: const Icon(Icons.folder_open_outlined),
+                label: const Text('Open workbook'),
               ),
             )
           : Column(

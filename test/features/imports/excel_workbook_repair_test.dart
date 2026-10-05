@@ -15,8 +15,7 @@ Uint8List buildWorkbook({
   required String stylesXml,
   String sheetName = 'Sheet1',
   String? cellXml,
-  String contentType =
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml',
+  String contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml',
 }) {
   final archive = Archive();
   void add(String name, String xml) =>
@@ -195,10 +194,7 @@ void main() {
         buildWorkbook(stylesXml: reservedNumFmtStyles),
       );
       final twice = ExcelWorkbookRepair.repair(once);
-      expect(
-        readPart(twice, 'xl/styles.xml'),
-        readPart(once, 'xl/styles.xml'),
-      );
+      expect(readPart(twice, 'xl/styles.xml'), readPart(once, 'xl/styles.xml'));
     });
 
     // Only styles.xml may be rewritten. Every other part has to come across

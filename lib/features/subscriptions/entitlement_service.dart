@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'entitlements.dart';
@@ -139,10 +139,7 @@ class EntitlementService extends ChangeNotifier {
     try {
       await supabase.functions.invoke(
         'subscription-manage',
-        body: <String, dynamic>{
-          'action': action,
-          'reason': ?reason,
-        },
+        body: <String, dynamic>{'action': action, 'reason': ?reason},
       );
       return await refresh();
     } catch (_) {

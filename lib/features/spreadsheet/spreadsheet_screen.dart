@@ -1,7 +1,9 @@
-﻿import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../app/app_navigation.dart';
+import '../../app/app_ui.dart';
 import '../auth/auth_models.dart';
 import '../auth/no_access_screen.dart';
 import '../imports/excel_import_service.dart';
@@ -99,9 +101,8 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
       await action();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$error')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$error')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -109,9 +110,8 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
   }
 
   void _notify(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _clearSelection() {
@@ -142,9 +142,7 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
     widget.controller.copy(range);
     final block = widget.controller.clipboard.block;
     if (block == null) return;
-    final text = block.values
-        .map((row) => row.join('\t'))
-        .join('\n');
+    final text = block.values.map((row) => row.join('\t')).join('\n');
     await Clipboard.setData(ClipboardData(text: text));
     _notify('Copied ${range.label}');
   }
@@ -219,7 +217,8 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
   bool get _canMergeSelection {
     final range = _selection;
     if (range == null) return false;
-    if (range.startRow == range.endRow && range.startColumn == range.endColumn) {
+    if (range.startRow == range.endRow &&
+        range.startColumn == range.endColumn) {
       return false;
     }
     if (range.endRow >= widget.controller.visibleRows.length) return false;
@@ -330,7 +329,9 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
                   height: 24,
                   decoration: BoxDecoration(
                     color: color.argb == null
-                        ? Theme.of(sheetContext).colorScheme.surfaceContainerHighest
+                        ? Theme.of(sheetContext)
+                              .colorScheme
+                              .surfaceContainerHighest
                         : Color(color.argb!),
                     border: Border.all(
                       color: Theme.of(sheetContext).dividerColor,
@@ -360,8 +361,9 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
               value: widget.controller.clipboard
                   .formatAt(_focus ?? const CellPosition(0, 0))
                   .italic,
-              onChanged: (value) =>
-                  _formatSelection((current) => current.copyWith(italic: value)),
+              onChanged: (value) => _formatSelection(
+                (current) => current.copyWith(italic: value),
+              ),
             ),
             ListTile(
               title: const Text('Clear formatting'),
@@ -461,14 +463,16 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
           if (result.failed > 0) Text('${result.failed} rows rejected'),
           if (result.errors.isNotEmpty) ...[
             const SizedBox(height: 12),
-            ...result.errors.take(10).map(
-              (error) => Text(
-                error,
-                style: TextStyle(
-                  color: Theme.of(dialogContext).colorScheme.error,
+            ...result.errors
+                .take(10)
+                .map(
+                  (error) => Text(
+                    error,
+                    style: TextStyle(
+                      color: Theme.of(dialogContext).colorScheme.error,
+                    ),
+                  ),
                 ),
-              ),
-            ),
           ],
         ],
       ),
@@ -537,7 +541,10 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
       }
       // The grid reader keeps the workbook's own cells, formulas, formatting
       // and merges, so nothing is forced into the delivery schema.
-      final book = widget.excelImportService.readWorkbookGrids(bytes, file.name);
+      final book = widget.excelImportService.readWorkbookGrids(
+        bytes,
+        file.name,
+      );
       if (!mounted) return;
       await Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -616,7 +623,12 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
             icon: const Icon(Icons.refresh),
           ),
         ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
       ),
+      drawer: shellDrawerFor(context),
       body: Column(
         children: [
           _buildToolbar(),
@@ -624,12 +636,10 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
           const SizedBox(height: 8),
           if (controller.isLoading) const LinearProgressIndicator(),
           if (controller.error != null)
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                controller.error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
+            AppErrorState(
+              title: 'Spreadsheet unavailable',
+              message: 'We could not load the saved delivery sheet.',
+              onRetry: _reload,
             ),
           if (_result != null)
             Padding(
@@ -637,8 +647,18 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
               child: Text('Last save: ${_result!.summary}'),
             ),
           Expanded(
-            child: controller.rows.isEmpty
-                ? const Center(child: Text('No records for this period.'))
+            child: controller.isLoading
+                ? const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: AppGridSkeleton(rows: 8, columns: 6),
+                  )
+                : controller.rows.isEmpty
+                ? const AppEmptyState(
+                    title: 'No spreadsheet rows',
+                    message:
+                        'There are no delivery rows for the selected period.',
+                    icon: Icons.grid_on_outlined,
+                  )
                 // The workbook grid is the spreadsheet. It is the only sheet
                 // UI, on a desktop and on a phone alike, so the same cells are
                 // what every user sees. The old fixed business table and the
@@ -796,9 +816,7 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
             // Only offered when the current selection actually makes a merge
             // sense, so the control never offers an action the manager will
             // refuse.
-            onPressed: _busy || !_canMergeSelection
-                ? null
-                : _mergeSelection,
+            onPressed: _busy || !_canMergeSelection ? null : _mergeSelection,
             icon: const Icon(Icons.table_rows_outlined, size: 18),
             label: const Text('Merge'),
           ),
@@ -853,7 +871,6 @@ class _SpreadsheetScreenState extends State<SpreadsheetScreen> {
       onSelectionChanged: () => setState(() {}),
     );
   }
-
 }
 
 /// Lets the secretary enter or clear the formula for one cell.
@@ -927,9 +944,7 @@ class _FormulaDialogState extends State<_FormulaDialog> {
             const SizedBox(height: 12),
             // The calculated result, updated as the secretary types.
             Text(
-              _preview == null
-                  ? 'Result: —'
-                  : 'Result: $_preview',
+              _preview == null ? 'Result: —' : 'Result: $_preview',
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
@@ -966,4 +981,3 @@ class _FormulaDialogState extends State<_FormulaDialog> {
     );
   }
 }
-

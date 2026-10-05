@@ -34,7 +34,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       final product = widget.product;
       final saved = product == null
           ? await widget.repository.create(_nameController.text)
-          : await widget.repository.update(product.copyWith(name: _nameController.text));
+          : await widget.repository.update(
+              product.copyWith(name: _nameController.text),
+            );
       if (mounted) Navigator.pop(context, saved);
     } on StateError catch (error) {
       setState(() => _error = error.message);
@@ -52,7 +54,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            if (_error != null) Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            if (_error != null)
+              Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             if (_error != null) const SizedBox(height: 16),
             TextFormField(
               controller: _nameController,
@@ -62,7 +68,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               onFieldSubmitted: (_) => _save(),
             ),
             const SizedBox(height: 24),
-            FilledButton.icon(onPressed: _save, icon: const Icon(Icons.save_outlined), label: Text(editing ? 'Save Changes' : 'Add Product')),
+            FilledButton.icon(
+              onPressed: _save,
+              icon: const Icon(Icons.save_outlined),
+              label: Text(editing ? 'Save Changes' : 'Add Product'),
+            ),
           ],
         ),
       ),

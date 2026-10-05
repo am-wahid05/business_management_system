@@ -1,4 +1,4 @@
-﻿import 'subscription_models.dart';
+import 'subscription_models.dart';
 
 /// What a company is currently allowed to do.
 ///
@@ -81,34 +81,34 @@ class Entitlements {
   );
 
   factory Entitlements.fromJson(Map<String, dynamic> json) => Entitlements(
-        status: _statusFromWire(json['status'] as String?),
-        isInTrial: json['isInTrial'] == true,
-        canAccessAdmin: json['canAccessAdmin'] == true,
-        canRecordAsSecretary: json['canRecordAsSecretary'] == true,
-        hasActiveSoftwareSubscription:
-            json['hasActiveSoftwareSubscription'] == true,
-        isInGracePeriod: json['isInGracePeriod'] == true,
-        isPaused: json['isPaused'] == true,
-        canUseAI: json['canUseAI'] == true,
-        aiStatus: _aiStatusFromWire(json['aiStatus'] as String?),
-        maxSecretaries: (json['maxSecretaries'] as num?)?.toInt() ?? 0,
-        secretaryBundles: (json['secretaryBundles'] as num?)?.toInt() ?? 0,
-        config: SubscriptionConfig.fromJson(json),
-        trialEndsAt: _date(json['trialEndsAt']),
-        currentPeriodStart: _date(json['currentPeriodStart']),
-        currentPeriodEnd: _date(json['currentPeriodEnd']),
-        gracePeriodEnd: _date(json['gracePeriodEnd']),
-        aiTrialEndsAt: _date(json['aiTrialEndsAt']),
-        aiPeriodEnd: _date(json['aiPeriodEnd']),
-      );
+    status: _statusFromWire(json['status'] as String?),
+    isInTrial: json['isInTrial'] == true,
+    canAccessAdmin: json['canAccessAdmin'] == true,
+    canRecordAsSecretary: json['canRecordAsSecretary'] == true,
+    hasActiveSoftwareSubscription:
+        json['hasActiveSoftwareSubscription'] == true,
+    isInGracePeriod: json['isInGracePeriod'] == true,
+    isPaused: json['isPaused'] == true,
+    canUseAI: json['canUseAI'] == true,
+    aiStatus: _aiStatusFromWire(json['aiStatus'] as String?),
+    maxSecretaries: (json['maxSecretaries'] as num?)?.toInt() ?? 0,
+    secretaryBundles: (json['secretaryBundles'] as num?)?.toInt() ?? 0,
+    config: SubscriptionConfig.fromJson(json),
+    trialEndsAt: _date(json['trialEndsAt']),
+    currentPeriodStart: _date(json['currentPeriodStart']),
+    currentPeriodEnd: _date(json['currentPeriodEnd']),
+    gracePeriodEnd: _date(json['gracePeriodEnd']),
+    aiTrialEndsAt: _date(json['aiTrialEndsAt']),
+    aiPeriodEnd: _date(json['aiPeriodEnd']),
+  );
 
   static SubscriptionStatus _statusFromWire(String? value) => switch (value) {
-        'ACTIVE' => SubscriptionStatus.active,
-        'GRACE_PERIOD' => SubscriptionStatus.gracePeriod,
-        'EXPIRED' => SubscriptionStatus.expired,
-        'PAUSED' => SubscriptionStatus.paused,
-        _ => SubscriptionStatus.trial,
-      };
+    'ACTIVE' => SubscriptionStatus.active,
+    'GRACE_PERIOD' => SubscriptionStatus.gracePeriod,
+    'EXPIRED' => SubscriptionStatus.expired,
+    'PAUSED' => SubscriptionStatus.paused,
+    _ => SubscriptionStatus.trial,
+  };
 
   static AiEntitlementStatus _aiStatusFromWire(String? value) =>
       switch (value) {
@@ -118,15 +118,15 @@ class Entitlements {
         _ => AiEntitlementStatus.none,
       };
 
-  static DateTime? _date(Object? value) => value is String
-      ? DateTime.tryParse(value)?.toLocal()
-      : null;
+  static DateTime? _date(Object? value) =>
+      value is String ? DateTime.tryParse(value)?.toLocal() : null;
 
   /// Whole days until the current period ends, or null when there is no period.
   int? get daysUntilRenewal => _daysUntil(currentPeriodEnd);
 
   /// Whole days of grace left, or null when no grace period is running.
-  int? get daysOfGraceLeft => isInGracePeriod ? _daysUntil(gracePeriodEnd) : null;
+  int? get daysOfGraceLeft =>
+      isInGracePeriod ? _daysUntil(gracePeriodEnd) : null;
 
   /// Whole days of trial left, or null when no trial is running.
   int? get daysOfTrialLeft => isInTrial ? _daysUntil(trialEndsAt) : null;

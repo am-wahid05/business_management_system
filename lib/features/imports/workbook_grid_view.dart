@@ -94,6 +94,7 @@ class WorkbookGridView extends StatefulWidget {
   @override
   State<WorkbookGridView> createState() => _WorkbookGridViewState();
 }
+
 class _WorkbookGridViewState extends State<WorkbookGridView> {
   static const double _headerHeight = 28;
   static const double _gutterWidth = 48;
@@ -354,12 +355,7 @@ class _WorkbookGridViewState extends State<WorkbookGridView> {
     );
   }
 
-  Widget _cell(
-    ThemeData theme,
-    int row,
-    int column,
-    List<ParsedCell> line,
-  ) {
+  Widget _cell(ThemeData theme, int row, int column, List<ParsedCell> line) {
     final merge = widget.grid.mergeAt(row, column);
     // A cell inside a merge is covered by its anchor, so it is not drawn. The
     // value lives in the anchor only, and is never copied into these cells.
@@ -381,7 +377,8 @@ class _WorkbookGridViewState extends State<WorkbookGridView> {
         ? (row, column)
         : (merge.startRow, merge.startColumn);
     final selected = row == _selectedRow && column == _selectedColumn;
-    final editing = _editingCell &&
+    final editing =
+        _editingCell &&
         anchor.$1 == _selectedRow &&
         anchor.$2 == _selectedColumn;
     final style = widget.grid.styleAt(anchor.$1, anchor.$2);
@@ -524,4 +521,3 @@ class _WorkbookGridViewState extends State<WorkbookGridView> {
     ),
   );
 }
-

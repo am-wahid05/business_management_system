@@ -45,7 +45,8 @@ class AnalyticsSummary {
 
   double get averageWeightPerDelivery =>
       deliveryCount == 0 ? 0 : totalWeight / deliveryCount;
-  double get averageWeightPerBag => totalBags == 0 ? 0 : totalWeight / totalBags;
+  double get averageWeightPerBag =>
+      totalBags == 0 ? 0 : totalWeight / totalBags;
   double get averageBagsPerDelivery =>
       deliveryCount == 0 ? 0 : totalBags / deliveryCount;
 }
@@ -69,7 +70,8 @@ class ProductAnalyticsTotal {
 
   double get averageWeightPerDelivery =>
       deliveryCount == 0 ? 0 : totalWeight / deliveryCount;
-  double get averageWeightPerBag => totalBags == 0 ? 0 : totalWeight / totalBags;
+  double get averageWeightPerBag =>
+      totalBags == 0 ? 0 : totalWeight / totalBags;
 }
 
 class SupplierAnalyticsTotal {
@@ -105,14 +107,23 @@ class AnalyticsTrendTotal {
 }
 
 class SupplierActivitySummary {
-  const SupplierActivitySummary({required this.newSuppliers, required this.returningSuppliers});
+  const SupplierActivitySummary({
+    required this.newSuppliers,
+    required this.returningSuppliers,
+  });
 
   final int newSuppliers;
   final int returningSuppliers;
 }
 
 class LocationAnalyticsTotal {
-  const LocationAnalyticsTotal({required this.location, required this.supplierCount, required this.deliveryCount, required this.totalBags, required this.totalWeight});
+  const LocationAnalyticsTotal({
+    required this.location,
+    required this.supplierCount,
+    required this.deliveryCount,
+    required this.totalBags,
+    required this.totalWeight,
+  });
 
   final String location;
   final int supplierCount;

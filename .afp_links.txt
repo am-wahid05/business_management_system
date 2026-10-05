@@ -1,0 +1,46 @@
+/// Both live under the primary action, which is where a user looks for them,
+/// and each is only rendered when the service behind it actually exists.
+class AuthLinks extends StatelessWidget {
+  const AuthLinks({
+    required this.showSignUp,
+    required this.showForgotPassword,
+    required this.onSignUp,
+    required this.onForgotPassword,
+    super.key,
+  });
+
+  final bool showSignUp;
+  final bool showForgotPassword;
+  final VoidCallback onSignUp;
+  final VoidCallback onForgotPassword;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!showSignUp && !showForgotPassword) {
+      return Text(
+        'Contact your company administrator if you cannot sign in.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 2,
+      runSpacing: 0,
+      children: [
+        if (showForgotPassword)
+          TextButton(
+            onPressed: onForgotPassword,
+            child: const Text('Forgot password?'),
+          ),
+        if (showSignUp)
+          TextButton(onPressed: onSignUp, child: const Text('Create account')),
+      ],
+    );
+  }
+}
+
+/// The seeded local accounts, shown as a small secondary panel.
+///
+/// Only rendered in the local setup, where these accounts are the real,
+/// documented way in. It replaces a block of raw credential text printed

@@ -1,0 +1,72 @@
+            ),
+            _DrawerSignOut(onLogout: onLogout),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Secretary shell
+// -----------------------------------------------------------------------------
+
+/// Touch-first navigation shell for Secretary workflows.
+///
+/// A tablet or desktop window gets a rail. A phone-sized window gets a bottom
+/// navigation bar, which is the correct control for a thumb. Both are built
+/// from [SecretaryNav.destinations], so the two layouts offer the same places.
+class SecretaryShell extends StatefulWidget {
+  const SecretaryShell({
+    required this.child,
+    required this.onLogout,
+    this.activeCompanyContext,
+    this.brandingService,
+    super.key,
+  });
+
+  final Widget child;
+  final VoidCallback onLogout;
+  final ActiveCompanyContext? activeCompanyContext;
+  final CompanyBrandingService? brandingService;
+
+  @override
+  State<SecretaryShell> createState() => _SecretaryShellState();
+}
+
+class _SecretaryShellState extends State<SecretaryShell> {
+  @override
+  Widget build(BuildContext context) {
+    final drawer = SecretaryNavigationDrawer(
+      onLogout: widget.onLogout,
+      activeCompanyContext: widget.activeCompanyContext,
+      brandingService: widget.brandingService,
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final persistent = constraints.maxWidth >= AppBreakpoints.sidebar;
+        if (persistent) {
+          return AppShellScope(
+            role: UserRole.secretary,
+            persistentSidebar: true,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SecretaryRail(
+                  activeCompanyContext: widget.activeCompanyContext,
+                  brandingService: widget.brandingService,
+                ),
+                const VerticalDivider(width: 1),
+                Expanded(child: widget.child),
+              ],
+            ),
+          );
+        }
+        return AppShellScope(
+          role: UserRole.secretary,
+          persistentSidebar: false,
+          drawer: drawer,
+          child: Scaffold(
+            body: widget.child,
+            bottomNavigationBar: const _SecretaryNavigationBar(),
+          ),

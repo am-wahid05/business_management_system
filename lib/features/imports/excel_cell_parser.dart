@@ -1,4 +1,4 @@
-﻿import 'package:excel/excel.dart';
+import 'package:excel/excel.dart';
 
 import '../../domain/models/delivery.dart';
 
@@ -109,10 +109,7 @@ ParsedCell parseCellValue(CellValue? value) {
     // asDateTimeLocal() keeps the calendar fields Excel stored. The UTC
     // variant used by toString() is what caused the off-by-one-day bug.
     final local = value.asDateTimeLocal();
-    return ParsedCell(
-      text: _formatDateAndTime(local),
-      date: local,
-    );
+    return ParsedCell(text: _formatDateAndTime(local), date: local);
   }
   if (value is DateTimeCellValue) {
     final local = value.asDateTimeLocal();
@@ -128,7 +125,10 @@ ParsedCell parseCellValue(CellValue? value) {
     );
   }
   if (value is DoubleCellValue) {
-    return ParsedCell(text: formatImportNumber(value.value), number: value.value);
+    return ParsedCell(
+      text: formatImportNumber(value.value),
+      number: value.value,
+    );
   }
   if (value is BoolCellValue) {
     return ParsedCell(text: value.value ? 'true' : 'false');
@@ -165,9 +165,8 @@ DateTime? parseImportDate(String raw, {bool allowSerial = false}) {
   final iso = DateTime.tryParse(text);
   if (iso != null) return _buildDate(iso.year, iso.month, iso.day);
 
-  final match = RegExp(
-    r'^(\d{1,4})\s*[/\-.]\s*(\d{1,2})\s*[/\-.]\s*(\d{1,4})$',
-  ).firstMatch(text);
+  final match = RegExp(r'^(\d{1,4})\s*[/\-.]\s*(\d{1,2})\s*[/\-.]\s*(\d{1,4})$')
+      .firstMatch(text);
   if (match == null) return null;
 
   final firstText = match.group(1)!;
@@ -227,7 +226,8 @@ String _formatDateAndTime(DateTime date, {bool hasSeconds = false}) {
   if (date.hour == 0 && date.minute == 0 && (date.second == 0 || !hasSeconds)) {
     return datePart;
   }
-  final time = '${date.hour.toString().padLeft(2, '0')}:'
+  final time =
+      '${date.hour.toString().padLeft(2, '0')}:'
       '${date.minute.toString().padLeft(2, '0')}';
   return '$datePart $time';
 }
@@ -243,13 +243,7 @@ DateTime? excelSerialToDate(double serial) {
   // A serial is a literal calendar value, so it is converted directly rather
   // than through the business-date guard, which rejects pre-1900 years. Excel's
   // first serial really is 1899-12-31 and must convert rather than fail.
-  return DateTime(
-    base.year,
-    base.month,
-    base.day,
-    base.hour,
-    base.minute,
-  );
+  return DateTime(base.year, base.month, base.day, base.hour, base.minute);
 }
 
 /// Formats a date the way it is shown in the preview and stored.
@@ -280,4 +274,3 @@ DateTime? _buildDate(int year, int month, int day) {
   if (date.month != month || date.day != day) return null;
   return date;
 }
-

@@ -296,7 +296,38 @@ Deno.serve(async (request) => {
     if (((previous ?? []) as unknown[]).length > 0) alreadySent.push(candidate);
   }
 
-  const targets = phones.filter((candidate) => !alreadySent.includes(candidate));
+  let targets = phones.filter((candidate) => !alreadySent.includes(candidate));
+  if (targets.length === 0) {
+    return json({ error: 'RECEIPT_ALREADY_SENT' }, 409);
+  }
+
+  // Claim every target before reserving credits or contacting Sailup. The unique
+  // company/delivery/phone key is the cross-request concurrency guard: a second
+  // click cannot race past the read above and submit the same SMS. A claim that
+  // already exists is treated as already sent/in progress, so this path never
+  // contacts the shared provider twice for one recipient.
+  const claimed: string[] = [];
+  for (const candidate of targets) {
+    const { error: claimError } = await adminClient
+      .from('sms_receipt_send_claims')
+      .insert({
+        company_id: companyId,
+        delivery_id: deliveryId,
+        phone: candidate,
+        status: 'sending',
+      });
+    if (!claimError) {
+      claimed.push(candidate);
+      continue;
+    }
+    if (claimError.code === '23505') {
+      alreadySent.push(candidate);
+      continue;
+    }
+    await releaseSendClaims(adminClient, companyId, deliveryId, claimed);
+    return json({ error: 'Could not claim receipt send' }, 500);
+  }
+  targets = claimed;
   if (targets.length === 0) {
     return json({ error: 'RECEIPT_ALREADY_SENT' }, 409);
   }
@@ -322,9 +353,11 @@ Deno.serve(async (request) => {
     },
   );
   if (reserveError) {
+    await releaseSendClaims(adminClient, companyId, deliveryId, targets);
     return json({ error: 'Could not verify SMS credits' }, 500);
   }
   if (!reservation) {
+    await releaseSendClaims(adminClient, companyId, deliveryId, targets);
     // Not enough credits for the whole send. Sailup is deliberately NOT called,
     // so no message is sent and no credit is consumed.
     const { data: companyRow } = await adminClient
@@ -349,6 +382,7 @@ Deno.serve(async (request) => {
   // sending anyway would leave a credit stranded in 'pending' with no settled
   // outcome. Stopping here sends nothing and keeps the credits reclaimable.
   if (reservationIds.length !== targets.length) {
+    await releaseSendClaims(adminClient, companyId, deliveryId, targets);
     return json({ error: 'Could not reserve SMS credits' }, 500);
   }
 
@@ -390,11 +424,21 @@ Deno.serve(async (request) => {
       // and a refund row is written to the ledger. The other recipients are
       // unaffected.
       await finalizeCredit(adminClient, reservationId, false, callerId);
+      await releaseSendClaims(adminClient, companyId, deliveryId, [recipient]);
       failed.push({ phone: recipient, error: outcome.error ?? 'SMS_REJECTED' });
       continue;
     }
     // The provider accepted the message, so this credit stays consumed.
     await finalizeCredit(adminClient, reservationId, true, callerId);
+    await adminClient
+      .from('sms_receipt_send_claims')
+      .update({
+        status: 'accepted',
+        provider_reference: outcome.providerMessageId ?? provider.name,
+      })
+      .eq('company_id', companyId)
+      .eq('delivery_id', deliveryId)
+      .eq('phone', recipient);
     accepted.push({
       phone: recipient,
       reference: outcome.providerMessageId ?? undefined,
@@ -468,6 +512,27 @@ async function finalizeCredit(
     });
   } catch {
     // Intentionally ignored; see above.
+  }
+}
+
+async function releaseSendClaims(
+  adminClient: ReturnType<typeof createClient>,
+  companyId: string,
+  deliveryId: string,
+  phones: string[],
+): Promise<void> {
+  if (phones.length === 0) return;
+  try {
+    await adminClient
+      .from('sms_receipt_send_claims')
+      .delete()
+      .eq('company_id', companyId)
+      .eq('delivery_id', deliveryId)
+      .in('phone', phones)
+      .eq('status', 'sending');
+  } catch {
+    // A failed release is safer than retrying a provider send: the unique claim
+    // remains as a duplicate guard and can be reconciled server-side.
   }
 }
 

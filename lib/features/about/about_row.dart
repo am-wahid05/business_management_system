@@ -36,9 +36,7 @@ class AboutRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.5,
-        ),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
@@ -56,9 +54,7 @@ class AboutRow extends StatelessWidget {
                       color: color,
                       // A row with no destination yet still reads as a label,
                       // not as a broken link.
-                      fontWeight: isEnabled
-                          ? FontWeight.w600
-                          : FontWeight.w400,
+                      fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ),

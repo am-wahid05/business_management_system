@@ -32,7 +32,8 @@ class SpreadsheetSaveResult {
       '$updated updated',
       '$unchanged unchanged',
     ];
-    if (skippedDuplicates > 0) parts.add('$skippedDuplicates duplicates skipped');
+    if (skippedDuplicates > 0)
+      parts.add('$skippedDuplicates duplicates skipped');
     if (suppliersCreated > 0) parts.add('$suppliersCreated suppliers created');
     if (failed > 0) parts.add('$failed failed');
     return parts.join(', ');
@@ -59,7 +60,9 @@ SpreadsheetRowCheck validateSpreadsheetRow(SpreadsheetRow row) {
     return const SpreadsheetRowCheck(warning: 'Removed');
   }
   if (row.recorderName.trim().isEmpty && !row.isNew) {
-    return const SpreadsheetRowCheck(error: 'The recorder for this row is unknown');
+    return const SpreadsheetRowCheck(
+      error: 'The recorder for this row is unknown',
+    );
   }
   // The date is checked first. A cell holding something that is not a date at
   // all is a specific, actionable problem, and reporting it hides nothing: an
@@ -100,7 +103,9 @@ SpreadsheetRowCheck applyRowValidation(SpreadsheetRow row) {
 ) => (
   created: rows.where((row) => row.state == SpreadsheetRowState.created).length,
   edited: rows.where((row) => row.state == SpreadsheetRowState.edited).length,
-  unchanged: rows.where((row) => row.state == SpreadsheetRowState.unchanged).length,
+  unchanged: rows
+      .where((row) => row.state == SpreadsheetRowState.unchanged)
+      .length,
   removed: rows.where((row) => row.state == SpreadsheetRowState.deleted).length,
 );
 

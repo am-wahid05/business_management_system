@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../auth/auth_models.dart';
 import 'billing_widgets.dart';
@@ -92,10 +92,7 @@ class SubscriptionLockedScreen extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 16),
-              Text(
-                SubscriptionMessages.dataSafe,
-                textAlign: TextAlign.center,
-              ),
+              Text(SubscriptionMessages.dataSafe, textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
                 SubscriptionMessages.secretaryStillWorking,
@@ -160,4 +157,3 @@ class AdminSubscriptionGate extends StatelessWidget {
     );
   }
 }
-

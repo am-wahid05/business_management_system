@@ -26,9 +26,8 @@ class FakeAssistantInvoker implements AssistantInvoker {
   }
 }
 
-Widget host(BusinessAssistantService service) => MaterialApp(
-  home: BusinessAssistantScreen(service: service),
-);
+Widget host(BusinessAssistantService service) =>
+    MaterialApp(home: BusinessAssistantScreen(service: service));
 
 void main() {
   group('authentication and the wire contract', () {
@@ -228,4 +227,3 @@ void main() {
     });
   });
 }
-

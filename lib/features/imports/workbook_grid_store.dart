@@ -51,23 +51,21 @@ class WorkbookGridStore {
       table,
       columns: ['value'],
       where: 'key = ?',
-      whereArgs: [keyFor(
-        companyId: companyId,
-        filename: filename,
-        sheetName: sheetName,
-      )],
+      whereArgs: [
+        keyFor(companyId: companyId, filename: filename, sheetName: sheetName),
+      ],
       limit: 1,
     );
     if (rows.isEmpty) return null;
     try {
-      final decoded = jsonDecode(rows.first['value']! as String) as Map<String, Object?>;
+      final decoded =
+          jsonDecode(rows.first['value']! as String) as Map<String, Object?>;
       return WorkbookGrid.fromJson(
         name: sheetName,
         sourceFilename: filename,
         raw: decoded['cells'] as List<Object?>? ?? const [],
         rawMerges: decoded['merges'] as List<Object?>? ?? const [],
-        rawStyles:
-            decoded['styles'] as Map<String, Object?>? ?? const {},
+        rawStyles: decoded['styles'] as Map<String, Object?>? ?? const {},
       );
     } catch (_) {
       // A document written by an older build is discarded rather than allowed
@@ -115,8 +113,7 @@ class WorkbookGridStore {
       whereArgs: ['$prefix%'],
     );
     return [
-      for (final row in rows)
-        (row['key']! as String).substring(prefix.length),
+      for (final row in rows) (row['key']! as String).substring(prefix.length),
     ];
   }
 
@@ -160,8 +157,12 @@ class WorkbookGridStore {
       books.add(SavedWorkbook(filename: filename, sheetName: sheetName));
     }
     books.sort((a, b) {
-      final byFile = a.filename.toLowerCase().compareTo(b.filename.toLowerCase());
-      return byFile != 0 ? byFile : a.sheetName.toLowerCase().compareTo(b.sheetName.toLowerCase());
+      final byFile = a.filename.toLowerCase().compareTo(
+        b.filename.toLowerCase(),
+      );
+      return byFile != 0
+          ? byFile
+          : a.sheetName.toLowerCase().compareTo(b.sheetName.toLowerCase());
     });
     return books;
   }

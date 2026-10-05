@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../app/app_navigation.dart';
+import '../../app/app_ui.dart';
 import '../../domain/models/delivery.dart';
 import '../auth/auth_models.dart';
 import '../auth/auth_repository.dart';
@@ -129,8 +131,11 @@ class _TodaysRecordsScreenState extends State<TodaysRecordsScreen> {
     if (range == null) return;
     setState(() {
       _from = DateTime(range.start.year, range.start.month, range.start.day);
-      _to = DateTime(range.end.year, range.end.month, range.end.day)
-          .add(const Duration(days: 1));
+      _to = DateTime(
+        range.end.year,
+        range.end.month,
+        range.end.day,
+      ).add(const Duration(days: 1));
       _loadRecords();
     });
   }
@@ -139,10 +144,7 @@ class _TodaysRecordsScreenState extends State<TodaysRecordsScreen> {
     final start = _from ?? DateTime.now();
     final endExclusive = _to ?? start.add(const Duration(days: 1));
     final end = endExclusive.subtract(const Duration(days: 1));
-    return DateTimeRange(
-      start: start,
-      end: end.isBefore(start) ? start : end,
-    );
+    return DateTimeRange(start: start, end: end.isBefore(start) ? start : end);
   }
 
   Future<void> _pickRecorder() async {
@@ -248,16 +250,32 @@ class _TodaysRecordsScreenState extends State<TodaysRecordsScreen> {
             icon: const Icon(Icons.calendar_month_outlined),
           ),
         ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
       ),
+      drawer: secretaryDrawerFor(context),
       body: FutureBuilder<_RecordsData>(
         future: _records,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView(
+              padding: const EdgeInsets.all(24),
+              children: const [
+                AppSkeleton(width: 220, height: 28),
+                SizedBox(height: 18),
+                AppTableSkeleton(rows: 4),
+                SizedBox(height: 20),
+                AppLoadingList(rows: 5),
+              ],
+            );
           }
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Could not load records: ${snapshot.error}'),
+            return AppErrorState(
+              title: 'Receivings unavailable',
+              message: 'We could not load the saved receiving records.',
+              onRetry: () => setState(_loadRecords),
             );
           }
           final data = snapshot.data!;
@@ -374,14 +392,10 @@ class _TodaysRecordsScreenState extends State<TodaysRecordsScreen> {
                 ),
                 const SizedBox(height: 24),
                 if (records.isEmpty)
-                  const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text(
-                        'No receipts match these filters. Adjust the search or '
-                        'date range to find an earlier receipt.',
-                      ),
-                    ),
+                  const AppEmptyState(
+                    title: 'No matching receivings',
+                    message: 'Adjust the search or date range to find an earlier receipt.',
+                    icon: Icons.receipt_long_outlined,
                   ),
                 ...records.map(
                   (delivery) => _ReceiptCard(
@@ -418,11 +432,7 @@ class _TodaysRecordsScreenState extends State<TodaysRecordsScreen> {
 }
 
 class _RecordsData {
-  const _RecordsData(
-    this.deliveries,
-    this.recorderNames,
-    this.smsByDelivery,
-  );
+  const _RecordsData(this.deliveries, this.recorderNames, this.smsByDelivery);
 
   final List<Delivery> deliveries;
   final Map<String, String> recorderNames;
@@ -472,9 +482,8 @@ class _ReceiptCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Receipt #: ${delivery.id}',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
                   Icon(
@@ -489,9 +498,8 @@ class _ReceiptCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     'SMS: $smsLabel',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: smsColor),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: smsColor),
                   ),
                 ],
               ),

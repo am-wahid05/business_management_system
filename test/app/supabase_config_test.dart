@@ -35,8 +35,7 @@ void main() {
     // the app correctly and then silently show the login screen instead of the
     // reset screen, which is much harder to diagnose than a broken intent filter.
     test('accepts the password recovery callback Supabase actually sends', () {
-      const recoveryLink =
-          'businessms://auth-callback?code=pkce-recovery-code';
+      const recoveryLink = 'businessms://auth-callback?code=pkce-recovery-code';
       expect(SupabaseConfig.isAuthCallback(Uri.parse(recoveryLink)), isTrue);
     });
   });
@@ -45,9 +44,8 @@ void main() {
     late String manifest;
 
     setUpAll(() {
-      manifest = File(
-        'android/app/src/main/AndroidManifest.xml',
-      ).readAsStringSync();
+      manifest = File('android/app/src/main/AndroidManifest.xml')
+          .readAsStringSync();
     });
 
     /// The filter that lets Android hand the callback to this app.
@@ -63,9 +61,10 @@ void main() {
     });
 
     test('declares no other custom scheme that could hijack the callback', () {
-      final schemes = RegExp(
-        r'android:scheme="([^"]+)"',
-      ).allMatches(manifest).map((m) => m.group(1)).toSet();
+      final schemes = RegExp(r'android:scheme="([^"]+)"')
+          .allMatches(manifest)
+          .map((m) => m.group(1))
+          .toSet();
       expect(schemes, {'businessms'});
     });
 

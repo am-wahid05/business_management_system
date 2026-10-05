@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../app/app_navigation.dart';
+import '../../app/app_ui.dart';
 import '../../domain/models/delivery.dart';
 import '../../domain/models/product.dart';
 import '../../domain/models/supplier.dart';
@@ -273,277 +275,297 @@ class _NewReceivingScreenState extends State<NewReceivingScreen>
           ],
         ),
       ),
+      drawer: secretaryDrawerFor(context),
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 120),
-            children: [
-              Text(
-                'Record delivery',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 20),
-              _sectionTitle(context, 'Supplier'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _searchController,
-                onChanged: (_) => setState(() => _selectedSupplier = null),
-                decoration: const InputDecoration(
-                  labelText: 'Search supplier name, ID, phone, or town',
-                  prefixIcon: Icon(Icons.search),
-                ),
-              ),
-              if (_searchController.text.trim().isNotEmpty &&
-                  _selectedSupplier == null)
-                ...matches.map(
-                  (supplier) => Card(
-                    child: ListTile(
-                      minVerticalPadding: 12,
-                      title: Text(supplier.name),
-                      subtitle: Text(
-                        '${supplier.id} · ${supplier.type == SupplierType.farmer ? 'Farmer' : 'Aggregator'} · ${supplier.town}',
-                      ),
-                      onTap: () => setState(() {
-                        _selectedSupplier = supplier;
-                        _searchController.text = supplier.name;
-                      }),
-                    ),
-                  ),
-                ),
-              if (_searchController.text.trim().isNotEmpty &&
-                  matches.isEmpty &&
-                  _selectedSupplier == null) ...[
-                const Card(
-                  child: ListTile(
-                    minVerticalPadding: 12,
-                    leading: Icon(Icons.person_add_alt_1),
-                    title: Text('No existing supplier found'),
-                    subtitle: Text(
-                      'A supplier profile will be created when this delivery is saved.',
-                    ),
-                  ),
-                ),
-                DropdownButtonFormField<SupplierType>(
-                  initialValue: _supplierType,
-                  decoration: const InputDecoration(labelText: 'Supplier type'),
-                  items: SupplierType.values
-                      .map(
-                        (type) => DropdownMenuItem(
-                          value: type,
-                          child: Text(
-                            type == SupplierType.farmer
-                                ? 'Farmer'
-                                : 'Aggregator',
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) setState(() => _supplierType = value);
-                  },
-                ),
-                const SizedBox(height: 12),
-                GhanaLocationFields(
-                  regionController: _regionController,
-                  districtController: _districtController,
-                  townController: _townController,
-                ),
-                const SizedBox(height: 12),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone number *',
-                    helperText: 'Required · enter a valid Ghana phone number',
-                  ),
-                  keyboardType: TextInputType.phone,
-                  validator: validateRequiredGhanaPhone,
-                ),
-              ],
-              if (_selectedSupplier != null)
-                Card(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  child: ListTile(
-                    minVerticalPadding: 12,
-                    leading: const Icon(Icons.check_circle_outline),
-                    title: Text(_selectedSupplier!.name),
-                    subtitle: Text(
-                      '${_selectedSupplier!.id} · ${_selectedSupplier!.town}',
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () => setState(() => _selectedSupplier = null),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 24),
-              _sectionTitle(context, 'Product and date'),
-              const SizedBox(height: 8),
-              FutureBuilder<List<Product>>(
-                future: _products,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const LinearProgressIndicator();
-                  }
-                  if (snapshot.hasError) {
-                    return Text('Could not load products: ${snapshot.error}');
-                  }
-                  return DropdownButtonFormField<Product>(
-                    initialValue: _selectedProduct,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              // Capping the width keeps the bag-weight table a comfortable
+              // size on a wide tablet or desktop window instead of stretching
+              // the entry fields across the whole screen.
+              constraints: const BoxConstraints(maxWidth: 980),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 120),
+                children: [
+                  const AppPageHeader(title: 'Record delivery'),
+                  _sectionTitle(context, 'Supplier'),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() => _selectedSupplier = null),
                     decoration: const InputDecoration(
-                      labelText: 'Active product',
+                      labelText: 'Search supplier name, ID, phone, or town',
+                      prefixIcon: Icon(Icons.search),
                     ),
-                    items: snapshot.data!
-                        .map(
-                          (product) => DropdownMenuItem(
-                            value: product,
-                            child: Text(product.name),
+                  ),
+                  if (_searchController.text.trim().isNotEmpty &&
+                      _selectedSupplier == null)
+                    ...matches.map(
+                      (supplier) => Card(
+                        child: ListTile(
+                          minVerticalPadding: 12,
+                          title: Text(supplier.name),
+                          subtitle: Text(
+                            '${supplier.id} · ${supplier.type == SupplierType.farmer ? 'Farmer' : 'Aggregator'} · ${supplier.town}',
                           ),
-                        )
-                        .toList(),
-                    onChanged: (product) =>
-                        setState(() => _selectedProduct = product),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: _chooseDate,
-                icon: const Icon(Icons.calendar_today_outlined),
-                label: Text('Date: ${_formatDate(_recordedDate)}'),
-              ),
-              // Both receiving types share every field above, so only the
-              // measurement section differs. The selected tab makes the active
-              // type obvious, and the bulk tab never renders the per-bag grid.
-              AnimatedBuilder(
-                animation: _tabController,
-                builder: (context, _) {
-                  if (_tabController.index == 1) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _sectionTitle(context, 'Weighing-bridge details'),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Enter the total shown by the scale and how many bags were on it. Individual bag weights are not recorded for this type.',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          onTap: () => setState(() {
+                            _selectedSupplier = supplier;
+                            _searchController.text = supplier.name;
+                          }),
                         ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _bulkBagsController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Number of bags',
-                            helperText: 'Whole number of bags on the scale',
-                          ),
+                      ),
+                    ),
+                  if (_searchController.text.trim().isNotEmpty &&
+                      matches.isEmpty &&
+                      _selectedSupplier == null) ...[
+                    const Card(
+                      child: ListTile(
+                        minVerticalPadding: 12,
+                        leading: Icon(Icons.person_add_alt_1),
+                        title: Text('No existing supplier found'),
+                        subtitle: Text(
+                          'A supplier profile will be created when this delivery is saved.',
                         ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _bulkTotalController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'Total weight',
-                            suffixText: 'kg',
-                          ),
+                      ),
+                    ),
+                    DropdownButtonFormField<SupplierType>(
+                      initialValue: _supplierType,
+                      decoration: const InputDecoration(
+                        labelText: 'Supplier type',
+                      ),
+                      items: SupplierType.values
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(
+                                type == SupplierType.farmer
+                                    ? 'Farmer'
+                                    : 'Aggregator',
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null)
+                          setState(() => _supplierType = value);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    GhanaLocationFields(
+                      regionController: _regionController,
+                      districtController: _districtController,
+                      townController: _townController,
+                    ),
+                    const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone number *',
+                        helperText:
+                            'Required · enter a valid Ghana phone number',
+                      ),
+                      keyboardType: TextInputType.phone,
+                      validator: validateRequiredGhanaPhone,
+                    ),
+                  ],
+                  if (_selectedSupplier != null)
+                    Card(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      child: ListTile(
+                        minVerticalPadding: 12,
+                        leading: const Icon(Icons.check_circle_outline),
+                        title: Text(_selectedSupplier!.name),
+                        subtitle: Text(
+                          '${_selectedSupplier!.id} · ${_selectedSupplier!.town}',
                         ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _bulkNotesController,
-                          decoration: const InputDecoration(
-                            labelText: 'Notes / weighing-bridge information (optional)',
-                          ),
-                          maxLines: 2,
+                        trailing: IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () =>
+                              setState(() => _selectedSupplier = null),
                         ),
-                      ],
-                    );
-                  }
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _sectionTitle(context, 'Bag weights'),
-                      const SizedBox(height: 8),
-                      _buildWeightTable(context),
-                      if (_canAddSheet) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: _addSheet,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add another sheet'),
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+                  _sectionTitle(context, 'Product and date'),
+                  const SizedBox(height: 8),
+                  FutureBuilder<List<Product>>(
+                    future: _products,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const LinearProgressIndicator();
+                      }
+                      if (snapshot.hasError) {
+                        return Text(
+                          'Could not load products: ${snapshot.error}',
+                        );
+                      }
+                      return DropdownButtonFormField<Product>(
+                        initialValue: _selectedProduct,
+                        decoration: const InputDecoration(
+                          labelText: 'Active product',
                         ),
-                      ],
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-              Card(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
+                        items: snapshot.data!
+                            .map(
+                              (product) => DropdownMenuItem(
+                                value: product,
+                                child: Text(product.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (product) =>
+                            setState(() => _selectedProduct = product),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _chooseDate,
+                    icon: const Icon(Icons.calendar_today_outlined),
+                    label: Text('Date: ${_formatDate(_recordedDate)}'),
+                  ),
+                  // Both receiving types share every field above, so only the
+                  // measurement section differs. The selected tab makes the active
+                  // type obvious, and the bulk tab never renders the per-bag grid.
+                  AnimatedBuilder(
+                    animation: _tabController,
+                    builder: (context, _) {
+                      if (_tabController.index == 1) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _sectionTitle(context, 'Weighing-bridge details'),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Enter the total shown by the scale and how many bags were on it. Individual bag weights are not recorded for this type.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _bulkBagsController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Number of bags',
+                                helperText: 'Whole number of bags on the scale',
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _bulkTotalController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              decoration: const InputDecoration(
+                                labelText: 'Total weight',
+                                suffixText: 'kg',
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _bulkNotesController,
+                              decoration: const InputDecoration(
+                                labelText: 'Notes / weighing-bridge information (optional)',
+                              ),
+                              maxLines: 2,
+                            ),
+                          ],
+                        );
+                      }
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Bags',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          Text(
-                            _bulk
-                                ? (_bulkBagsController.text.isEmpty
-                                      ? '—'
-                                      : _bulkBagsController.text)
-                                : '${_weightControllers.where((controller) => controller.text.trim().isNotEmpty).length}',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
+                          _sectionTitle(context, 'Bag weights'),
+                          const SizedBox(height: 8),
+                          _buildWeightTable(context),
+                          if (_canAddSheet) ...[
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: _addSheet,
+                              icon: const Icon(Icons.add),
+                              label: const Text('Add another sheet'),
+                            ),
+                          ],
                         ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Total weight',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          Text(
-                            _bulk
-                                ? '${double.tryParse(_bulkTotalController.text.trim())?.toStringAsFixed(1) ?? '—'} kg'
-                                : '${_totalWeight.toStringAsFixed(1)} kg',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                        ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  Card(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Bags',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Text(
+                                _bulk
+                                    ? (_bulkBagsController.text.isEmpty
+                                          ? '—'
+                                          : _bulkBagsController.text)
+                                    : '${_weightControllers.where((controller) => controller.text.trim().isNotEmpty).length}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall,
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Total weight',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Text(
+                                _bulk
+                                    ? '${double.tryParse(_bulkTotalController.text.trim())?.toStringAsFixed(1) ?? '—'} kg'
+                                    : '${_totalWeight.toStringAsFixed(1)} kg',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 56,
+                    child: FilledButton.icon(
+                      onPressed: _isSaving ? null : _saveDelivery,
+                      icon: _isSaving
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(),
+                            )
+                          : const Icon(Icons.save_outlined),
+                      label: const Text('Save Delivery'),
+                    ),
+                  ),
+                ],
               ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 16),
-                Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-              const SizedBox(height: 24),
-              SizedBox(
-                height: 56,
-                child: FilledButton.icon(
-                  onPressed: _isSaving ? null : _saveDelivery,
-                  icon: _isSaving
-                      ? const SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(),
-                        )
-                      : const Icon(Icons.save_outlined),
-                  label: const Text('Save Delivery'),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

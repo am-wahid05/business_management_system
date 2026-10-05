@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app/supabase_config.dart';
+import '../receiving/print_settings_service.dart';
+import 'supabase_auth_link_handler.dart';
 
 /// Outcome of a remote sign-up attempt.
 ///
@@ -43,9 +45,10 @@ class SignUpException implements Exception {
 /// always becomes its owner, so offering a choice would be offering a choice
 /// the architecture does not honour.
 class SupabaseSignUpService {
-  const SupabaseSignUpService(this.client);
+  const SupabaseSignUpService(this.client, {this.authLinkHandler});
 
   final SupabaseClient client;
+  final SupabaseAuthLinkHandler? authLinkHandler;
 
   /// Creates the account and, through the existing server trigger, its company.
   ///
@@ -69,6 +72,7 @@ class SupabaseSignUpService {
       // because the trigger provisions a company for every non-empty value.
       if (company != null && company.isNotEmpty) 'company_name': company,
     };
+    authLinkHandler?.expectEmailVerification();
     try {
       final response = await client.auth.signUp(
         email: address,
@@ -81,10 +85,13 @@ class SupabaseSignUpService {
       // A null session with no error means the project requires the user to
       // confirm the address first. That is a success, not a failure.
       if (response.session == null) return SignUpOutcome.needsEmailConfirmation;
+      authLinkHandler?.clearExpectedFlow();
       return SignUpOutcome.readyToContinue;
     } on AuthException catch (error) {
+      authLinkHandler?.clearExpectedFlow();
       throw SignUpException(_friendlyMessage(error));
     } catch (_) {
+      authLinkHandler?.clearExpectedFlow();
       throw const SignUpException(
         'We could not create your account. Check your connection and try again.',
       );
@@ -95,13 +102,20 @@ class SupabaseSignUpService {
   /// nothing about accounts other than the one being created.
   String _friendlyMessage(AuthException error) {
     final status = error.statusCode;
+    final raw = error.message.toLowerCase();
     bool hasStatus(int code) => status == '$code';
+
+    if (hasStatus(429) ||
+        raw.contains('too many attempts') ||
+        raw.contains('too many requests') ||
+        raw.contains('rate limit')) {
+      return 'Too many signup attempts. Please wait a few minutes and try again.';
+    }
 
     // Supabase returns this for an address that is already registered. It is
     // the only account-existence detail exposed, and it is unavoidable: it is
     // about the address the user just typed, not a way to enumerate accounts.
     if (hasStatus(422) || hasStatus(400)) {
-      final raw = error.message.toLowerCase();
       if (raw.contains('already') || raw.contains('registered')) {
         return 'An account already exists for this email address. '
             'Try signing in, or reset your password.';
@@ -112,9 +126,6 @@ class SupabaseSignUpService {
       }
       return 'That email address or password was not accepted. Please check and '
           'try again.';
-    }
-    if (hasStatus(429)) {
-      return 'Too many attempts. Please wait a moment and try again.';
     }
     if (_looksOffline(error)) {
       return 'No internet connection. Your account was not created.';
@@ -198,15 +209,22 @@ class AccountException implements Exception {
 
 /// The Supabase Auth implementation of [AccountService].
 class SupabaseAccountService implements AccountService {
-  SupabaseAccountService(this.client) {
+  SupabaseAccountService(this.client, {this.authLinkHandler}) {
     // The recovery flag is owned here rather than by the gate widget, because a
     // recovery link can be exchanged before any widget is listening (cold start),
     // and because MaterialApp is rebuilt with a new key once the recovery session
     // resolves to a user. A flag held in widget state would be lost in both cases.
-    _authSubscription = client.auth.onAuthStateChange.listen(_onAuthStateChange);
+    _authSubscription = client.auth.onAuthStateChange.listen(
+      _onAuthStateChange,
+      onError: _onAuthStreamError,
+    );
+    if (authLinkHandler?.takePendingPasswordRecovery() == true) {
+      _recovering = true;
+    }
   }
 
   final SupabaseClient client;
+  final SupabaseAuthLinkHandler? authLinkHandler;
 
   late final StreamSubscription<AuthState> _authSubscription;
   final StreamController<bool> _recoveryEvents =
@@ -220,14 +238,22 @@ class SupabaseAccountService implements AccountService {
 
   void _onAuthStateChange(AuthState state) {
     if (state.event == AuthChangeEvent.passwordRecovery) {
+      authLinkHandler?.clearExpectedFlow();
       _setRecovering(true);
       return;
+    }
+    if (state.event == AuthChangeEvent.signedIn) {
+      authLinkHandler?.clearExpectedFlow();
     }
     // A sign-out ends any recovery window, so a later link cannot be replayed
     // against a session that has already been abandoned.
     if (state.event == AuthChangeEvent.signedOut) {
       _setRecovering(false);
     }
+  }
+
+  void _onAuthStreamError(Object error, StackTrace stackTrace) {
+    authLinkHandler?.handleAuthStreamError(error, stackTrace);
   }
 
   void _setRecovering(bool value) {
@@ -297,6 +323,7 @@ class SupabaseAccountService implements AccountService {
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {
+    authLinkHandler?.expectPasswordRecovery();
     try {
       // redirectTo reuses the project's existing deep-link architecture, so the
       // reset link returns through businessms://auth-callback exactly like the
@@ -307,6 +334,7 @@ class SupabaseAccountService implements AccountService {
         redirectTo: SupabaseConfig.emailRedirectTo,
       );
     } on AuthException {
+      authLinkHandler?.clearExpectedFlow();
       // Reported generically, so this screen cannot be used to test whether an
       // address is registered.
       throw const AccountException(
@@ -323,6 +351,7 @@ class SupabaseAccountService implements AccountService {
       );
     }
     await _updatePassword(newPassword);
+    authLinkHandler?.clearExpectedFlow();
     // The link has now been spent, so the recovery window closes. Without this a
     // later rebuild of the gate would offer the reset screen again for a session
     // that has already been used.
@@ -363,7 +392,12 @@ class SupabaseAccountService implements AccountService {
 
   @override
   Future<void> cancelRecovery() async {
+    authLinkHandler?.clearExpectedFlow();
     _setRecovering(false);
-    await client.auth.signOut();
+    try {
+      await client.auth.signOut();
+    } finally {
+      PrintPreferences.clear();
+    }
   }
 }

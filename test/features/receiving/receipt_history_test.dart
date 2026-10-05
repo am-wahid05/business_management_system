@@ -286,16 +286,19 @@ void main() {
       expect(receipt!.supplier.phone, '0241234567');
     });
 
-    test('reopening and reprinting does not create a duplicate record', () async {
-      final before = await database.query('deliveries');
-      // Reading the saved receipt is what printing uses; it must not write.
-      final first = await repository.findById('TXN-00125');
-      final second = await repository.findById('TXN-00125');
-      final after = await database.query('deliveries');
-      expect(first!.bagWeights, second!.bagWeights);
-      expect(after, hasLength(before.length));
-      expect(after.map((r) => r['id']).toSet(), hasLength(before.length));
-    });
+    test(
+      'reopening and reprinting does not create a duplicate record',
+      () async {
+        final before = await database.query('deliveries');
+        // Reading the saved receipt is what printing uses; it must not write.
+        final first = await repository.findById('TXN-00125');
+        final second = await repository.findById('TXN-00125');
+        final after = await database.query('deliveries');
+        expect(first!.bagWeights, second!.bagWeights);
+        expect(after, hasLength(before.length));
+        expect(after.map((r) => r['id']).toSet(), hasLength(before.length));
+      },
+    );
   });
 
   group('company isolation for receipt history', () {

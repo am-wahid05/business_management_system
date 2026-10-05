@@ -7,6 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import 'auth_models.dart';
 import 'active_company_context.dart';
 import 'auth_repository.dart';
+import '../receiving/print_settings_service.dart';
 
 class LocalAuthRepository implements AuthRepository {
   static const testUsername = 'localadmin';
@@ -115,6 +116,7 @@ class LocalAuthRepository implements AuthRepository {
     );
     if (!valid) return null;
     final user = _fromRow(row);
+    if (currentUser?.id != user.id) PrintPreferences.clear();
     _activeCompanyContext.value = user;
     return user;
   }
@@ -136,6 +138,7 @@ class LocalAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
+    PrintPreferences.clear();
     _activeCompanyContext.value = null;
   }
 

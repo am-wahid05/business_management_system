@@ -63,7 +63,10 @@ void main() {
     detectFieldForHeader('Number of Bags') == ImportField.bagCount &&
         detectFieldForHeader('Number of Bags') != ImportField.bagWeights,
   );
-  check('Notes maps to notes', detectFieldForHeader('Notes') == ImportField.notes);
+  check(
+    'Notes maps to notes',
+    detectFieldForHeader('Notes') == ImportField.notes,
+  );
 
   final mapping = guessMapping(const [
     'Record Type',
@@ -85,14 +88,23 @@ void main() {
   // --- record type cell values ---
   check(
     'bulk wording selects a bulk record',
-    ['Bulk', 'bulk', ' BULK ', 'Bulk / Weighing Bridge', 'weighing bridge']
-        .every((v) => parseImportRecordType(v) == DeliveryRecordType.bulk),
+    [
+      'Bulk',
+      'bulk',
+      ' BULK ',
+      'Bulk / Weighing Bridge',
+      'weighing bridge',
+    ].every((v) => parseImportRecordType(v) == DeliveryRecordType.bulk),
   );
   check(
     'anything else, including blank, stays individual',
-    [null, '', '   ', 'Individual', 'anything'].every(
-      (v) => parseImportRecordType(v) == DeliveryRecordType.individual,
-    ),
+    [
+      null,
+      '',
+      '   ',
+      'Individual',
+      'anything',
+    ].every((v) => parseImportRecordType(v) == DeliveryRecordType.individual),
   );
 
   // --- bulk import validation ---
@@ -103,10 +115,11 @@ void main() {
   );
   check(
     'bulk import rejects zero/negative bags',
-    [() => parseBulkReceivingInput(bags: '0', totalWeight: '100'),
-     () => parseBulkReceivingInput(bags: '-1', totalWeight: '100'),
-     () => parseBulkReceivingInput(bags: 'x', totalWeight: '100')]
-        .every((f) {
+    [
+      () => parseBulkReceivingInput(bags: '0', totalWeight: '100'),
+      () => parseBulkReceivingInput(bags: '-1', totalWeight: '100'),
+      () => parseBulkReceivingInput(bags: 'x', totalWeight: '100'),
+    ].every((f) {
       try {
         f();
         return false;
@@ -161,7 +174,9 @@ void main() {
   bulkRow.weights = '48.5,51.2';
   check(
     'a bulk row cannot be converted by editing weights',
-    bulkRow.isBulk && bulkRow.totalWeight == 62430 && bulkRow.numberOfBags == 1250,
+    bulkRow.isBulk &&
+        bulkRow.totalWeight == 62430 &&
+        bulkRow.numberOfBags == 1250,
   );
 
   // --- recorder / company ---

@@ -1,0 +1,3 @@
+00:00 +0: loading C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart
+00:00 +0: Supabase login repository restoring without a session clears cached print context
+00:00 +1: All tests passed!
