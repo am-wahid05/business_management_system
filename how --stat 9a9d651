@@ -1,0 +1,230 @@
+[33mcommit 9a9d65141189e2d41c06893f1d2f0adc0b46dbc1[m
+Author: abdulwahidmumuni9@gmail.com <abdulwahidmumuni9@gmail.com>
+Date:   Mon Oct 5 21:03:14 2026 +0000
+
+    bug fixes
+
+ an2.txt => .a3.txt                                 |    0
+ .a3r.txt                                           |    1 [32m+[m
+ .ab.txt                                            |   44 [32m+[m
+ .abt.txt                                           |  152 [32m++[m
+ .afp_links.txt                                     |   46 [32m+[m
+ .analyze_final.stderr                              |    1 [32m+[m
+ .analyze_final.stdout                              |   31 [32m+[m
+ an_err.txt => .analyze_logout.stderr               |    0
+ an_out.txt => .analyze_logout.stdout               |    0
+ .auth_nav_test.exit                                |    1 [32m+[m
+ drawers.txt => .auth_nav_test.stderr               |    0
+ .auth_nav_test.stdout                              |   29 [32m+[m
+ .c.txt                                             |    1 [32m+[m
+ .cl_a.txt                                          |  102 [32m++[m
+ .cn_a.txt                                          |   64 [32m+[m
+ .cn_b.txt                                          |   72 [32m+[m
+ .cur_login_93_200.txt                              |  108 [32m++[m
+ .cur_nav_55_200.txt                                |  146 [32m++[m
+ .dar.txt                                           |   86 [32m+[m
+ .f.txt                                             |  Bin [31m0[m -> [32m53149523[m bytes
+ .f2.txt                                            |    1 [32m+[m
+ .format.exit                                       |    1 [32m+[m
+ .format.stderr                                     |    0
+ .format.stdout                                     |    1 [32m+[m
+ .format2.stderr                                    |    0
+ .format2.stdout                                    |    0
+ .g1.txt                                            |    9 [32m+[m
+ .h1.txt                                            |   47 [32m+[m
+ .h2.txt                                            |    1 [32m+[m
+ .h3.txt                                            |   16 [32m+[m
+ .h4.txt                                            |  Bin [31m0[m -> [32m14[m bytes
+ .h5.txt                                            |    7 [32m+[m
+ .h6.txt                                            |   31 [32m+[m
+ .h7.txt                                            |   74 [32m+[m
+ .head_login.txt                                    |  Bin [31m0[m -> [32m39520[m bytes
+ .head_theme.txt                                    |  Bin [31m0[m -> [32m6640[m bytes
+ .head_ui.txt                                       |  Bin [31m0[m -> [32m10472[m bytes
+ .hl_login.txt                                      |  481 [32m++++++[m
+ .imgs.txt                                          |  207 [32m+++[m
+ .lnk.txt                                           |   32 [32m+[m
+ .old_afp.txt                                       |  Bin [31m0[m -> [32m872[m bytes
+ .old_stat.txt                                      |    5 [32m+[m
+ .rail.txt                                          |  188 [32m+++[m
+ .railmeta.txt                                      |    1 [32m+[m
+ .receipt_print_test.exit                           |    1 [32m+[m
+ .receipt_print_test.stderr                         |    0
+ .receipt_print_test.stdout                         |   77 [32m+[m
+ .ref1.txt                                          |    2 [32m+[m
+ .ref2.txt                                          |    1 [32m+[m
+ .routes1.txt                                       |   61 [32m+[m
+ .routesdef.txt                                     |   51 [32m+[m
+ .sec1.txt                                          |    4 [32m+[m
+ .secfiles.txt                                      |    7 [32m+[m
+ .supabase_isolation.exit                           |    1 [32m+[m
+ .supabase_isolation.stderr                         |    0
+ .supabase_isolation.stdout                         |    3 [32m+[m
+ .t1.txt                                            |    8 [32m+[m
+ .t2.txt                                            |   16 [32m+[m
+ .t2b.txt                                           |    1 [32m+[m
+ .t3.txt                                            |   42 [32m+[m
+ .test_local.stderr                                 |    0
+ .test_local.stdout                                 |    1 [32m+[m
+ .u1.txt                                            |    0
+ .u2.txt                                            |    1 [32m+[m
+ .u3.txt                                            |    1 [32m+[m
+ .un.txt                                            |    6 [32m+[m
+ .und_head.txt                                      |    0
+ .und_now.txt                                       |    0
+ .work                                              |    1 [32m+[m
+ analyze_out.txt                                    |  Bin [31m5024[m -> [32m0[m bytes
+ cleanup_marker_tmp.txt                             |    0
+ labelhits.txt                                      |   47 [31m-[m
+ lib/app/albnc_app.dart                             |  275 [32m+++[m[31m-[m
+ lib/app/app_info.dart                              |    2 [32m+[m[31m-[m
+ lib/app/app_navigation.dart                        | 1656 [32m++++++++++++++++++++[m
+ lib/app/app_responsive.dart                        |   15 [32m+[m[31m-[m
+ lib/app/app_routes.dart                            |   10 [32m+[m
+ lib/app/app_theme.dart                             |  205 [32m++[m[31m-[m
+ lib/app/app_ui.dart                                | 1026 [32m+++++++++++[m[31m-[m
+ lib/app/password_recovery_gate.dart                |   86 [32m+[m[31m-[m
+ lib/app/placeholder_screen.dart                    |   73 [32m+[m[31m-[m
+ lib/app/supabase_config.dart                       |   59 [32m+[m[31m-[m
+ lib/features/about/about_row.dart                  |    8 [32m+[m[31m-[m
+ lib/features/about/about_screen.dart               |   10 [32m+[m[31m-[m
+ lib/features/analytics/analytics_models.dart       |   19 [32m+[m[31m-[m
+ .../analytics/analytics_report_screen.dart         |  547 [32m++++++[m[31m-[m
+ lib/features/analytics/analytics_repository.dart   |   91 [32m+[m[31m-[m
+ .../assistant/business_assistant_screen.dart       |  113 [32m+[m[31m-[m
+ .../assistant/business_assistant_service.dart      |   73 [32m+[m[31m-[m
+ lib/features/auth/account_service.dart             |   50 [32m+[m[31m-[m
+ lib/features/auth/account_settings_screen.dart     |    5 [32m+[m[31m-[m
+ lib/features/auth/auth_form_parts.dart             |  342 [32m++++[m
+ lib/features/auth/auth_repository.dart             |    7 [32m+[m[31m-[m
+ lib/features/auth/change_password_screen.dart      |    7 [32m+[m[31m-[m
+ lib/features/auth/forgot_password_screen.dart      |  164 [32m+[m[31m-[m
+ lib/features/auth/local_auth_repository.dart       |    3 [32m+[m
+ lib/features/auth/login_screen.dart                |  457 [32m+++[m[31m---[m
+ lib/features/auth/no_access_screen.dart            |   14 [32m+[m[31m-[m
+ lib/features/auth/password_widgets.dart            |  101 [32m+[m[31m-[m
+ lib/features/auth/reset_password_screen.dart       |    5 [32m+[m[31m-[m
+ lib/features/auth/sign_up_screen.dart              |  280 [32m++[m[31m--[m
+ lib/features/auth/supabase_auth_link_handler.dart  |  194 [32m+++[m
+ lib/features/auth/supabase_auth_repository.dart    |   98 [32m+[m[31m-[m
+ lib/features/auth/user_management_screen.dart      |  175 [32m++[m[31m-[m
+ lib/features/credits/sms_credits_card.dart         |    3 [32m+[m[31m-[m
+ lib/features/exports/excel_export_service.dart     |  228 [32m++[m[31m-[m
+ lib/features/imports/excel_cell_parser.dart        |   29 [32m+[m[31m-[m
+ lib/features/imports/excel_import_service.dart     |   71 [32m+[m[31m-[m
+ lib/features/imports/excel_workbook_repair.dart    |    1 [31m-[m
+ lib/features/imports/import_header_detector.dart   |   12 [32m+[m[31m-[m
+ lib/features/imports/workbook_formula_cache.dart   |    6 [32m+[m[31m-[m
+ lib/features/imports/workbook_grid_model.dart      |   36 [32m+[m[31m-[m
+ lib/features/imports/workbook_grid_store.dart      |   25 [32m+[m[31m-[m
+ lib/features/imports/workbook_grid_view.dart       |   12 [32m+[m[31m-[m
+ .../management/admin_dashboard_screen.dart         |  413 [32m++[m[31m---[m
+ lib/features/management/excel_export_screen.dart   |  860 [32m++++++++[m[31m--[m
+ lib/features/management/products_screen.dart       |  259 [32m++[m[31m-[m
+ lib/features/management/reports_screen.dart        |  155 [32m+[m[31m-[m
+ lib/features/management/settings_screen.dart       |  556 [32m++++++[m[31m-[m
+ lib/features/management/suppliers_screen.dart      |  190 [32m++[m[31m-[m
+ lib/features/management/workbook_grid_screen.dart  |   31 [32m+[m[31m-[m
+ lib/features/products/product_database.dart        |    6 [32m+[m[31m-[m
+ lib/features/products/product_form_screen.dart     |   16 [32m+[m[31m-[m
+ lib/features/products/product_repository.dart      |   39 [32m+[m[31m-[m
+ lib/features/receiving/paper_layout.dart           |  230 [32m+++[m
+ lib/features/receiving/paper_size.dart             |  231 [32m+++[m
+ lib/features/receiving/print_settings_service.dart |  228 [32m+++[m
+ lib/features/receiving/receipt_service.dart        |  553 [32m++++++[m[31m-[m
+ lib/features/receiving/sms_receipt_service.dart    |  401 [32m++++[m[31m-[m
+ lib/features/receiving/sms_transport.dart          |    3 [32m+[m[31m-[m
+ lib/features/reports/daily_report.dart             |   22 [32m+[m[31m-[m
+ lib/features/reports/daily_report_repository.dart  |    5 [32m+[m[31m-[m
+ lib/features/secretary/bag_weight_validation.dart  |    8 [32m+[m[31m-[m
+ lib/features/secretary/delivery_detail_screen.dart |  449 [32m+++++[m[31m-[m
+ lib/features/secretary/new_receiving_screen.dart   |  518 [32m+++[m[31m---[m
+ .../secretary/secretary_dashboard_screen.dart      |  384 [32m+++[m[31m--[m
+ .../secretary/secretary_print_records_screen.dart  |  355 [32m+++++[m
+ .../secretary/secretary_sms_credits_screen.dart    |  306 [32m++++[m
+ lib/features/secretary/todays_records_screen.dart  |   64 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_controller.dart        |   50 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_formatting.dart        |    5 [32m+[m[31m-[m
+ lib/features/spreadsheet/spreadsheet_formula.dart  |   18 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_import_export.dart     |    7 [32m+[m[31m-[m
+ lib/features/spreadsheet/spreadsheet_merges.dart   |    9 [32m+[m[31m-[m
+ lib/features/spreadsheet/spreadsheet_screen.dart   |   90 [32m+[m[31m-[m
+ lib/features/spreadsheet/spreadsheet_service.dart  |   12 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_state_store.dart       |    2 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_validation.dart        |   11 [32m+[m[31m-[m
+ lib/features/subscriptions/billing_screen.dart     |  159 [32m+[m[31m-[m
+ lib/features/subscriptions/billing_widgets.dart    |    6 [32m+[m[31m-[m
+ .../subscriptions/entitlement_service.dart         |    7 [32m+[m[31m-[m
+ lib/features/subscriptions/entitlements.dart       |   62 [32m+[m[31m-[m
+ .../subscriptions/subscription_messages.dart       |   25 [32m+[m[31m-[m
+ .../subscriptions/subscription_models.dart         |  114 [32m+[m[31m-[m
+ lib/features/subscriptions/subscription_ui.dart    |    8 [32m+[m[31m-[m
+ .../suppliers/supplier_profile_screen.dart         |  239 [32m++[m[31m-[m
+ lib/features/suppliers/supplier_statement.dart     |    8 [32m+[m[31m-[m
+ .../suppliers/supplier_statement_screen.dart       |   81 [32m+[m[31m-[m
+ .../suppliers/supplier_statements_screen.dart      |   64 [32m+[m[31m-[m
+ lib/features/sync/sync_coordinator.dart            |    2 [32m+[m[31m-[m
+ lib/features/sync/sync_status_card.dart            |  131 [32m+[m[31m-[m
+ lib/main.dart                                      |   18 [32m+[m[31m-[m
+ pubspec.lock                                       |   44 [32m+[m[31m-[m
+ pubspec.yaml                                       |   10 [32m+[m[31m-[m
+ supabase/SETUP.md                                  |   26 [32m+[m
+ supabase/functions/send-sms-receipt/index.ts       |   67 [32m+[m[31m-[m
+ ...0020001_sms_initial_credits_and_send_claims.sql |   51 [32m+[m
+ .../202610030001_company_print_preferences.sql     |   70 [32m+[m
+ test/app/password_recovery_gate_test.dart          |   14 [32m+[m[31m-[m
+ test/app/role_navigation_test.dart                 |  191 [32m+++[m
+ test/app/supabase_config_test.dart                 |   15 [32m+[m[31m-[m
+ test/bug_repro_test.dart                           |   20 [32m+[m[31m-[m
+ test/dbg.dart                                      |    8 [32m+[m[31m-[m
+ .../ai_assistant_function_source_test.dart         |   56 [32m+[m[31m-[m
+ .../assistant/business_assistant_service_test.dart |    6 [32m+[m[31m-[m
+ test/features/auth/local_auth_repository_test.dart |  123 [32m+[m[31m-[m
+ test/features/auth/login_role_test.dart            |  111 [32m+[m[31m-[m
+ test/features/auth/password_and_about_test.dart    |   48 [32m+[m[31m-[m
+ .../auth/supabase_account_service_test.dart        |   87 [32m+[m
+ .../auth/supabase_auth_link_handler_test.dart      |   92 [32m++[m
+ test/features/auth/supabase_login_wiring_test.dart |   55 [32m+[m[31m-[m
+ test/features/backup/backup_service_test.dart      |   95 [32m+[m[31m-[m
+ .../sms_initial_credits_migration_test.dart        |   21 [32m+[m
+ .../exports/excel_export_service_test.dart         |  561 [32m++++++[m[31m-[m
+ test/features/imports/bulk_excel_test.dart         |    5 [32m+[m[31m-[m
+ test/features/imports/excel_cell_parser_test.dart  |    3 [32m+[m[31m-[m
+ .../imports/excel_workbook_repair_test.dart        |    8 [32m+[m[31m-[m
+ .../imports/import_header_detector_test.dart       |   10 [32m+[m[31m-[m
+ .../imports/supplier_import_flow_test.dart         |   12 [32m+[m[31m-[m
+ test/features/imports/workbook_grid_test.dart      |   77 [32m+[m[31m-[m
+ test/features/products/product_ordering_test.dart  |   61 [32m+[m[31m-[m
+ .../features/products/product_repository_test.dart |   39 [32m+[m[31m-[m
+ test/features/receiving/bulk_delivery_test.dart    |   12 [32m+[m[31m-[m
+ test/features/receiving/receipt_history_test.dart  |   23 [32m+[m[31m-[m
+ .../receiving/receipt_service_pdf_test.dart        |  753 [32m+++++++++[m
+ .../receiving/sms_multi_recipient_test.dart        |  167 [32m+[m[31m-[m
+ .../receiving/sms_receipt_service_test.dart        |   50 [32m+[m[31m-[m
+ test/features/receiving/sms_recipients_test.dart   |   30 [32m+[m[31m-[m
+ test/features/reports/daily_report_test.dart       |  113 [32m+[m[31m-[m
+ test/features/secretary/bag_weight_entry_test.dart |   21 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_extras_test.dart       |   17 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_merges_test.dart       |   35 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_persistence_test.dart  |   45 [32m+[m[31m-[m
+ test/features/spreadsheet/spreadsheet_test.dart    |   41 [32m+[m[31m-[m
+ .../spreadsheet/spreadsheet_ui_wiring_test.dart    |   42 [32m+[m[31m-[m
+ .../subscriptions/subscription_app_flow_test.dart  |   28 [32m+[m[31m-[m
+ .../subscriptions/subscription_billing_test.dart   |   24 [32m+[m[31m-[m
+ .../subscription_edge_function_test.dart           |   14 [32m+[m[31m-[m
+ .../subscription_entitlements_test.dart            |   11 [32m+[m[31m-[m
+ .../subscriptions/subscription_security_test.dart  |  116 [32m+[m[31m-[m
+ .../subscriptions/subscription_test_helpers.dart   |   58 [32m+[m[31m-[m
+ .../suppliers/supplier_repository_test.dart        |  102 [32m++[m
+ .../suppliers/supplier_statement_test.dart         |   56 [32m+[m[31m-[m
+ test/features/sync/sync_coordinator_test.dart      |   56 [32m+[m[31m-[m
+ test/phase1_harness.dart                           |   72 [32m+[m[31m-[m
+ test/smoke_probe_test.dart                         |   50 [32m+[m[31m-[m
+ test/widget_test.dart                              |   41 [32m+[m[31m-[m
+ test_baseline.txt                                  |  Bin [31m5232[m -> [32m0[m bytes
+ tool/bulk_domain_check.dart                        |   10 [32m+[m[31m-[m
+ tool/bulk_excel_check.dart                         |   37 [32m+[m[31m-[m
+ townhits.txt                                       |   24 [31m-[m
+ verify.err                                         |    0
+ verify.raw                                         |    2 [32m+[m
+ 223 files changed, 16810 insertions(+), 3547 deletions(-)
