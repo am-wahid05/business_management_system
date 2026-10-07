@@ -1,0 +1,4 @@
+Flutter 3.49.0-1.0.pre-54 • channel master • https://github.com/flutter/flutter.git
+Framework • revision 19946f91c8 (2 weeks ago) • 2026-09-20 10:16:38 +0000
+Engine • hash 39c38b759eba9bcf048f203176845d7b1baef159 (revision 19946f91c8) (17 days ago) • 2026-09-20 10:16:38.000Z
+Tools • Dart 3.14.0 (build 3.14.0-248.0.dev) • DevTools 2.61.0-dev.0
