@@ -15,7 +15,10 @@ abstract final class ProductDatabase {
     return factory.openDatabase(
       databasePath ?? path.join(directory!, 'albnc_ventures.db'),
       options: OpenDatabaseOptions(
-        version: 20,
+        version: 21,
+        onConfigure: (database) async {
+          await database.execute('PRAGMA foreign_keys = ON');
+        },
         onCreate: (database, version) async {
           await _createProductsTable(database);
           await _createDeliveryTables(database);
@@ -23,6 +26,8 @@ abstract final class ProductDatabase {
           await _createReceiptSendTable(database);
           await _createImportLogTable(database);
           await _createSpreadsheetTables(database);
+          await _addAnalyticsIndexes(database);
+          await _addCompanyColumns(database);
         },
         onUpgrade: (database, oldVersion, newVersion) async {
           if (oldVersion < 2) await _createDeliveryTables(database);
@@ -41,6 +46,7 @@ abstract final class ProductDatabase {
           if (oldVersion < 18) await _addBulkDeliveryColumns(database);
           if (oldVersion < 19) await _addCompanyColumns(database);
           if (oldVersion < 20) await _scopeProductKeysToCompany(database);
+          if (oldVersion < 21) await _scopeDeliveryKeysToCompany(database);
         },
       ),
     );
@@ -83,14 +89,27 @@ abstract final class ProductDatabase {
   }
 
   static Future<void> _createDeliveryTables(Database database) async {
+    await _createCompanyScopedDeliveriesTable(database, 'deliveries');
+    await _createCompanyScopedBagWeightsTable(
+      database,
+      'delivery_bag_weights',
+      'deliveries',
+    );
+    await _createSupplierTables(database);
+  }
+
+  static Future<void> _createCompanyScopedDeliveriesTable(
+    DatabaseExecutor database,
+    String tableName,
+  ) async {
     await database.execute('''
-      CREATE TABLE IF NOT EXISTS deliveries (
-        id TEXT PRIMARY KEY,
+      CREATE TABLE $tableName (
+        id TEXT NOT NULL,
+        company_id TEXT NOT NULL DEFAULT '',
         supplier_id TEXT NOT NULL,
         product_id TEXT NOT NULL,
         recorded_at TEXT NOT NULL,
         recorded_by_user_id TEXT NOT NULL,
-        company_id TEXT,
         status TEXT NOT NULL,
         synchronization_status TEXT NOT NULL,
         supplier_internal_id TEXT,
@@ -106,20 +125,151 @@ abstract final class ProductDatabase {
         bag_count INTEGER,
         notes TEXT,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        PRIMARY KEY (company_id, id)
       )
     ''');
+  }
+
+  static Future<void> _createCompanyScopedBagWeightsTable(
+    DatabaseExecutor database,
+    String tableName,
+    String deliveriesTableName,
+  ) async {
     await database.execute('''
-      CREATE TABLE IF NOT EXISTS delivery_bag_weights (
+      CREATE TABLE $tableName (
+        company_id TEXT NOT NULL DEFAULT '',
         delivery_id TEXT NOT NULL,
-        company_id TEXT,
         bag_number INTEGER NOT NULL,
         weight REAL NOT NULL,
-        PRIMARY KEY (delivery_id, bag_number),
-        FOREIGN KEY (delivery_id) REFERENCES deliveries (id) ON DELETE CASCADE
+        PRIMARY KEY (company_id, delivery_id, bag_number),
+        FOREIGN KEY (company_id, delivery_id)
+          REFERENCES $deliveriesTableName (company_id, id) ON DELETE CASCADE
       )
     ''');
-    await _createSupplierTables(database);
+  }
+
+  /// Rebuilds the legacy global delivery keys to match Supabase tenant keys.
+  ///
+  /// Valid company IDs are copied unchanged; NULL values from pre-company local
+  /// data become the existing unassigned sentinel, an empty string. Bag rows
+  /// whose company does not match their delivery cannot be safely reassigned,
+  /// so they are preserved in a local reconciliation table instead of being
+  /// attached to another company's delivery or discarded.
+  static Future<void> _scopeDeliveryKeysToCompany(Database database) async {
+    final deliveryColumns = await database.rawQuery(
+      'PRAGMA table_info(deliveries)',
+    );
+    final weightColumns = await database.rawQuery(
+      'PRAGMA table_info(delivery_bag_weights)',
+    );
+    if (deliveryColumns.isEmpty || weightColumns.isEmpty) return;
+
+    final hasWeightRecorder = weightColumns.any(
+      (column) => column['name'] == 'recorded_by_user_id',
+    );
+    final recorderExpression = hasWeightRecorder
+        ? 'w.recorded_by_user_id'
+        : 'NULL';
+    final orphanRows = await database.rawQuery('''
+      SELECT
+        w.company_id,
+        w.delivery_id,
+        w.bag_number,
+        w.weight,
+        $recorderExpression AS recorded_by_user_id,
+        CASE
+          WHEN d.id IS NULL THEN 'delivery_missing'
+          ELSE 'company_id_mismatch'
+        END AS reason
+      FROM delivery_bag_weights w
+      LEFT JOIN deliveries d ON d.id = w.delivery_id
+      WHERE d.id IS NULL
+         OR COALESCE(w.company_id, '') != COALESCE(d.company_id, '')
+    ''');
+
+    if (orphanRows.isNotEmpty) {
+      await database.execute('''
+        CREATE TABLE IF NOT EXISTS delivery_bag_weights_legacy_orphans (
+          orphan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          company_id TEXT,
+          delivery_id TEXT NOT NULL,
+          bag_number INTEGER NOT NULL,
+          weight REAL NOT NULL,
+          recorded_by_user_id TEXT,
+          reason TEXT NOT NULL
+        )
+      ''');
+      await database.execute('''
+        INSERT INTO delivery_bag_weights_legacy_orphans (
+          company_id, delivery_id, bag_number, weight,
+          recorded_by_user_id, reason
+        )
+        SELECT
+          w.company_id, w.delivery_id, w.bag_number, w.weight,
+          $recorderExpression,
+          CASE
+            WHEN d.id IS NULL THEN 'delivery_missing'
+            ELSE 'company_id_mismatch'
+          END
+        FROM delivery_bag_weights w
+        LEFT JOIN deliveries d ON d.id = w.delivery_id
+        WHERE d.id IS NULL
+           OR COALESCE(w.company_id, '') != COALESCE(d.company_id, '')
+      ''');
+    }
+
+    await _createCompanyScopedDeliveriesTable(
+      database,
+      'deliveries_company_scoped',
+    );
+    await _createCompanyScopedBagWeightsTable(
+      database,
+      'delivery_bag_weights_company_scoped',
+      'deliveries_company_scoped',
+    );
+    await database.execute('''
+      INSERT INTO deliveries_company_scoped (
+        id, company_id, supplier_id, product_id, recorded_at,
+        recorded_by_user_id, status, synchronization_status,
+        supplier_internal_id, supplier_name, product_name, supplier_type,
+        synchronization_error, sync_attempts, last_sync_attempt_at, synced_at,
+        record_type, total_weight, bag_count, notes, created_at, updated_at
+      )
+      SELECT
+        id, COALESCE(company_id, ''), supplier_id, product_id, recorded_at,
+        recorded_by_user_id, status, synchronization_status,
+        supplier_internal_id, supplier_name, product_name, supplier_type,
+        synchronization_error, sync_attempts, last_sync_attempt_at, synced_at,
+        record_type, total_weight, bag_count, notes, created_at, updated_at
+      FROM deliveries
+    ''');
+    await database.execute('''
+      INSERT INTO delivery_bag_weights_company_scoped (
+        company_id, delivery_id, bag_number, weight
+      )
+      SELECT COALESCE(w.company_id, ''), w.delivery_id, w.bag_number, w.weight
+      FROM delivery_bag_weights w
+      JOIN deliveries d ON d.id = w.delivery_id
+      WHERE COALESCE(w.company_id, '') = COALESCE(d.company_id, '')
+    ''');
+
+    // Drop the old child first. The new child references the temporary parent,
+    // which SQLite updates to `deliveries` when that table is renamed below.
+    await database.execute('DROP TABLE delivery_bag_weights');
+    await database.execute('DROP TABLE deliveries');
+    await database.execute(
+      'ALTER TABLE deliveries_company_scoped RENAME TO deliveries',
+    );
+    await database.execute(
+      'ALTER TABLE delivery_bag_weights_company_scoped RENAME TO delivery_bag_weights',
+    );
+    await _addAnalyticsIndexes(database);
+    await _addCompanyColumns(database);
+    await database.execute('''
+      CREATE INDEX IF NOT EXISTS idx_delivery_bag_weights_company_delivery
+      ON delivery_bag_weights(company_id, delivery_id)
+    ''');
   }
 
   static Future<void> _addDeliveryDisplaySnapshots(Database database) async {

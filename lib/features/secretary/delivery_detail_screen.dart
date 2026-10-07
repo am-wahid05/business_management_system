@@ -166,12 +166,18 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen>
       final profile = await PrintPreferences.current(
         context: widget.activeCompanyContext,
       );
+      // The printer is a device setting: remembered per company on this
+      // machine only, never through the company profile or Supabase.
+      final device = await DevicePrintSettingsStore.forContext(
+        widget.activeCompanyContext,
+      );
       if (!mounted) return;
       if (!profile.showPreview) {
         await _receiptService.print(
           latest,
           companyName: _companyName,
           paper: profile.receiptPaper,
+          printer: device.receiptPrinter,
         );
         return;
       }
@@ -180,6 +186,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen>
         latest,
         companyName: _companyName,
         paper: profile.receiptPaper,
+        printer: device.receiptPrinter,
       );
     } catch (error) {
       if (mounted)

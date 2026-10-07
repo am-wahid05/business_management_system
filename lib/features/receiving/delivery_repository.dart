@@ -4,6 +4,7 @@ import '../../domain/models/delivery.dart';
 import '../../domain/models/product.dart';
 import '../../domain/models/supplier.dart';
 import '../suppliers/supplier_repository.dart';
+import '../sync/sync_models.dart';
 
 class DeliveryRepository {
   DeliveryRepository(
@@ -17,6 +18,11 @@ class DeliveryRepository {
   final String? Function()? userIdProvider;
   String? get _companyId => companyIdProvider?.call();
   bool get _usesCompanyScope => companyIdProvider != null;
+
+  SyncScope captureSyncScope() => SyncScope(
+    companyId: _companyId,
+    isCompanyScoped: _usesCompanyScope,
+  );
 
   Future<void> save(Delivery delivery) async {
     _requireActiveCompany(delivery);
@@ -34,7 +40,18 @@ class DeliveryRepository {
     Delivery delivery, {
     String? createdAt,
   }) async {
-    _requireActiveCompany(delivery);
+    final activeCompanyId = _companyId;
+    if (_usesCompanyScope &&
+        (activeCompanyId == null || activeCompanyId.isEmpty)) {
+      throw StateError('Select an active company before saving deliveries.');
+    }
+    if (_usesCompanyScope &&
+        delivery.companyId != null &&
+        delivery.companyId != activeCompanyId) {
+      throw StateError('Delivery belongs to a different company.');
+    }
+    final storedCompanyId =
+        (_usesCompanyScope ? activeCompanyId : delivery.companyId) ?? '';
     final columns = await transaction.rawQuery('PRAGMA table_info(deliveries)');
     final weightColumns = await transaction.rawQuery(
       'PRAGMA table_info(delivery_bag_weights)',
@@ -79,7 +96,7 @@ class DeliveryRepository {
       row['supplier_internal_id'] = delivery.supplier.internalId;
     }
     if (columns.any((column) => column['name'] == 'company_id')) {
-      row['company_id'] = _usesCompanyScope ? _companyId : delivery.companyId;
+      row['company_id'] = storedCompanyId;
     }
     // Bulk / weighing-bridge fields, written only when the column exists so an
     // older local database keeps working unchanged.
@@ -111,7 +128,7 @@ class DeliveryRepository {
       await transaction.insert('delivery_bag_weights', {
         'delivery_id': delivery.id,
         if (columns.any((column) => column['name'] == 'company_id'))
-          'company_id': _usesCompanyScope ? _companyId : delivery.companyId,
+          'company_id': storedCompanyId,
         'bag_number': index + 1,
         'weight': delivery.bagWeights[index],
         if (hasWeightRecorder) 'recorded_by_user_id': weightRecorder,
@@ -131,14 +148,19 @@ class DeliveryRepository {
   }
 
   Future<List<Delivery>> unsynchronized() async {
-    if (_usesCompanyScope && _companyId == null) return const [];
+    return unsynchronizedForScope(captureSyncScope());
+  }
+
+  Future<List<Delivery>> unsynchronizedForScope(SyncScope scope) async {
+    _validateSyncScope(scope);
+    if (scope.isCompanyScoped && scope.companyId == null) return const [];
     final rows = await database.query(
       'deliveries',
-      where: _usesCompanyScope
+      where: scope.isCompanyScoped
           ? 'company_id IS ? AND synchronization_status IN (?, ?, ?, ?)'
           : 'synchronization_status IN (?, ?, ?, ?)',
-      whereArgs: _usesCompanyScope
-          ? [_companyId, 'localOnly', 'pendingSync', 'pending', 'syncFailed']
+      whereArgs: scope.isCompanyScoped
+          ? [scope.companyId, 'localOnly', 'pendingSync', 'pending', 'syncFailed']
           : ['localOnly', 'pendingSync', 'pending', 'syncFailed'],
       orderBy: 'recorded_at ASC',
     );
@@ -146,20 +168,38 @@ class DeliveryRepository {
   }
 
   Future<void> recordSyncAttempt(String id, DateTime attemptedAt) async {
-    if (_usesCompanyScope && _companyId == null) return;
+    await recordSyncAttemptForScope(id, attemptedAt, captureSyncScope());
+  }
+
+  Future<void> recordSyncAttemptForScope(
+    String id,
+    DateTime attemptedAt,
+    SyncScope scope,
+  ) async {
+    _validateSyncScope(scope);
+    if (scope.isCompanyScoped && scope.companyId == null) return;
     await database.rawUpdate(
-      'UPDATE deliveries SET synchronization_status = ?, sync_attempts = sync_attempts + 1, last_sync_attempt_at = ? WHERE id = ?${_usesCompanyScope ? ' AND company_id IS ?' : ''}',
+      'UPDATE deliveries SET synchronization_status = ?, sync_attempts = sync_attempts + 1, last_sync_attempt_at = ? WHERE id = ?${scope.isCompanyScoped ? ' AND company_id IS ?' : ''}',
       [
         'pendingSync',
         attemptedAt.toIso8601String(),
         id,
-        if (_usesCompanyScope) _companyId,
+        if (scope.isCompanyScoped) scope.companyId,
       ],
     );
   }
 
   Future<void> markSynced(String id, DateTime syncedAt) async {
-    if (_usesCompanyScope && _companyId == null) return;
+    await markSyncedForScope(id, syncedAt, captureSyncScope());
+  }
+
+  Future<void> markSyncedForScope(
+    String id,
+    DateTime syncedAt,
+    SyncScope scope,
+  ) async {
+    _validateSyncScope(scope);
+    if (scope.isCompanyScoped && scope.companyId == null) return;
     await database.update(
       'deliveries',
       {
@@ -167,8 +207,8 @@ class DeliveryRepository {
         'synchronization_error': null,
         'synced_at': syncedAt.toIso8601String(),
       },
-      where: _usesCompanyScope ? 'id = ? AND company_id IS ?' : 'id = ?',
-      whereArgs: _usesCompanyScope ? [id, _companyId] : [id],
+      where: scope.isCompanyScoped ? 'id = ? AND company_id IS ?' : 'id = ?',
+      whereArgs: scope.isCompanyScoped ? [id, scope.companyId] : [id],
     );
   }
 
@@ -177,7 +217,17 @@ class DeliveryRepository {
     String error,
     DateTime attemptedAt,
   ) async {
-    if (_usesCompanyScope && _companyId == null) return;
+    await markSyncFailedForScope(id, error, attemptedAt, captureSyncScope());
+  }
+
+  Future<void> markSyncFailedForScope(
+    String id,
+    String error,
+    DateTime attemptedAt,
+    SyncScope scope,
+  ) async {
+    _validateSyncScope(scope);
+    if (scope.isCompanyScoped && scope.companyId == null) return;
     await database.update(
       'deliveries',
       {
@@ -185,9 +235,15 @@ class DeliveryRepository {
         'synchronization_error': error,
         'last_sync_attempt_at': attemptedAt.toIso8601String(),
       },
-      where: _usesCompanyScope ? 'id = ? AND company_id IS ?' : 'id = ?',
-      whereArgs: _usesCompanyScope ? [id, _companyId] : [id],
+      where: scope.isCompanyScoped ? 'id = ? AND company_id IS ?' : 'id = ?',
+      whereArgs: scope.isCompanyScoped ? [id, scope.companyId] : [id],
     );
+  }
+
+  void _validateSyncScope(SyncScope scope) {
+    if (scope.isCompanyScoped != _usesCompanyScope) {
+      throw StateError('Sync scope does not match this delivery repository.');
+    }
   }
 
   Future<List<Delivery>> forDate(DateTime date) async {
@@ -615,6 +671,10 @@ class DeliveryRepository {
     );
     final deliveries = <Delivery>[];
     for (final row in rows) {
+      final storedCompanyId = row['company_id'] as String?;
+      final companyId = storedCompanyId == null || storedCompanyId.isEmpty
+          ? null
+          : storedCompanyId;
       final weightRows = await database.query(
         'delivery_bag_weights',
         where: _usesCompanyScope
@@ -631,7 +691,7 @@ class DeliveryRepository {
           id: row['id']! as String,
           supplier: Supplier(
             id: row['supplier_id']! as String,
-            companyId: row['company_id'] as String?,
+            companyId: companyId,
             name: row['supplier_name']! as String,
             type: SupplierType.values.byName(row['supplier_type']! as String),
             town: '',
@@ -639,13 +699,13 @@ class DeliveryRepository {
             region: '',
             phone: await _supplierPhoneFor(
               row['supplier_id']! as String,
-              row['company_id'] as String?,
+              companyId,
             ),
           ),
           product: Product(
             id: row['product_id']! as String,
             name: row['product_name']! as String,
-            companyId: row['company_id'] as String?,
+            companyId: companyId,
           ),
           recordedAt: DateTime.parse(row['recorded_at']! as String),
           bagWeights: recordType == DeliveryRecordType.bulk
@@ -663,7 +723,7 @@ class DeliveryRepository {
                     )
                     .toList()
               : const [],
-          companyId: row['company_id'] as String?,
+          companyId: companyId,
           status: DeliveryStatus.values.byName(row['status']! as String),
           synchronizationStatus: SynchronizationStatus.values.byName(
             row['synchronization_status']! as String,

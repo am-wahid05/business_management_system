@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_2/features/auth/active_company_context.dart';
 import 'package:flutter_application_2/features/auth/account_service.dart';
 import 'package:flutter_application_2/features/auth/auth_models.dart';
@@ -85,6 +86,154 @@ void main() {
       final profile = await PrintPreferences.current(context: context);
       expect(profile.receiptPaper, PaperSize.thermal80);
     });
+  });
+
+  test('logout clears cached print context so the next user cannot inherit it', () async {
+    final companyA = const AppUser(
+      id: 'user-a',
+      username: 'a@example.com',
+      displayName: 'Company A User',
+      role: UserRole.admin,
+      isActive: true,
+      companyId: 'company-a',
+      companyName: 'Company A',
+    );
+    final companyB = const AppUser(
+      id: 'user-b',
+      username: 'b@example.com',
+      displayName: 'Company B User',
+      role: UserRole.secretary,
+      isActive: true,
+      companyId: 'company-b',
+      companyName: 'Company B',
+    );
+
+    final repository = _RemoteAuthRepository()
+      ..signInResult = companyA
+      ..memberships = const [
+        CompanyMembership(
+          companyId: 'company-a',
+          companyName: 'Company A',
+          role: UserRole.admin,
+        ),
+      ];
+
+    // A signs in and Company A is selected; A's preferred paper size is cached.
+    await repository.signIn('a@example.com', 'password');
+    await repository.selectCompany('company-a');
+    PrintPreferences.remember(
+      'company-a',
+      const CompanyPrintProfile(receiptPaper: PaperSize.thermal58),
+    );
+
+    // A signs out. The canonical SupabaseAuthRepository.signOut already clears
+    // PrintPreferences; the test double does too after this wiring.
+    await repository.signOut();
+
+    // B signs in and Company B is selected; B's own profile is cached.
+    repository.signInResult = companyB;
+    repository.memberships = const [
+      CompanyMembership(
+        companyId: 'company-b',
+        companyName: 'Company B',
+        role: UserRole.secretary,
+      ),
+    ];
+    await repository.signIn('b@example.com', 'password');
+    await repository.selectCompany('company-b');
+    PrintPreferences.remember(
+      'company-b',
+      const CompanyPrintProfile(receiptPaper: PaperSize.thermal80),
+    );
+
+    // Company A's cached profile is gone: its context now resolves to the
+    // default thermal80, not A's 58 mm.
+    expect(
+      (await PrintPreferences.current(context: ActiveCompanyContext(companyA)))
+          .receiptPaper,
+      PaperSize.thermal80,
+    );
+
+    // Company B's active print-settings context resolves to B's own profile
+    // (thermal80), not A's 58 mm.
+    expect(
+      (await PrintPreferences.current(context: ActiveCompanyContext(companyB)))
+          .receiptPaper,
+      PaperSize.thermal80,
+    );
+  });
+
+  test('company-specific preferences reload correctly after switching back to the previous company', () async {
+    final companyA = const AppUser(
+      id: 'user-a',
+      username: 'a@example.com',
+      displayName: 'Company A User',
+      role: UserRole.admin,
+      isActive: true,
+      companyId: 'company-a',
+      companyName: 'Company A',
+    );
+    final companyB = const AppUser(
+      id: 'user-b',
+      username: 'b@example.com',
+      displayName: 'Company B User',
+      role: UserRole.secretary,
+      isActive: true,
+      companyId: 'company-b',
+      companyName: 'Company B',
+    );
+
+    final repository = _RemoteAuthRepository()
+      ..signInResult = companyA
+      ..memberships = const [
+        CompanyMembership(
+          companyId: 'company-a',
+          companyName: 'Company A',
+          role: UserRole.admin,
+        ),
+      ];
+
+    // A signs in and Company A is selected; A's preferred paper size is cached.
+    await repository.signIn('a@example.com', 'password');
+    await repository.selectCompany('company-a');
+    PrintPreferences.remember(
+      'company-a',
+      const CompanyPrintProfile(receiptPaper: PaperSize.thermal58),
+    );
+
+    // B signs in and Company B is selected; B's preferred paper size is cached.
+    repository.signInResult = companyB;
+    repository.memberships = const [
+      CompanyMembership(
+        companyId: 'company-b',
+        companyName: 'Company B',
+        role: UserRole.secretary,
+      ),
+    ];
+    await repository.signIn('b@example.com', 'password');
+    await repository.selectCompany('company-b');
+    PrintPreferences.remember(
+      'company-b',
+      const CompanyPrintProfile(receiptPaper: PaperSize.thermal80),
+    );
+
+    // Back to Company A: its own 58 mm profile must be returned, not B's 80 mm.
+    repository.signInResult = companyA;
+    repository.memberships = const [
+      CompanyMembership(
+        companyId: 'company-a',
+        companyName: 'Company A',
+        role: UserRole.admin,
+      ),
+    ];
+    await repository.signIn('a@example.com', 'password');
+    await repository.selectCompany('company-a');
+
+    expect(
+      (await PrintPreferences.current(context: ActiveCompanyContext(companyA)))
+          .receiptPaper,
+      PaperSize.thermal58,
+    );
   });
 
   testWidgets(
@@ -203,6 +352,27 @@ void main() {
   testWidgets('settings exposes company branding and change password', (
     tester,
   ) async {
+    const channel = MethodChannel('net.nfet.printing');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          if (call.method == 'printingInfo') {
+            return <String, dynamic>{
+              'directPrint': true,
+              'dynamicLayout': true,
+              'canPrint': true,
+              'canConvertHtml': false,
+              'canListPrinters': false,
+              'canShare': false,
+              'canRaster': true,
+            };
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+
     sqfliteFfiInit();
     final database = await databaseFactoryFfi.openDatabase(':memory:');
     final context = ActiveCompanyContext(
@@ -216,12 +386,30 @@ void main() {
         companyName: 'Harbor Cooperative',
       ),
     );
+    // The settings screen now includes the Printing section, which reads the
+    // active company's paper sizes through this client. Without a mock the test
+    // would open a real connection to example.supabase.co and pumpAndSettle
+    // would wait forever on the skeleton animation, so the row is served
+    // in-memory like the sign-in test above.
     final client = SupabaseClient(
       'https://example.supabase.co',
       'test-publishable-key',
+      httpClient: MockClient(
+        (request) async => http.Response(
+          jsonEncode({
+            'receipt_paper_size': 'thermal58',
+            'report_paper_size': 'a4',
+            'statement_paper_size': 'a4',
+            'print_show_preview': true,
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        ),
+      ),
     );
     addTearDown(database.close);
     addTearDown(client.dispose);
+    addTearDown(PrintPreferences.clear);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -240,6 +428,112 @@ void main() {
     expect(find.text('Harbor Cooperative'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'settings offers this device printers without leaking them to the company',
+    (tester) async {
+      // The platform reports printer enumeration, so the Printing section
+      // shows its pickers. Without this mock the section correctly falls
+      // back to its "not supported" card instead.
+      const channel = MethodChannel('net.nfet.printing');
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            switch (call.method) {
+              case 'printingInfo':
+                return <String, dynamic>{
+                  'directPrint': true,
+                  'dynamicLayout': true,
+                  'canPrint': true,
+                  'canConvertHtml': false,
+                  'canListPrinters': true,
+                  'canShare': false,
+                  'canRaster': true,
+                };
+              case 'listPrinters':
+                return <Map<String, dynamic>>[
+                  {
+                    'url': 'Thermal 58',
+                    'name': 'Thermal 58',
+                    'default': true,
+                    'available': true,
+                  },
+                  {
+                    'url': 'Microsoft Print to PDF',
+                    'name': 'Microsoft Print to PDF',
+                    'default': false,
+                    'available': true,
+                  },
+                ];
+            }
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null),
+      );
+
+      sqfliteFfiInit();
+      final database = await databaseFactoryFfi.openDatabase(':memory:');
+      final context = ActiveCompanyContext(
+        const AppUser(
+          id: 'user-1',
+          username: 'user@example.com',
+          displayName: 'Company Admin',
+          role: UserRole.admin,
+          isActive: true,
+          companyId: 'company-1',
+          companyName: 'Harbor Cooperative',
+        ),
+      );
+      final client = SupabaseClient(
+        'https://example.supabase.co',
+        'test-publishable-key',
+        httpClient: MockClient(
+          (request) async => http.Response(
+            jsonEncode({
+              'receipt_paper_size': 'thermal80',
+              'report_paper_size': 'a4',
+              'statement_paper_size': 'a4',
+              'print_show_preview': true,
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+          ),
+        ),
+      );
+      addTearDown(database.close);
+      addTearDown(client.dispose);
+      addTearDown(PrintPreferences.clear);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: SettingsScreen(
+            backupService: BackupService(database),
+            accountService: _FakeAccountService(),
+            brandingService: CompanyBrandingService(client, context),
+            activeCompanyContext: context,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Both device pickers are offered, each with "Ask each time" as the
+      // explicit no-preference entry.
+      expect(find.text('Receipt printer'), findsOneWidget);
+      expect(find.text('Report & statement printer'), findsOneWidget);
+      expect(find.text('Ask each time (system dialog)'), findsNWidgets(2));
+      // The enumerated printers are selectable by name...
+      expect(find.text('Thermal 58'), findsOneWidget);
+      expect(find.text('Microsoft Print to PDF'), findsOneWidget);
+      // ...and the "cannot list printers" fallback stays away while the
+      // platform can enumerate.
+      expect(
+        find.textContaining('does not support choosing a printer'),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 class _RemoteAuthRepository implements AuthRepository {
@@ -305,7 +599,10 @@ class _RemoteAuthRepository implements AuthRepository {
   }) => throw StateError('Remote login must not create a local account.');
 
   @override
-  Future<void> signOut() async => _context.value = null;
+  Future<void> signOut() async {
+    _context.value = null;
+    PrintPreferences.clear();
+  }
 }
 
 class _FakeAccountService implements AccountService {

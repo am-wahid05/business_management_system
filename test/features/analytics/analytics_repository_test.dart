@@ -16,17 +16,18 @@ void main() {
         onCreate: (database, version) async {
           await database.execute('''
             CREATE TABLE deliveries (
-              id TEXT PRIMARY KEY, company_id TEXT, supplier_id TEXT NOT NULL, product_id TEXT NOT NULL,
+              id TEXT NOT NULL, company_id TEXT, supplier_id TEXT NOT NULL, product_id TEXT NOT NULL,
               recorded_at TEXT NOT NULL, recorded_by_user_id TEXT NOT NULL, status TEXT NOT NULL,
               synchronization_status TEXT NOT NULL, supplier_internal_id TEXT,
               supplier_name TEXT NOT NULL, product_name TEXT NOT NULL, supplier_type TEXT NOT NULL,
-              created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+              created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+              PRIMARY KEY (company_id, id)
             )
           ''');
           await database.execute('''
             CREATE TABLE delivery_bag_weights (
               delivery_id TEXT NOT NULL, company_id TEXT, bag_number INTEGER NOT NULL, weight REAL NOT NULL,
-              PRIMARY KEY (delivery_id, bag_number)
+              PRIMARY KEY (company_id, delivery_id, bag_number)
             )
           ''');
           await database.execute('''
@@ -182,7 +183,7 @@ void main() {
     );
     await _insertDelivery(
       database,
-      'tenant-a-delivery',
+      'shared-delivery-id',
       'shared-id',
       'cashew',
       'Cashew',
@@ -193,7 +194,7 @@ void main() {
     );
     await _insertDelivery(
       database,
-      'tenant-b-delivery',
+      'shared-delivery-id',
       'shared-id',
       'cashew',
       'Cashew',
@@ -202,18 +203,58 @@ void main() {
       [900],
       companyId: 'tenant-b',
     );
+    await _insertDelivery(
+      database,
+      'tenant-b-old-delivery',
+      'shared-id',
+      'cocoa',
+      'Cocoa',
+      'farmer',
+      '2025-09-20T10:00:00',
+      const [],
+      companyId: 'tenant-b',
+    );
 
     final tenantA = AnalyticsRepository(
       database,
       companyIdProvider: () => 'tenant-a',
     );
-    final summary = await tenantA.summary(_filters());
-    final locations = await tenantA.locationBreakdown(_filters());
+    final tenantB = AnalyticsRepository(
+      database,
+      companyIdProvider: () => 'tenant-b',
+    );
+    final summaryA = await tenantA.summary(_filters());
+    final locationsA = await tenantA.locationBreakdown(_filters());
+    final productsA = await tenantA.productBreakdown(_filters());
+    final suppliersA = await tenantA.supplierBreakdown(_filters());
+    final trendA = await tenantA.trend(_filters(), AnalyticsTrend.monthly);
+    final activityA = await tenantA.supplierActivity(_filters());
+    final summaryB = await tenantB.summary(_filters());
+    final locationsB = await tenantB.locationBreakdown(_filters());
+    final productsB = await tenantB.productBreakdown(_filters());
+    final suppliersB = await tenantB.supplierBreakdown(_filters());
+    final trendB = await tenantB.trend(_filters(), AnalyticsTrend.monthly);
+    final activityB = await tenantB.supplierActivity(_filters());
 
-    expect(summary.deliveryCount, 1);
-    expect(summary.totalWeight, 10);
-    expect(summary.activeSuppliers, 1);
-    expect(locations.map((row) => row.location), ['A town']);
+    expect(summaryA.deliveryCount, 1);
+    expect(summaryA.totalWeight, 10);
+    expect(summaryA.activeSuppliers, 1);
+    expect(locationsA.map((row) => row.location), ['A town']);
+    expect(productsA.single.totalWeight, 10);
+    expect(suppliersA.single.totalWeight, 10);
+    expect(trendA.single.totalWeight, 10);
+    expect(activityA.newSuppliers, 1);
+    expect(activityA.returningSuppliers, 0);
+
+    expect(summaryB.deliveryCount, 1);
+    expect(summaryB.totalWeight, 900);
+    expect(summaryB.activeSuppliers, 1);
+    expect(locationsB.map((row) => row.location), ['B town']);
+    expect(productsB.single.totalWeight, 900);
+    expect(suppliersB.single.totalWeight, 900);
+    expect(trendB.single.totalWeight, 900);
+    expect(activityB.newSuppliers, 0);
+    expect(activityB.returningSuppliers, 1);
   });
 }
 

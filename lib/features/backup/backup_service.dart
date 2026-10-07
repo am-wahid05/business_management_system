@@ -146,7 +146,12 @@ class BackupService {
           continue;
         }
         for (final row in tables[table]!) {
-          await transaction.insert(table, row);
+          final restoredRow = Map<String, Object?>.from(row);
+          if ((table == 'deliveries' || table == 'delivery_bag_weights') &&
+              restoredRow['company_id'] == null) {
+            restoredRow['company_id'] = '';
+          }
+          await transaction.insert(table, restoredRow);
         }
       }
     });

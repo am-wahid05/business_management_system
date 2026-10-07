@@ -13,6 +13,7 @@ import 'features/auth/local_auth_repository.dart';
 import 'features/auth/supabase_auth_repository.dart';
 import 'features/auth/supabase_auth_link_handler.dart';
 import 'features/company/company_branding.dart';
+import 'features/receiving/print_settings_service.dart';
 import 'features/receiving/receiving_service.dart';
 import 'features/suppliers/supplier_repository.dart';
 import 'features/sync/supabase_delivery_store.dart';
@@ -63,6 +64,13 @@ Future<void> main() async {
         repository.activeCompanyContext,
       );
       await repository.restoreSession();
+      // Screens that print resolve the active company's paper sizes through
+      // this client without every one of them being handed it. It holds a
+      // connection, never a credential: reads are made with the signed-in
+      // session and re-checked by the same company RLS as the company row
+      // itself, so this cannot reach a company the user is not part of.
+      PrintPreferences.attachClient(client);
+      PrintPreferences.rememberContext(repository.activeCompanyContext);
     } catch (_) {
       // Never switch to local credentials when remote initialization fails.
       runApp(const _AuthStartupErrorApp());
@@ -100,7 +108,6 @@ Future<void> main() async {
       remoteStore: SupabaseDeliveryStore(
         client,
         localDatabase: database,
-        companyId: () => authRepository.activeCompanyContext.companyId,
         userId: () => authRepository.currentUser?.id,
         isAdmin: () => authRepository.currentUser?.role == UserRole.admin,
       ),

@@ -501,10 +501,14 @@ class _PrintingSettingsSection extends StatefulWidget {
 
 class _PrintingSettingsSectionState extends State<_PrintingSettingsSection> {
   CompanyPrintProfile? _profile;
+  DevicePrinterPreference _devicePrinters = const DevicePrinterPreference();
   List<Printer> _printers = const [];
   bool _canListPrinters = false;
   bool _saving = false;
   String? _message;
+
+  /// The file that remembers this device's printer choices, per company.
+  final DevicePrintSettingsStore _store = DevicePrintSettingsStore();
 
   @override
   void initState() {
@@ -529,9 +533,15 @@ class _PrintingSettingsSectionState extends State<_PrintingSettingsSection> {
     } catch (_) {
       canList = false;
     }
+    // Printer choices live in a local file keyed by company, so the dropdowns
+    // show what this machine will actually use at print time.
+    final devicePrinters = await _store.load(
+      widget.activeCompanyContext?.companyId,
+    );
     if (!mounted) return;
     setState(() {
       _profile = profile;
+      _devicePrinters = devicePrinters;
       _printers = printers;
       _canListPrinters = canList;
     });
@@ -553,6 +563,29 @@ class _PrintingSettingsSectionState extends State<_PrintingSettingsSection> {
       }
       PrintPreferences.remember(companyId, next);
       if (mounted) setState(() => _message = 'Printing settings saved.');
+    } catch (error) {
+      if (mounted) setState(() => _message = 'Could not save: $error');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Saves a printer choice for the active company on this device only.
+  ///
+  /// Nothing is written to Supabase: the file lives in this machine's
+  /// application-support directory, so the choice never follows the company
+  /// to another computer and never leaks to the other company on this one.
+  Future<void> _saveDevicePrinter(DevicePrinterPreference next) async {
+    setState(() {
+      _devicePrinters = next;
+      _saving = true;
+      _message = null;
+    });
+    try {
+      await _store.save(widget.activeCompanyContext?.companyId, next);
+      if (mounted) {
+        setState(() => _message = 'Printing settings saved.');
+      }
     } catch (error) {
       if (mounted) setState(() => _message = 'Could not save: $error');
     } finally {
@@ -657,12 +690,12 @@ class _PrintingSettingsSectionState extends State<_PrintingSettingsSection> {
     );
   }
 
-  /// The printer list, only when the platform can actually provide one.
+  /// The printer pickers, only when the platform can actually enumerate.
   ///
-  /// Printing goes through the operating system's own print dialog, so this is
-  /// a convenience rather than a requirement. Where enumeration is not
-  /// supported the section says so plainly instead of showing an empty picker
-  /// that cannot work.
+  /// Printing still goes through the operating system, so this is a
+  /// convenience rather than a requirement. Where enumeration is not
+  /// supported the section says so plainly instead of showing an empty
+  /// picker that cannot work.
   Widget _printerSection(BuildContext context) {
     if (!_canListPrinters) {
       return Card(
@@ -689,33 +722,74 @@ class _PrintingSettingsSectionState extends State<_PrintingSettingsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Available printers',
-          style: Theme.of(context).textTheme.labelLarge,
-        ),
+        Text('Printers', style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 4),
         Text(
-          'Printing uses the system print dialog. A printer belongs to this '
-          'computer rather than to the company, so it is never shared between '
-          'companies.',
+          'A printer belongs to this computer rather than to the company, so '
+          'the choice is saved on this device only — never shared between '
+          'companies and never copied to another machine. "Ask each time" '
+          'keeps opening the system print dialog.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final printer in _printers)
-              Chip(
-                avatar: Icon(
-                  printer.isDefault
-                      ? Icons.check_circle_outline
-                      : Icons.print_outlined,
-                  size: 16,
-                ),
-                label: Text(printer.name),
-              ),
+        _printerField(
+          context,
+          label: 'Receipt printer',
+          value: _devicePrinters.receiptPrinter,
+          onChanged: (name) => _saveDevicePrinter(
+            _devicePrinters.copyWith(
+              receiptPrinter: name,
+              clearReceiptPrinter: name == null,
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        _printerField(
+          context,
+          label: 'Report & statement printer',
+          value: _devicePrinters.reportPrinter,
+          onChanged: (name) => _saveDevicePrinter(
+            _devicePrinters.copyWith(
+              reportPrinter: name,
+              clearReportPrinter: name == null,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// One printer dropdown, with "Ask each time" as a real, selectable entry.
+  ///
+  /// The saved name is offered even when the printer is not in the current
+  /// enumeration, so a temporarily unplugged printer still shows what is
+  /// configured rather than silently appearing unset. At print time such a
+  /// printer falls back to the system dialog instead of failing the job.
+  Widget _printerField(
+    BuildContext context, {
+    required String label,
+    required String? value,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String?>(
+          initialValue: value,
+          items: [
+            const DropdownMenuItem<String?>(
+              value: null,
+              child: Text('Ask each time (system dialog)'),
+            ),
+            for (final name in <String>{
+              ..._printers.map((printer) => printer.name),
+              ?value,
+            })
+              DropdownMenuItem<String?>(value: name, child: Text(name)),
           ],
+          onChanged: onChanged,
         ),
       ],
     );

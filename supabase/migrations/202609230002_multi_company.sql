@@ -346,7 +346,8 @@ using (public.is_company_member(company_id));
 create policy suppliers_company_insert on public.suppliers for insert to authenticated
 with check (public.is_company_member(company_id));
 create policy suppliers_company_update on public.suppliers for update to authenticated
-using (public.is_company_member(company_id)) with check (public.is_company_member(company_id));
+using (public.has_company_role(company_id, array['owner','admin']::public.company_role[]))
+with check (public.has_company_role(company_id, array['owner','admin']::public.company_role[]));
 create policy suppliers_company_delete on public.suppliers for delete to authenticated
 using (public.has_company_role(company_id, array['owner','admin']::public.company_role[]));
 create policy products_company_read on public.products for select to authenticated

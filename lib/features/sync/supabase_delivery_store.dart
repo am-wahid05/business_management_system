@@ -10,14 +10,12 @@ class SupabaseDeliveryStore implements CompanyCatalogStore {
   SupabaseDeliveryStore(
     this.client, {
     required this.localDatabase,
-    required this.companyId,
     required this.userId,
     required this.isAdmin,
   });
 
   final SupabaseClient client;
   final Database localDatabase;
-  final String? Function() companyId;
   final String? Function() userId;
   final bool Function() isAdmin;
 
@@ -49,11 +47,8 @@ class SupabaseDeliveryStore implements CompanyCatalogStore {
   }
 
   @override
-  Future<void> synchronizeCatalog() async {
-    final activeCompanyId = companyId();
-    if (activeCompanyId == null) {
-      throw StateError('Select a company before synchronizing.');
-    }
+  Future<void> synchronizeCatalog({required SyncScope scope}) async {
+    final activeCompanyId = _requireCompanyScope(scope);
     final supplierRows = await localDatabase.query(
       'suppliers',
       where: 'company_id = ?',
@@ -97,11 +92,8 @@ class SupabaseDeliveryStore implements CompanyCatalogStore {
   }
 
   @override
-  Future<void> downloadCompany() async {
-    final activeCompanyId = companyId();
-    if (activeCompanyId == null) {
-      throw StateError('Select a company before synchronizing.');
-    }
+  Future<void> downloadCompany({required SyncScope scope}) async {
+    final activeCompanyId = _requireCompanyScope(scope);
     final remoteSuppliers = await _allRows('suppliers', activeCompanyId);
     final remoteProducts = await _allRows('products', activeCompanyId);
     final remoteDeliveries = await _allRows('deliveries', activeCompanyId);
@@ -224,10 +216,18 @@ class SupabaseDeliveryStore implements CompanyCatalogStore {
   }
 
   @override
-  Future<void> upsert(Delivery delivery) async {
-    final activeCompanyId = companyId();
+  Future<void> upsert(
+    Delivery delivery, {
+    required SyncScope scope,
+  }) async {
+    final activeCompanyId = _requireCompanyScope(scope);
+    if (delivery.companyId != activeCompanyId) {
+      throw StateError(
+        'Delivery company does not match the captured sync company.',
+      );
+    }
     final activeUserId = userId();
-    if (activeCompanyId == null || activeUserId == null) {
+    if (activeUserId == null) {
       throw StateError('Sign in to a company before synchronizing records.');
     }
 
@@ -403,6 +403,14 @@ class SupabaseDeliveryStore implements CompanyCatalogStore {
         'its bag weights could not be saved on the server ($error).',
       );
     }
+  }
+
+  String _requireCompanyScope(SyncScope scope) {
+    final companyId = scope.companyId;
+    if (!scope.isCompanyScoped || companyId == null || companyId.isEmpty) {
+      throw StateError('Select a company before synchronizing.');
+    }
+    return companyId;
   }
 }
 

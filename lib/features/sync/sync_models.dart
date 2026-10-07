@@ -1,5 +1,13 @@
 import '../../domain/models/delivery.dart';
 
+/// Company identity captured once for a complete synchronization run.
+class SyncScope {
+  const SyncScope({required this.companyId, required this.isCompanyScoped});
+
+  final String? companyId;
+  final bool isCompanyScoped;
+}
+
 class SyncFailure {
   const SyncFailure({
     required this.deliveryId,
@@ -55,10 +63,10 @@ class SyncPartiallyAppliedException implements Exception {
 }
 
 abstract interface class RemoteDeliveryStore {
-  Future<void> upsert(Delivery delivery);
+  Future<void> upsert(Delivery delivery, {required SyncScope scope});
 }
 
 abstract interface class CompanyCatalogStore implements RemoteDeliveryStore {
-  Future<void> synchronizeCatalog();
-  Future<void> downloadCompany();
+  Future<void> synchronizeCatalog({required SyncScope scope});
+  Future<void> downloadCompany({required SyncScope scope});
 }

@@ -13,7 +13,10 @@ import 'package:flutter_application_2/features/receiving/paper_size.dart';
 import 'package:flutter_application_2/features/receiving/print_settings_service.dart';
 import 'package:flutter_application_2/features/receiving/receipt_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:pdf/pdf.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   final supplier = Supplier(
@@ -655,6 +658,46 @@ void main() {
       },
     );
 
+    test(
+      'an attached client lets any print site resolve the company paper',
+      () async {
+        PrintPreferences.clear();
+        addTearDown(PrintPreferences.clear);
+        // Detached afterwards so this test's client cannot leak into the
+        // tests around it; the app attaches its own client at startup.
+        addTearDown(() => PrintPreferences.attachClient(null));
+
+        // The wiring the app performs at startup: the client is attached once
+        // and a screen passes only its company context — never a client of
+        // its own — yet the profile still comes from the company row.
+        final client = SupabaseClient(
+          'https://example.supabase.co',
+          'test-publishable-key',
+          httpClient: MockClient(
+            (request) async => http.Response(
+              jsonEncode({
+                'receipt_paper_size': 'thermal58',
+                'report_paper_size': 'a4',
+                'statement_paper_size': 'a4',
+                'print_show_preview': false,
+              }),
+              200,
+              headers: {'content-type': 'application/json'},
+            ),
+          ),
+        );
+        addTearDown(client.dispose);
+        PrintPreferences.attachClient(client);
+
+        final profile = await PrintPreferences.current(
+          context: _contextFor('company-a'),
+        );
+
+        expect(profile.receiptPaper, PaperSize.thermal58);
+        expect(profile.showPreview, isFalse);
+      },
+    );
+
     test('the option lists match what the app can actually print', () {
       for (final size in [PaperSize.thermal58, PaperSize.thermal80]) {
         expect(PaperSize.receiptOptions, contains(size));
@@ -671,6 +714,115 @@ void main() {
       // scaled down.
       expect(narrow.contentWidthPt, lessThan(wide.contentWidthPt));
       expect(wide.contentWidthPt, greaterThan(200));
+    });
+  });
+
+  group('device printer preferences stay on this device', () {
+    test('each company keeps its own printer on one machine', () async {
+      final dir = await Directory.systemTemp.createTemp('print_settings');
+      addTearDown(() => dir.delete(recursive: true));
+      DevicePrintSettingsStore store() =>
+          DevicePrintSettingsStore(directory: () async => dir);
+
+      await store().save(
+        'company-a',
+        const DevicePrinterPreference(receiptPrinter: 'Thermal 58'),
+      );
+      await store().save(
+        'company-b',
+        const DevicePrinterPreference(receiptPrinter: 'Thermal 80'),
+      );
+
+      // A fresh store over the same folder sees both, independently: A's
+      // choice never appears under B, and neither reaches a third company.
+      expect((await store().load('company-a')).receiptPrinter, 'Thermal 58');
+      expect((await store().load('company-b')).receiptPrinter, 'Thermal 80');
+      expect(
+        (await store().load('company-c')).receiptPrinter,
+        isNull,
+        reason: 'a company that never chose a printer gets no preference',
+      );
+    });
+
+    test('receipt and report printers round-trip separately', () async {
+      final dir = await Directory.systemTemp.createTemp('print_settings');
+      addTearDown(() => dir.delete(recursive: true));
+      final store = DevicePrintSettingsStore(directory: () async => dir);
+
+      await store.save(
+        'company-a',
+        const DevicePrinterPreference(
+          receiptPrinter: 'Thermal 80',
+          reportPrinter: 'Microsoft Print to PDF',
+        ),
+      );
+      final loaded = await store.load('company-a');
+
+      expect(loaded.receiptPrinter, 'Thermal 80');
+      expect(loaded.reportPrinter, 'Microsoft Print to PDF');
+    });
+
+    test('an unreadable settings file degrades to no preference', () async {
+      final dir = await Directory.systemTemp.createTemp('print_settings');
+      addTearDown(() => dir.delete(recursive: true));
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}print_settings.json',
+      );
+      await file.writeAsString('not json at all');
+
+      final store = DevicePrintSettingsStore(directory: () async => dir);
+      final loaded = await store.load('company-a');
+
+      expect(loaded.receiptPrinter, isNull);
+      expect(loaded.reportPrinter, isNull);
+    });
+
+    test('resolving through a context never fails a print', () async {
+      // In a bare test environment there is no platform path provider at
+      // all: the read must answer "no preference" instead of throwing and
+      // taking the print job down with it.
+      final preference = await DevicePrintSettingsStore.forContext(
+        _contextFor('company-a'),
+      );
+
+      expect(preference.receiptPrinter, isNull);
+      expect(preference.reportPrinter, isNull);
+    });
+
+    test('every print entry point hands its device printer to the service', () {
+      const entryPoints = {
+        'lib/features/secretary/delivery_detail_screen.dart':
+            'device.receiptPrinter',
+        'lib/features/secretary/secretary_print_records_screen.dart':
+            'device.receiptPrinter',
+        'lib/features/suppliers/supplier_profile_screen.dart':
+            'device.reportPrinter',
+      };
+      for (final entry in entryPoints.entries) {
+        expect(
+          File(entry.key).readAsStringSync().contains(entry.value),
+          isTrue,
+          reason: '${entry.key} must pass ${entry.value} when printing',
+        );
+      }
+    });
+
+    test('the system dialog stays the default when no printer is chosen', () {
+      final source = File('lib/features/receiving/receipt_service.dart')
+          .readAsStringSync();
+
+      // A printer remembered for this device prints straight to it...
+      expect(
+        source.contains('directPrintPdf'),
+        isTrue,
+        reason: 'a chosen device printer must bypass the dialog',
+      );
+      // ...and without one the well-trodden dialog path is unchanged.
+      expect(
+        source.contains('Printing.layoutPdf('),
+        isTrue,
+        reason: 'the system print dialog remains the fallback path',
+      );
     });
   });
 }

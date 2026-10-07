@@ -27,6 +27,7 @@ class SyncCoordinator {
   /// phase reports its own problems as warnings that never rewrite a
   /// delivery state.
   Future<SyncSummary> synchronize() async {
+    final syncScope = deliveryRepository.captureSyncScope();
     if (_isSynchronizing) {
       return const SyncSummary(
         attempted: 0,
@@ -46,36 +47,61 @@ class SyncCoordinator {
       // worth reporting, but it must not stop deliveries being uploaded.
       if (catalogStore != null) {
         try {
-          await catalogStore.synchronizeCatalog();
+          await catalogStore.synchronizeCatalog(scope: syncScope);
         } on Object catch (error) {
           warnings.add('Supplier catalog could not be uploaded: $error');
         }
       }
 
-      final pending = await deliveryRepository.unsynchronized();
+      final pending = await deliveryRepository.unsynchronizedForScope(
+        syncScope,
+      );
       final failures = <SyncFailure>[];
       var synced = 0;
       for (final delivery in pending) {
         final attemptedAt = DateTime.now();
-        await deliveryRepository.recordSyncAttempt(delivery.id, attemptedAt);
+        if (delivery.companyId != syncScope.companyId) {
+          failures.add(
+            SyncFailure(
+              deliveryId: delivery.id,
+              message: 'Delivery company does not match the captured sync company.',
+              attemptedAt: attemptedAt,
+            ),
+          );
+          continue;
+        }
+        await deliveryRepository.recordSyncAttemptForScope(
+          delivery.id,
+          attemptedAt,
+          syncScope,
+        );
         try {
-          await remoteStore.upsert(delivery);
-          await deliveryRepository.markSynced(delivery.id, DateTime.now());
+          await remoteStore.upsert(delivery, scope: syncScope);
+          await deliveryRepository.markSyncedForScope(
+            delivery.id,
+            DateTime.now(),
+            syncScope,
+          );
           synced++;
         } on SyncPartiallyAppliedException catch (error) {
           // The delivery row was accepted by the server before a later write
           // for that same delivery failed. The record really is on Supabase, so
           // it is marked synced rather than failed, and the user is simply told
           // the follow-up needs another attempt.
-          await deliveryRepository.markSynced(delivery.id, DateTime.now());
+          await deliveryRepository.markSyncedForScope(
+            delivery.id,
+            DateTime.now(),
+            syncScope,
+          );
           synced++;
           warnings.add('${error.deliveryId}: uploaded, but ${error.message}');
         } on Object catch (error) {
           final message = error.toString();
-          await deliveryRepository.markSyncFailed(
+          await deliveryRepository.markSyncFailedForScope(
             delivery.id,
             message,
             attemptedAt,
+            syncScope,
           );
           failures.add(
             SyncFailure(
@@ -92,7 +118,7 @@ class SyncCoordinator {
       // failed.
       if (catalogStore != null) {
         try {
-          await catalogStore.downloadCompany();
+          await catalogStore.downloadCompany(scope: syncScope);
           await onDownloaded?.call();
         } on Object catch (error) {
           warnings.add(

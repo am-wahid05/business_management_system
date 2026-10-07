@@ -97,6 +97,11 @@ class _SecretaryPrintRecordsScreenState
       final profile = await PrintPreferences.current(
         context: widget.activeCompanyContext,
       );
+      // The printer is a device setting, resolved once for the batch: every
+      // record in one job goes to the same printer on this machine.
+      final device = await DevicePrintSettingsStore.forContext(
+        widget.activeCompanyContext,
+      );
       for (final delivery in selected) {
         // Each selected record is previewed in turn. When the preview closes,
         // the next one opens, so the Secretary confirms every document they
@@ -107,6 +112,7 @@ class _SecretaryPrintRecordsScreenState
             delivery,
             companyName: companyName,
             paper: profile.receiptPaper,
+            printer: device.receiptPrinter,
           );
           continue;
         }
@@ -115,6 +121,7 @@ class _SecretaryPrintRecordsScreenState
           delivery,
           companyName: companyName,
           paper: profile.receiptPaper,
+          printer: device.receiptPrinter,
         );
       }
     } catch (error) {

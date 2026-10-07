@@ -21,8 +21,8 @@ class AnalyticsRepository {
         COUNT(DISTINCT CASE WHEN s.is_active = 1 THEN d.supplier_id END) AS active_suppliers,
         COUNT(DISTINCT d.product_id) AS product_count
       FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.delivery_id = d.id AND w.weight > 0
-      LEFT JOIN suppliers s ON s.supplier_id = d.supplier_id
+      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+      LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
     ''', query.arguments)).single;
     return AnalyticsSummary(
@@ -50,8 +50,8 @@ class AnalyticsRepository {
         COALESCE(SUM(w.weight), 0) AS total_weight,
         COUNT(DISTINCT d.supplier_id) AS unique_suppliers
       FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.delivery_id = d.id AND w.weight > 0
-      LEFT JOIN suppliers s ON s.supplier_id = d.supplier_id
+      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+      LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
       GROUP BY d.product_id, d.product_name
       ORDER BY total_weight DESC, d.product_name COLLATE NOCASE
@@ -83,10 +83,10 @@ class AnalyticsRepository {
         COUNT(w.delivery_id) AS total_bags,
         COALESCE(SUM(w.weight), 0) AS total_weight
       FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.delivery_id = d.id AND w.weight > 0
-      LEFT JOIN suppliers s ON s.supplier_id = d.supplier_id
+      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+      LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
-      GROUP BY d.supplier_id
+      GROUP BY d.company_id, d.supplier_id
       ORDER BY total_weight DESC, supplier_name COLLATE NOCASE
     ''', query.arguments);
     return rows
@@ -121,8 +121,8 @@ class AnalyticsRepository {
         COUNT(w.delivery_id) AS total_bags,
         COALESCE(SUM(w.weight), 0) AS total_weight
       FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.delivery_id = d.id AND w.weight > 0
-      LEFT JOIN suppliers s ON s.supplier_id = d.supplier_id
+      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+      LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
       GROUP BY period
       ORDER BY period
@@ -149,8 +149,13 @@ class AnalyticsRepository {
         COUNT(DISTINCT CASE WHEN first_delivery.first_recorded_at >= ? AND first_delivery.first_recorded_at < ? THEN d.supplier_id END) AS new_suppliers,
         COUNT(DISTINCT CASE WHEN first_delivery.first_recorded_at < ? THEN d.supplier_id END) AS returning_suppliers
       FROM deliveries d
-      LEFT JOIN suppliers s ON s.supplier_id = d.supplier_id
-      LEFT JOIN (SELECT supplier_id, MIN(recorded_at) AS first_recorded_at FROM deliveries WHERE status != 'cancelled' GROUP BY supplier_id) first_delivery ON first_delivery.supplier_id = d.supplier_id
+      LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
+      LEFT JOIN (
+        SELECT company_id, supplier_id, MIN(recorded_at) AS first_recorded_at
+        FROM deliveries
+        WHERE status != 'cancelled'
+        GROUP BY company_id, supplier_id
+      ) first_delivery ON first_delivery.company_id IS d.company_id AND first_delivery.supplier_id = d.supplier_id
       WHERE ${query.where}
     ''',
       [
@@ -181,8 +186,8 @@ class AnalyticsRepository {
         COUNT(DISTINCT d.id) AS delivery_count, COUNT(w.delivery_id) AS total_bags,
         COALESCE(SUM(w.weight), 0) AS total_weight
       FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.delivery_id = d.id AND w.weight > 0
-      LEFT JOIN suppliers s ON s.supplier_id = d.supplier_id
+      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+      LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where} AND $column IS NOT NULL AND TRIM($column) != ''
       GROUP BY $column
       ORDER BY total_weight DESC

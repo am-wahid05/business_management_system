@@ -169,16 +169,23 @@ abstract final class PrintPreferences {
 /// company id, so two companies used on the same PC each keep their own printer
 /// while neither is forced onto another computer.
 class DevicePrintSettingsStore {
-  DevicePrintSettingsStore({this.fileName = 'print_settings.json'});
+  DevicePrintSettingsStore({
+    this.fileName = 'print_settings.json',
+    Future<Directory> Function()? directory,
+  }) : _directory = directory ?? getApplicationSupportDirectory;
 
   /// Overridable so tests can use a scratch file instead of the real one.
   final String fileName;
+
+  /// Where the file lives. Tests can point it at a scratch folder so the real
+  /// application-support directory is never touched.
+  final Future<Directory> Function() _directory;
 
   File? _cache;
 
   Future<File> _file() async {
     if (_cache != null) return _cache!;
-    final dir = await getApplicationSupportDirectory();
+    final dir = await _directory();
     final file = File('${dir.path}${Platform.pathSeparator}$fileName');
     _cache = file;
     return file;
@@ -205,6 +212,17 @@ class DevicePrintSettingsStore {
     all[companyId] = preference.toJson();
     await _writeAll(all);
   }
+
+  /// The printer preference for the company in [context], read from this
+  /// device only.
+  ///
+  /// A convenience over [load] for print sites that already hold the active
+  /// company context, so no screen has to extract the company id itself.
+  /// Nothing here ever reads from or writes to Supabase: a printer is a
+  /// property of this machine, not of the business.
+  static Future<DevicePrinterPreference> forContext(
+    ActiveCompanyContext? context,
+  ) => DevicePrintSettingsStore().load(context?.companyId);
 
   Future<Map<String, dynamic>> _loadAll() async {
     try {

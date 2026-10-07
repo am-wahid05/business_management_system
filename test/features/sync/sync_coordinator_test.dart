@@ -12,7 +12,7 @@ class FakeRemoteStore implements RemoteDeliveryStore {
   final failuresRemaining = <String, int>{};
 
   @override
-  Future<void> upsert(Delivery delivery) async {
+  Future<void> upsert(Delivery delivery, {required SyncScope scope}) async {
     final remaining = failuresRemaining[delivery.id] ?? 0;
     if (remaining > 0) {
       failuresRemaining[delivery.id] = remaining - 1;
@@ -29,7 +29,7 @@ class PartiallyFailingStore implements CompanyCatalogStore {
   final uploadedIds = <String>[];
 
   @override
-  Future<void> upsert(Delivery delivery) async {
+  Future<void> upsert(Delivery delivery, {required SyncScope scope}) async {
     uploadedIds.add(delivery.id);
     // The server has already stored the delivery row at this point.
     throw const SyncPartiallyAppliedException(
@@ -39,10 +39,10 @@ class PartiallyFailingStore implements CompanyCatalogStore {
   }
 
   @override
-  Future<void> synchronizeCatalog() async {}
+  Future<void> synchronizeCatalog({required SyncScope scope}) async {}
 
   @override
-  Future<void> downloadCompany() async {
+  Future<void> downloadCompany({required SyncScope scope}) async {
     throw StateError('download blocked');
   }
 }
@@ -52,14 +52,16 @@ class DownloadFailingStore implements CompanyCatalogStore {
   final uploadedIds = <String>[];
 
   @override
-  Future<void> upsert(Delivery delivery) async => uploadedIds.add(delivery.id);
+  Future<void> upsert(Delivery delivery, {required SyncScope scope}) async =>
+      uploadedIds.add(delivery.id);
 
   @override
-  Future<void> synchronizeCatalog() async =>
+    Future<void> synchronizeCatalog({required SyncScope scope}) async =>
       throw StateError('catalog rejected');
 
   @override
-  Future<void> downloadCompany() async => throw StateError('download blocked');
+    Future<void> downloadCompany({required SyncScope scope}) async =>
+      throw StateError('download blocked');
 }
 
 void main() {

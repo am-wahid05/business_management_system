@@ -122,6 +122,11 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
                 final profile = await PrintPreferences.current(
                   context: widget.activeCompanyContext,
                 );
+                // Statements print to this device's own report printer when
+                // one is chosen; it is never part of the company profile.
+                final device = await DevicePrintSettingsStore.forContext(
+                  widget.activeCompanyContext,
+                );
                 if (!context.mounted) return;
                 if (!profile.showPreview) {
                   await _receiptService.printSupplierHistory(
@@ -129,6 +134,7 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
                     history,
                     companyName: _companyName,
                     paper: profile.statementPaper,
+                    printer: device.reportPrinter,
                   );
                   return;
                 }
@@ -138,6 +144,7 @@ class _SupplierProfileScreenState extends State<SupplierProfileScreen> {
                   history,
                   companyName: _companyName,
                   paper: profile.statementPaper,
+                  printer: device.reportPrinter,
                 );
               } catch (error) {
                 if (context.mounted) {

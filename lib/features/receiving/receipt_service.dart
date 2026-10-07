@@ -243,6 +243,7 @@ class ReceiptService {
     Delivery delivery, {
     String? companyName,
     PaperSize paper = PaperSize.a4,
+    String? printer,
   }) async {
     final bytes = await buildPdf(
       delivery,
@@ -253,6 +254,7 @@ class ReceiptService {
       bytes,
       fileName: 'Receipt_${delivery.id}.pdf',
       pageFormat: _layoutFor(delivery, paper).pageFormat,
+      printer: printer,
     );
   }
 
@@ -320,6 +322,7 @@ class ReceiptService {
     List<Delivery> deliveries, {
     String? companyName,
     PaperSize paper = PaperSize.a4,
+    String? printer,
   }) async {
     final bytes = await buildSupplierHistoryPdf(
       supplier,
@@ -331,6 +334,7 @@ class ReceiptService {
       bytes,
       fileName: 'Supplier_History_${supplier.id}.pdf',
       pageFormat: PaperLayout.forPaper(paper).pageFormat,
+      printer: printer,
     );
   }
 
@@ -351,30 +355,71 @@ class ReceiptService {
   static String _time(DateTime date) =>
       '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
-  /// Hands an already-built document to the Windows print dialog.
+  /// Hands an already-built document to this device's printer.
   ///
-  /// [document] is passed through untouched: the same bytes that were built are
-  /// the bytes the driver receives. The print path is deliberately left on the
-  /// classic Windows print dialog. `windowsModernDialog` routes the job to
-  /// `PrintDlgEx`, which on Windows 11 hands printing to the redesigned system
-  /// dialog; upstream documents that this dialog unconditionally disables
-  /// preview for Win32 apps and ignores the `IPrintDialogCallback` preview hook.
-  /// It is also a much newer code path than the long-established `PrintDlg`
-  /// route. Neither is wanted here: the user is always shown the in-app preview
-  /// first, and printing must go through the well-trodden path.
+  /// [document] is passed through untouched: the same bytes that were built
+  /// are the bytes the driver receives. With [printer] set — a printer the
+  /// user chose for this document type in Settings → Printing on this machine
+  /// — the job goes straight to that printer. Without one, or when it is no
+  /// longer present on this device, the classic Windows print dialog opens so
+  /// the printer can be chosen there. The modern dialog is deliberately not
+  /// used: `windowsModernDialog` routes the job to `PrintDlgEx`, which on
+  /// Windows 11 hands printing to the redesigned system dialog; upstream
+  /// documents that this dialog unconditionally disables preview for Win32
+  /// apps and ignores the `IPrintDialogCallback` preview hook. It is also a
+  /// much newer code path than the long-established `PrintDlg` route. Neither
+  /// is wanted here: the user is always shown the in-app preview first, and
+  /// printing must go through the well-trodden path.
   static Future<bool> _sendToPrinter(
     Uint8List document, {
     required String fileName,
     required PdfPageFormat pageFormat,
-  }) => Printing.layoutPdf(
-    // The document is already built at its final size, so the driver must not
-    // re-lay it out against whatever paper it reports. That is how a finished
-    // 80 mm receipt would otherwise be re-flowed to the printer's own default.
-    format: pageFormat,
-    dynamicLayout: false,
-    onLayout: (_) async => document,
-    name: fileName,
-  );
+    String? printer,
+  }) async {
+    if (printer != null &&
+        printer.isNotEmpty &&
+        await _printerExists(printer)) {
+      return Printing.directPrintPdf(
+        // Built at its final size on both paths: the driver must not re-lay
+        // the document out against whatever paper it reports, which is how a
+        // finished 80 mm receipt would otherwise be re-flowed to the
+        // printer's own default.
+        printer: Printer(url: printer, name: printer),
+        format: pageFormat,
+        dynamicLayout: false,
+        onLayout: (_) async => document,
+        name: fileName,
+      );
+    }
+    return Printing.layoutPdf(
+      // The document is already built at its final size, so the driver must
+      // not re-lay it out against whatever paper it reports. That is how a
+      // finished 80 mm receipt would otherwise be re-flowed to the printer's
+      // own default.
+      format: pageFormat,
+      dynamicLayout: false,
+      onLayout: (_) async => document,
+      name: fileName,
+    );
+  }
+
+  /// True when [name] is a printer this device can currently see.
+  ///
+  /// A remembered printer can disappear: unplugged, renamed, or written by a
+  /// settings file copied from another machine. Instead of failing the print
+  /// job, an unavailable printer falls back to the system dialog, where the
+  /// user can choose another one. Enumeration itself never breaks printing —
+  /// if it cannot be done, the dialog path is the answer.
+  static Future<bool> _printerExists(String name) async {
+    try {
+      final info = await Printing.info();
+      if (!info.canListPrinters) return false;
+      final printers = await Printing.listPrinters();
+      return printers.any((printer) => printer.name == name);
+    } catch (_) {
+      return false;
+    }
+  }
 
   /// Asserts the generated bytes really are a PDF, and returns them unchanged.
   ///
@@ -413,6 +458,10 @@ class ReceiptService {
   /// [pageFormat] is the real geometry of [document], so a 58 mm receipt
   /// previews as a 58 mm receipt and an A4 statement previews as A4.
   ///
+  /// [printer] is this device's remembered printer for the document type.
+  /// When set, the preview's print button sends the job straight to that
+  /// printer — the same behaviour as printing without a preview.
+  ///
   /// The preview is pushed as its own route, so the way out is simply popping
   /// that route. Nothing is signed out, no form is reset and no data is
   /// touched: the screen underneath is the exact one the user left, still
@@ -423,6 +472,7 @@ class ReceiptService {
     required String fileName,
     required String title,
     required PdfPageFormat pageFormat,
+    String? printer,
   }) {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
@@ -445,7 +495,35 @@ class ReceiptService {
             canChangeOrientation: false,
             canDebug: false,
             allowSharing: false,
-            allowPrinting: true,
+            // The stock print action always opens the system dialog. The
+            // preview carries its own print action instead, so the printer
+            // remembered for this document type on this device is honoured
+            // from the preview exactly as it is when printing directly.
+            allowPrinting: false,
+            actions: [
+              PdfPreviewAction(
+                icon: const Icon(Icons.print),
+                onPressed: (actionContext, build, currentFormat) async {
+                  try {
+                    await _sendToPrinter(
+                      document,
+                      fileName: fileName,
+                      pageFormat: currentFormat,
+                      printer: printer,
+                    );
+                  } catch (error) {
+                    // The preview route has no caller to catch for this
+                    // button, so the failure is surfaced here instead of
+                    // vanishing into an unhandled async error.
+                    if (actionContext.mounted) {
+                      ScaffoldMessenger.of(actionContext).showSnackBar(
+                        SnackBar(content: Text('Could not print: $error')),
+                      );
+                    }
+                  }
+                },
+              ),
+            ],
             dynamicLayout: false,
             scrollViewDecoration: const BoxDecoration(color: Colors.white),
             pdfPreviewPageDecoration: BoxDecoration(
@@ -474,6 +552,7 @@ class ReceiptService {
     Delivery delivery, {
     String? companyName,
     PaperSize paper = PaperSize.a4,
+    String? printer,
   }) async {
     final bytes = await buildPdf(
       delivery,
@@ -487,6 +566,7 @@ class ReceiptService {
       fileName: 'Receipt_${delivery.id}.pdf',
       title: 'Print receipt',
       pageFormat: _layoutFor(delivery, paper).pageFormat,
+      printer: printer,
     );
   }
 
@@ -497,6 +577,7 @@ class ReceiptService {
     List<Delivery> deliveries, {
     String? companyName,
     PaperSize paper = PaperSize.a4,
+    String? printer,
   }) async {
     final bytes = await buildSupplierHistoryPdf(
       supplier,
@@ -511,6 +592,7 @@ class ReceiptService {
       fileName: 'Supplier_History_${supplier.id}.pdf',
       title: 'Print supplier history',
       pageFormat: PaperLayout.forPaper(paper).pageFormat,
+      printer: printer,
     );
   }
 
