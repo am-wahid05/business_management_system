@@ -1,0 +1,9 @@
+
+
+ProcessId    : 9976
+CreationDate : 10/8/2026 3:55:32 AM
+CommandLine  : C:\WINDOWS\system32\cmd.exe /d /s /c ""C:\Users\PC\flutter\bin\flutter.bat" "daemon""
+
+
+
+

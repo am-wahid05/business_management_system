@@ -32,6 +32,7 @@ import '../features/reports/daily_report_repository.dart';
 import '../features/analytics/analytics_repository.dart';
 import '../features/analytics/analytics_models.dart';
 import '../features/analytics/analytics_report_screen.dart';
+import '../features/analytics/weekly_purchasing_intelligence_service.dart';
 import '../features/exports/excel_export_service.dart';
 import '../features/imports/excel_import_service.dart';
 import '../features/imports/workbook_grid_store.dart';
@@ -53,6 +54,13 @@ import 'app_navigation.dart';
 import 'password_recovery_gate.dart';
 import '../features/auth/supabase_auth_link_handler.dart';
 
+const _weeklyPurchasingPythonExecutable = String.fromEnvironment(
+  'WEEKLY_PURCHASING_PYTHON_EXECUTABLE',
+);
+const _weeklyPurchasingPythonScript = String.fromEnvironment(
+  'WEEKLY_PURCHASING_PYTHON_SCRIPT',
+);
+
 class AlbncApp extends StatelessWidget {
   AlbncApp({
     required this.productRepository,
@@ -69,14 +77,19 @@ class AlbncApp extends StatelessWidget {
     AnalyticsRepository? analyticsRepository,
     SupplierRepository? repository,
     ReceivingService? receivingService,
+    this.companyIdProvider,
+    String? pythonExecutable,
+    String? pythonScriptPath,
     super.key,
   }) : repository =
            repository ??
            SupplierRepository(
              database: deliveryRepository.database,
-             companyIdProvider: authRepository.isRemote
-                 ? () => authRepository.activeCompanyContext.companyId
-                 : null,
+             companyIdProvider:
+                 companyIdProvider ??
+                 (authRepository.isRemote
+                     ? () => authRepository.activeCompanyContext.companyId
+                     : null),
            ),
        reportRepository =
            reportRepository ?? DailyReportRepository(deliveryRepository),
@@ -84,17 +97,21 @@ class AlbncApp extends StatelessWidget {
            analyticsRepository ??
            AnalyticsRepository(
              deliveryRepository.database,
-             companyIdProvider: authRepository.isRemote
-                 ? () => authRepository.activeCompanyContext.companyId
-                 : null,
+             companyIdProvider:
+                 companyIdProvider ??
+                 (authRepository.isRemote
+                     ? () => authRepository.activeCompanyContext.companyId
+                     : null),
            ),
        syncStatusRepository =
            syncStatusRepository ??
            SyncStatusRepository(
              deliveryRepository.database,
-             companyIdProvider: authRepository.isRemote
-                 ? () => authRepository.activeCompanyContext.companyId
-                 : null,
+             companyIdProvider:
+                 companyIdProvider ??
+                 (authRepository.isRemote
+                     ? () => authRepository.activeCompanyContext.companyId
+                     : null),
            ),
        receivingService =
            receivingService ??
@@ -104,15 +121,35 @@ class AlbncApp extends StatelessWidget {
                  repository ??
                  SupplierRepository(
                    database: deliveryRepository.database,
-                   companyIdProvider: authRepository.isRemote
-                       ? () => authRepository.activeCompanyContext.companyId
-                       : null,
+                   companyIdProvider:
+                       companyIdProvider ??
+                       (authRepository.isRemote
+                           ? () =>
+                                 authRepository.activeCompanyContext.companyId
+                           : null),
                  ),
-             companyIdProvider: authRepository.isRemote
-                 ? () => authRepository.activeCompanyContext.companyId
-                 : null,
+             companyIdProvider:
+                 companyIdProvider ??
+                 (authRepository.isRemote
+                     ? () => authRepository.activeCompanyContext.companyId
+                     : null),
              userIdProvider: () => authRepository.currentUser?.id,
-           );
+           ) {
+    weeklyPurchasingIntelligenceService =
+        WeeklyPurchasingIntelligenceService(
+          analyticsRepository: this.analyticsRepository,
+          pythonExecutable:
+              pythonExecutable ??
+              (_weeklyPurchasingPythonExecutable.isEmpty
+                  ? null
+                  : _weeklyPurchasingPythonExecutable),
+          pythonScriptPath:
+              pythonScriptPath ??
+              (_weeklyPurchasingPythonScript.isEmpty
+                  ? null
+                  : _weeklyPurchasingPythonScript),
+        );
+  }
 
   final SupplierRepository repository;
   final ProductRepository productRepository;
@@ -128,6 +165,9 @@ class AlbncApp extends StatelessWidget {
   final SyncStatusRepository syncStatusRepository;
   final SyncCoordinator? syncCoordinator;
   final ReceivingService receivingService;
+  final String? Function()? companyIdProvider;
+  late final WeeklyPurchasingIntelligenceService
+  weeklyPurchasingIntelligenceService;
 
   Widget _protected(
     Widget screen, {
@@ -165,12 +205,13 @@ class AlbncApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The active company scope for every repository below. This mirrors the
-    // inline form already used by the other routes in this table, and stays
-    // null in a local single-company installation, which has no tenant id.
-    final String? Function()? companyIdProvider = authRepository.isRemote
-        ? () => authRepository.activeCompanyContext.companyId
-        : null;
+    // Use an injected scope for isolated smoke runs; normal local installs have
+    // no tenant ID, while remote installations follow the active membership.
+    final String? Function()? companyIdProvider =
+        this.companyIdProvider ??
+        (authRepository.isRemote
+            ? () => authRepository.activeCompanyContext.companyId
+            : null);
     return MaterialApp(
       title: 'Business Management System',
       debugShowCheckedModeBanner: false,
@@ -346,6 +387,8 @@ class AlbncApp extends StatelessWidget {
               repository: analyticsRepository,
               productRepository: productRepository,
               supplierRepository: repository,
+              weeklyPurchasingIntelligenceService:
+                  weeklyPurchasingIntelligenceService,
               title: 'Analytics',
               initialTrend: AnalyticsTrend.monthly,
             ),
@@ -436,9 +479,7 @@ class AlbncApp extends StatelessWidget {
                 database: deliveryRepository.database,
                 deliveryRepository: deliveryRepository,
                 userId: authRepository.currentUser?.id ?? 'unknown',
-                companyIdProvider: authRepository.isRemote
-                    ? () => authRepository.activeCompanyContext.companyId
-                    : null,
+                companyIdProvider: companyIdProvider,
                 receivingService: receivingService,
               ),
               // The grid the user opens from here is saved into the same local
@@ -467,9 +508,7 @@ class AlbncApp extends StatelessWidget {
                 database: deliveryRepository.database,
                 deliveryRepository: deliveryRepository,
                 userId: authRepository.currentUser?.id ?? 'unknown',
-                companyIdProvider: authRepository.isRemote
-                    ? () => authRepository.activeCompanyContext.companyId
-                    : null,
+                companyIdProvider: companyIdProvider,
                 receivingService: receivingService,
               ),
               store: WorkbookGridStore(deliveryRepository.database),
@@ -488,9 +527,7 @@ class AlbncApp extends StatelessWidget {
             SettingsScreen(
               backupService: BackupService(
                 deliveryRepository.database,
-                companyIdProvider: authRepository.isRemote
-                    ? () => authRepository.activeCompanyContext.companyId
-                    : null,
+                companyIdProvider: companyIdProvider,
               ),
               accountService: accountService,
               brandingService: brandingService,

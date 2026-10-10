@@ -1,0 +1,6 @@
+=== URL (from source) ===
+defaultValue: 'https://simhlgswtlpylpsdwyoy.supabase.co',
+
+=== CLI VERSION ===
+CLI_NOT_FOUND
+DONE_STEP0

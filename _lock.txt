@@ -1,0 +1,14 @@
+Access to the path 'C:\Projects\flutter_application_2\build\native_assets\windows\sqlite3.dll' is denied.
+
+   Id ProcessName StartTime           
+   -- ----------- ---------           
+ 9976 cmd         10/8/2026 3:55:32 AM
+ 5668 dart        10/8/2026 3:55:33 AM
+ 7516 dart        10/7/2026 5:52:10 AM
+13828 dart        10/7/2026 6:35:41 PM
+15992 dart        10/8/2026 3:56:03 AM
+17488 dart        10/8/2026 3:55:33 AM
+17724 dart        10/8/2026 3:55:53 AM
+
+
+

@@ -7,6 +7,7 @@ import '../products/product_repository.dart';
 import '../suppliers/supplier_repository.dart';
 import 'analytics_models.dart';
 import 'analytics_repository.dart';
+import 'weekly_purchasing_intelligence_service.dart';
 
 class AnalyticsReportScreen extends StatefulWidget {
   const AnalyticsReportScreen({
@@ -17,6 +18,7 @@ class AnalyticsReportScreen extends StatefulWidget {
     this.title = 'Reports',
     this.initialFrom,
     this.initialTo,
+    this.weeklyPurchasingIntelligenceService,
     super.key,
   });
 
@@ -27,6 +29,8 @@ class AnalyticsReportScreen extends StatefulWidget {
   final String title;
   final DateTime? initialFrom;
   final DateTime? initialTo;
+  final WeeklyPurchasingIntelligenceService?
+  weeklyPurchasingIntelligenceService;
 
   @override
   State<AnalyticsReportScreen> createState() => _AnalyticsReportScreenState();
@@ -379,6 +383,15 @@ class _AnalyticsReportScreenState extends State<AnalyticsReportScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              if (widget.weeklyPurchasingIntelligenceService case final service?)
+                WeeklyPurchasingInsightsSection(
+                  isRuntimeConfigured: service.isRuntimeConfigured,
+                  loadInsights: () => service.analyzeWeeklyPurchasing(
+                    endDate: DateTime.now(),
+                  ),
+                ),
+              if (widget.weeklyPurchasingIntelligenceService != null)
+                const SizedBox(height: 20),
               FutureBuilder<_AnalyticsViewData>(
                 future: _data,
                 builder: (context, snapshot) {
@@ -420,6 +433,162 @@ class _AnalyticsReportScreenState extends State<AnalyticsReportScreen> {
 
   static String _formatDate(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+}
+
+class WeeklyPurchasingInsightsSection extends StatefulWidget {
+  const WeeklyPurchasingInsightsSection({
+    required this.isRuntimeConfigured,
+    required this.loadInsights,
+    super.key,
+  });
+
+  final bool isRuntimeConfigured;
+  final Future<Map<String, dynamic>> Function() loadInsights;
+
+  @override
+  State<WeeklyPurchasingInsightsSection> createState() =>
+      _WeeklyPurchasingInsightsSectionState();
+}
+
+class _WeeklyPurchasingInsightsSectionState
+    extends State<WeeklyPurchasingInsightsSection> {
+  Map<String, dynamic>? _insights;
+  String? _error;
+  bool _loading = false;
+
+  Future<void> _loadInsights() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final result = await widget.loadInsights();
+      if (result['schema_version'] != 1 ||
+          result['latest_week'] is! Map ||
+          result['weekly_totals'] is! List) {
+        throw const FormatException('Python returned an unsupported result.');
+      }
+      if (mounted) {
+        setState(() {
+          _insights = result;
+          _loading = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _error = error.toString();
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final latest = _insights?['latest_week'];
+    final latestWeek = latest is Map ? latest : null;
+    final weeklyTotals = _insights?['weekly_totals'];
+    final totals = weeklyTotals is List ? weeklyTotals : const [];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Weekly Purchasing Intelligence',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Advisory statistics from this company’s local purchasing data.',
+            ),
+            const SizedBox(height: 12),
+            if (!widget.isRuntimeConfigured)
+              const Text(
+                'Python is not configured. Weekly insights are unavailable; '
+                'the existing analytics remain available.',
+              ),
+            if (_error != null)
+              Text(
+                'Weekly insights could not be generated: $_error',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            if (_loading) const LinearProgressIndicator(),
+            if (latestWeek != null) ...[
+              Text(
+                'Latest week: ${latestWeek['week_start'] ?? 'Unknown'} · '
+                '${_formatWeight(latestWeek['total_weight'])}',
+              ),
+              Wrap(
+                spacing: 20,
+                runSpacing: 8,
+                children: [
+                  _metric(
+                    'Week-over-week',
+                    _formatPercent(latestWeek['week_over_week_percent']),
+                  ),
+                  _metric(
+                    'Historical mean',
+                    _formatWeight(latestWeek['historical_mean']),
+                  ),
+                  _metric(
+                    'Historical median',
+                    _formatWeight(latestWeek['historical_median']),
+                  ),
+                ],
+              ),
+              if (latestWeek['unusual_volume_explanation'] is String)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    latestWeek['unusual_volume_explanation'] as String,
+                  ),
+                ),
+              if (totals.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                ...totals.map((item) {
+                  if (item is! Map) return const SizedBox.shrink();
+                  return ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('${item['week_start'] ?? 'Unknown week'}'),
+                    trailing: Text(_formatWeight(item['total_weight'])),
+                  );
+                }),
+              ],
+            ],
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: !widget.isRuntimeConfigured || _loading
+                  ? null
+                  : _loadInsights,
+              icon: const Icon(Icons.insights_outlined),
+              label: Text(_loading ? 'Calculating…' : 'Generate weekly insights'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _metric(String label, String value) => SizedBox(
+    width: 170,
+    child: ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      title: Text(label),
+      subtitle: Text(value),
+    ),
+  );
+
+  static String _formatWeight(Object? value) =>
+      value is num ? '${value.toStringAsFixed(1)} kg' : 'Not available';
+
+  static String _formatPercent(Object? value) =>
+      value is num ? '${value.toStringAsFixed(1)}%' : 'Not available';
 }
 
 class _AnalyticsViewData {

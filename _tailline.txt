@@ -1,0 +1,4 @@
+12:13 +114 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: remote login UI submits entered credentials and has no local demo path
+12:16 +115 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: login shows the active company branding
+12:17 +116 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: selected membership determines the dashboard role
+12:18 +117 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: settings exposes company branding and change password

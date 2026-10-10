@@ -1,0 +1,72 @@
+ m .work
+ M _test_out.txt
+ M test/features/products/product_database_company_scope_test.dart
+ M test/features/products/product_database_recorder_migration_test.dart
+ M test/features/sync/sync_company_scope_test.dart
+?? _audit1.txt
+?? _audit2.txt
+?? _audit_final.txt
+?? _audit_status.txt
+?? _audit_tests.txt
+?? _check.txt
+?? _cmdprocs.txt
+?? _dartprocs.txt
+?? _fails.txt
+?? _fk.txt
+?? _gitdiff.txt
+?? _gitlog.txt
+?? _grep.txt
+?? _grep2.txt
+?? _grep3.txt
+?? _hist.txt
+?? _hist2.txt
+?? _holder.txt
+?? _lock.txt
+?? _lockdiff.txt
+?? _migdiag.ps1
+?? _migdiag.txt
+?? _migfind.ps1
+?? _migfind.txt
+?? _miglist.txt
+?? _migsearch.ps1
+?? _migsearch.txt
+?? _migver.txt
+?? _mods.txt
+?? _mydiff.txt
+?? _origtest.txt
+?? _probe.txt
+?? _s0auth_rc.txt
+?? _s0list2.txt
+?? _s0miglist.txt
+?? _s0probe.txt
+?? _s0temp.txt
+?? _status.txt
+?? _step0.txt
+?? _step0_out.txt
+?? _supcli.txt
+?? _supdir.txt
+?? _tailline.txt
+?? _test_all.txt
+?? _test_all_tail.txt
+?? _test_out2.txt
+?? _test_out3.txt
+?? _test_run.txt
+?? _testlines.txt
+?? _testmid.txt
+?? _ver_out.txt
+?? _wt.txt
+?? _wt2.txt
+?? product_scope.out
+faf398a restore missing feature
+c71fd27 security bug fixes 1
+21fad08 fixing security issues
+9a9d651 bug fixes
+04bab28 Remove duplicate nested Flutter project
+19f2cb7 Resolve merge conflicts
+e99e697 fixed bug
+4570459 Rename project from al_bnc_management_system to business_management_system
+db5c0ad microsoft
+81bafa4 database
+14f62b8 before ai
+798a480 code before Ai
+fbacb7f Initial commit

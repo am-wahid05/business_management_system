@@ -1,0 +1,66 @@
+﻿
+> lib\features\products\product_database.dart:276:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:277:      database,
+  lib\features\products\product_database.dart:278:      'deliveries',
+  lib\features\products\product_database.dart:279:      'supplier_name TEXT NOT NULL DEFAULT ""',
+> lib\features\products\product_database.dart:281:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:282:      database,
+  lib\features\products\product_database.dart:283:      'deliveries',
+  lib\features\products\product_database.dart:284:      'product_name TEXT NOT NULL DEFAULT ""',
+> lib\features\products\product_database.dart:289:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:290:      database,
+  lib\features\products\product_database.dart:291:      'deliveries',
+  lib\features\products\product_database.dart:292:      'supplier_type TEXT NOT NULL DEFAULT "farmer"',
+> lib\features\products\product_database.dart:384:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:385:      database,
+  lib\features\products\product_database.dart:386:      'deliveries',
+  lib\features\products\product_database.dart:387:      'synchronization_error TEXT',
+> lib\features\products\product_database.dart:389:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:390:      database,
+  lib\features\products\product_database.dart:391:      'deliveries',
+  lib\features\products\product_database.dart:392:      'sync_attempts INTEGER NOT NULL DEFAULT 0',
+> lib\features\products\product_database.dart:394:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:395:      database,
+  lib\features\products\product_database.dart:396:      'deliveries',
+  lib\features\products\product_database.dart:397:      'last_sync_attempt_at TEXT',
+> lib\features\products\product_database.dart:399:    await _addColumnIfMissing(database, 'deliveries', 'synced_at TEXT');
+  lib\features\products\product_database.dart:400:  }
+  lib\features\products\product_database.dart:401:
+  lib\features\products\product_database.dart:402:  /// Adds the weighing-bridge columns to the deliveries table.
+> lib\features\products\product_database.dart:410:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:411:      database,
+  lib\features\products\product_database.dart:412:      'deliveries',
+  lib\features\products\product_database.dart:413:      "record_type TEXT NOT NULL DEFAULT 'individual'",
+> lib\features\products\product_database.dart:415:    await _addColumnIfMissing(database, 'deliveries', 'total_weight REAL');
+> lib\features\products\product_database.dart:416:    await _addColumnIfMissing(database, 'deliveries', 'bag_count INTEGER');
+> lib\features\products\product_database.dart:417:    await _addColumnIfMissing(database, 'deliveries', 'notes TEXT');
+  lib\features\products\product_database.dart:418:  }
+  lib\features\products\product_database.dart:419:
+  lib\features\products\product_database.dart:420:  static Future<void> _addSupplierTables(Database database) async {
+> lib\features\products\product_database.dart:422:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:423:      database,
+  lib\features\products\product_database.dart:424:      'deliveries',
+  lib\features\products\product_database.dart:425:      'supplier_internal_id TEXT',
+> lib\features\products\product_database.dart:488:    await _addColumnIfMissing(database, 'suppliers', 'company_id TEXT');
+  lib\features\products\product_database.dart:489:    await database.execute(
+  lib\features\products\product_database.dart:490:      'CREATE INDEX IF NOT EXISTS idx_suppliers_company_name ON suppliers(company_id, 
+normalized_name)',
+  lib\features\products\product_database.dart:491:    );
+> lib\features\products\product_database.dart:593:    await _addColumnIfMissing(database, 'products', 'company_id TEXT');
+> lib\features\products\product_database.dart:594:    await _addColumnIfMissing(database, 'deliveries', 'company_id TEXT');
+> lib\features\products\product_database.dart:595:    await _addColumnIfMissing(
+  lib\features\products\product_database.dart:596:      database,
+  lib\features\products\product_database.dart:597:      'delivery_bag_weights',
+  lib\features\products\product_database.dart:598:      'company_id TEXT',
+> lib\features\products\product_database.dart:600:    await _addColumnIfMissing(database, 'receipt_sends', 'company_id TEXT');
+> lib\features\products\product_database.dart:601:    await _addColumnIfMissing(database, 'import_logs', 'company_id TEXT');
+  lib\features\products\product_database.dart:602:    await database.execute(
+  lib\features\products\product_database.dart:603:      'CREATE INDEX IF NOT EXISTS idx_deliveries_company_id ON deliveries(company_id)',
+  lib\features\products\product_database.dart:604:    );
+> lib\features\products\product_database.dart:665:  static Future<void> _addColumnIfMissing(
+  lib\features\products\product_database.dart:666:    Database database,
+  lib\features\products\product_database.dart:667:    String table,
+  lib\features\products\product_database.dart:668:    String definition,
+
+
+21fad08 fixing security issues

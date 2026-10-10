@@ -1,0 +1,29 @@
+
+
+ProcessId    : 7516
+CreationDate : 10/7/2026 5:52:10 AM
+CommandLine  : "C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe"  --packages="C:\Users\PC\flutter\packages\flutter_tools\.dart_tool\package_config.json"  "C:\Users\PC\flutter\bin\cache\flutter_tools.snapshot" "daemon" 
+
+ProcessId    : 13828
+CreationDate : 10/7/2026 6:35:41 PM
+CommandLine  : "C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe"  --packages="C:\Users\PC\flutter\packages\flutter_tools\.dart_tool\package_config.json"  "C:\Users\PC\flutter\bin\cache\flutter_tools.snapshot" "daemon" 
+
+ProcessId    : 17488
+CreationDate : 10/8/2026 3:55:33 AM
+CommandLine  : C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe language-server --protocol=lsp --client-id=VS-Code --client-version=3.144.0
+
+ProcessId    : 5668
+CreationDate : 10/8/2026 3:55:33 AM
+CommandLine  : C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe tooling-daemon --machine
+
+ProcessId    : 17724
+CreationDate : 10/8/2026 3:55:53 AM
+CommandLine  : C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe devtools --machine --allow-embedding --dtd-uri ws://127.0.0.1:57647/sAcWOrN-V7k=
+
+ProcessId    : 15992
+CreationDate : 10/8/2026 3:56:03 AM
+CommandLine  : "C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe"  --packages="C:\Users\PC\flutter\packages\flutter_tools\.dart_tool\package_config.json"  "C:\Users\PC\flutter\bin\cache\flutter_tools.snapshot" "daemon" 
+
+
+
+

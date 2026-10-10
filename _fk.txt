@@ -1,0 +1,76 @@
+﻿=== FKs on delivery_bag_weights ===
+202609230001_initial_schema.sql:65: delivery_id uuid not null references public.deliveries(id) on delete cascade,
+202609230001_initial_schema.sql:73: delivery_id uuid not null references public.deliveries(id) on delete cascade,
+202609230002_multi_company.sql:78: alter table public.delivery_bag_weights drop constraint if exists delivery_bag_weights_pkey;
+202609230002_multi_company.sql:180: alter table public.delivery_bag_weights drop constraint if exists delivery_bag_weights_pkey;
+202609230002_multi_company.sql:194: alter table public.delivery_bag_weights drop constraint if exists bag_weights_company_fk;
+202609230002_multi_company.sql:195: alter table public.delivery_bag_weights drop constraint if exists bag_weights_delivery_company_fk;
+202609230002_multi_company.sql:214: foreign key (company_id, delivery_id) references public.deliveries(company_id, id) on delete cascade;
+202609230002_multi_company.sql:216: foreign key (company_id, delivery_id) references public.deliveries(company_id, id) on delete cascade;
+=== RLS enable + policy names ===
+202609230001_initial_schema.sql:133: alter table public.profiles enable row level security;
+202609230001_initial_schema.sql:134: alter table public.suppliers enable row level security;
+202609230001_initial_schema.sql:135: alter table public.products enable row level security;
+202609230001_initial_schema.sql:136: alter table public.deliveries enable row level security;
+202609230001_initial_schema.sql:137: alter table public.delivery_bag_weights enable row level security;
+202609230001_initial_schema.sql:138: alter table public.receipt_sends enable row level security;
+202609230001_initial_schema.sql:141: create policy profiles_select_authenticated on public.profiles for select to authenticated
+202609230001_initial_schema.sql:145: create policy profiles_update_self on public.profiles for update to authenticated
+202609230001_initial_schema.sql:150: create policy suppliers_select_authenticated on public.suppliers for select to authenticated
+202609230001_initial_schema.sql:154: create policy suppliers_admin_write on public.suppliers for all to authenticated
+202609230001_initial_schema.sql:158: create policy products_select_authenticated on public.products for select to authenticated
+202609230001_initial_schema.sql:162: create policy products_admin_write on public.products for all to authenticated
+202609230001_initial_schema.sql:166: create policy deliveries_select_authorized on public.deliveries for select to authenticated
+202609230001_initial_schema.sql:170: create policy deliveries_insert_authorized on public.deliveries for insert to authenticated
+202609230001_initial_schema.sql:174: create policy deliveries_update_authorized on public.deliveries for update to authenticated
+202609230001_initial_schema.sql:179: create policy deliveries_delete_admin on public.deliveries for delete to authenticated
+202609230001_initial_schema.sql:183: create policy delivery_bag_weights_authorized on public.delivery_bag_weights for all to authenticated
+202609230001_initial_schema.sql:196: create policy receipt_sends_authorized on public.receipt_sends for all to authenticated
+202609230002_multi_company.sql:294: alter table public.companies enable row level security;
+202609230002_multi_company.sql:295: alter table public.company_memberships enable row level security;
+202609230002_multi_company.sql:300: create policy companies_read_member on public.companies for select to authenticated
+202609230002_multi_company.sql:303: create policy memberships_read_same_company on public.company_memberships for select to authenticated
+202609230002_multi_company.sql:306: create policy memberships_admin_manage on public.company_memberships for all to authenticated
+202609230002_multi_company.sql:320: create policy profiles_update_self_company on public.profiles for update to authenticated
+202609230002_multi_company.sql:344: create policy suppliers_company_read on public.suppliers for select to authenticated
+202609230002_multi_company.sql:346: create policy suppliers_company_insert on public.suppliers for insert to authenticated
+202609230002_multi_company.sql:348: create policy suppliers_company_update on public.suppliers for update to authenticated
+202609230002_multi_company.sql:351: create policy suppliers_company_delete on public.suppliers for delete to authenticated
+202609230002_multi_company.sql:353: create policy products_company_read on public.products for select to authenticated
+202609230002_multi_company.sql:355: create policy products_company_write on public.products for all to authenticated
+202609230002_multi_company.sql:358: create policy deliveries_company_read on public.deliveries for select to authenticated
+202609230002_multi_company.sql:360: create policy deliveries_company_insert on public.deliveries for insert to authenticated
+202609230002_multi_company.sql:362: create policy deliveries_company_update on public.deliveries for update to authenticated
+202609230002_multi_company.sql:365: create policy deliveries_company_delete on public.deliveries for delete to authenticated
+202609230002_multi_company.sql:367: create policy weights_company_access on public.delivery_bag_weights for all to authenticated
+202609230002_multi_company.sql:378: create policy receipt_company_access on public.receipt_sends for all to authenticated
+202609230002_multi_company.sql:382: create policy profiles_company_member_read on public.profiles for select to authenticated
+202609240001_company_branding_storage.sql:15: alter table public.companies enable row level security;
+202609240001_company_branding_storage.sql:22: create policy companies_owner_admin_update
+202609240001_company_branding_storage.sql:27: create policy companies_owner_admin_update_boundary
+202609240001_company_branding_storage.sql:41: create policy company_logos_member_read
+202609240001_company_branding_storage.sql:54: create policy company_logos_member_read_boundary
+202609240001_company_branding_storage.sql:70: create policy company_logos_owner_admin_insert
+202609240001_company_branding_storage.sql:84: create policy company_logos_owner_admin_insert_boundary
+202609240001_company_branding_storage.sql:101: create policy company_logos_owner_admin_update
+202609240001_company_branding_storage.sql:126: create policy company_logos_owner_admin_update_boundary
+202609240001_company_branding_storage.sql:156: create policy company_logos_owner_admin_delete
+202609240001_company_branding_storage.sql:170: create policy company_logos_owner_admin_delete_boundary
+202609240002_recorded_by_identity.sql:21: alter table public.deliveries enable row level security;
+202609240002_recorded_by_identity.sql:22: alter table public.delivery_bag_weights enable row level security;
+202609240002_recorded_by_identity.sql:26: create policy deliveries_recorded_by_insert_boundary
+202609240002_recorded_by_identity.sql:32: create policy bag_weights_recorded_by_insert_boundary
+202609260001_sms_credits.sql:154: alter table public.sms_credit_transactions enable row level security;
+202609260001_sms_credits.sql:155: alter table public.sms_credit_reservations enable row level security;
+202609260001_sms_credits.sql:166: create policy sms_credit_transactions_company_read
+202609270001_subscriptions.sql:980: alter table public.subscription_config enable row level security;
+202609270001_subscriptions.sql:981: alter table public.company_subscriptions enable row level security;
+202609270001_subscriptions.sql:982: alter table public.company_ai_entitlements enable row level security;
+202609270001_subscriptions.sql:983: alter table public.payment_transactions enable row level security;
+202609270001_subscriptions.sql:984: alter table public.subscription_events enable row level security;
+202609270001_subscriptions.sql:990: create policy subscription_config_read on public.subscription_config
+202609270001_subscriptions.sql:1000: create policy subscriptions_admin_read on public.company_subscriptions
+202609270001_subscriptions.sql:1005: create policy ai_entitlements_admin_read on public.company_ai_entitlements
+202609270001_subscriptions.sql:1010: create policy payments_admin_read on public.payment_transactions
+202609270001_subscriptions.sql:1015: create policy subscription_events_admin_read on public.subscription_events
+202610020001_sms_initial_credits_and_send_claims.sql:47: alter table public.sms_receipt_send_claims enable row level security;

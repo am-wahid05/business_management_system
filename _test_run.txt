@@ -1,0 +1,10 @@
+00:00 +0: loading C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart
+00:00 +0: (setUpAll)
+00:22 +0: same delivery ID and bag numbers coexist per company
+00:23 +1: company-scoped update, bag delete, and delivery delete stay isolated
+00:24 +2: composite foreign key rejects A bag weight under B delivery scope
+00:24 +3: sync download does not replace another company duplicate ID
+00:25 +4: v20 migration preserves tenant keys and archives mismatched legacy weights
+00:25 +5: (tearDownAll)
+00:25 +5: All tests passed!
+EXITCODE=0 

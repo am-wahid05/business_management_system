@@ -1,0 +1,154 @@
+HOLDER: 12080 flutter_tester :: C:\Projects\flutter_application_2\build\native_assets\windows\sqlite3.dll
+
+
+ProcessId       : 15692
+ParentProcessId : 10736
+Name            : msedge.exe
+CreationDate    : 10/8/2026 3:50:08 AM
+CommandLine     : "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --type=renderer --pdf-upsell-enabled --video-capture-use-gpu-memory-buffer --lang=en-US --js-flags --device-scale-factor=1.25 --num-raster-threads=1 --renderer-client-id=165 --ram-no-pressure-read-main-dll 
+                  --launch-time-ticks=79937612455 --metrics-shmem-handle=8652,i,15908498444991674493,15762119467187205882,1048576 --field-trial-handle=2276,i,1509243923516817259,9838961246663296019,262144 --variations-seed-version 
+                  --pseudonymization-salt-handle=2280,i,4559721991932913909,6151609024251669404,4 --trace-process-track-uuid=3190709140923776579 --mojo-platform-channel-handle=9428 /prefetch:1
+
+ProcessId       : 16576
+ParentProcessId : 11652
+Name            : codex.exe
+CreationDate    : 10/8/2026 3:50:45 AM
+CommandLine     : c:\Users\PC\.vscode\extensions\openai.chatgpt-26.1002.51308-win32-x64\bin\windows-x86_64\codex.exe -c features.code_mode_host=true app-server --analytics-default-enabled
+
+ProcessId       : 14744
+ParentProcessId : 16576
+Name            : conhost.exe
+CreationDate    : 10/8/2026 3:50:45 AM
+CommandLine     : \??\C:\WINDOWS\system32\conhost.exe 0x4
+
+ProcessId       : 9976
+ParentProcessId : 11652
+Name            : cmd.exe
+CreationDate    : 10/8/2026 3:55:32 AM
+CommandLine     : C:\WINDOWS\system32\cmd.exe /d /s /c ""C:\Users\PC\flutter\bin\flutter.bat" "daemon""
+
+ProcessId       : 1388
+ParentProcessId : 9976
+Name            : conhost.exe
+CreationDate    : 10/8/2026 3:55:33 AM
+CommandLine     : \??\C:\WINDOWS\system32\conhost.exe 0x4
+
+ProcessId       : 17488
+ParentProcessId : 11652
+Name            : dart.exe
+CreationDate    : 10/8/2026 3:55:33 AM
+CommandLine     : C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe language-server --protocol=lsp --client-id=VS-Code --client-version=3.144.0
+
+ProcessId       : 5668
+ParentProcessId : 11652
+Name            : dart.exe
+CreationDate    : 10/8/2026 3:55:33 AM
+CommandLine     : C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe tooling-daemon --machine
+
+ProcessId       : 2684
+ParentProcessId : 5668
+Name            : conhost.exe
+CreationDate    : 10/8/2026 3:55:33 AM
+CommandLine     : \??\C:\WINDOWS\system32\conhost.exe 0x4
+
+ProcessId       : 6608
+ParentProcessId : 17488
+Name            : conhost.exe
+CreationDate    : 10/8/2026 3:55:33 AM
+CommandLine     : \??\C:\WINDOWS\system32\conhost.exe 0x4
+
+ProcessId       : 17724
+ParentProcessId : 11652
+Name            : dart.exe
+CreationDate    : 10/8/2026 3:55:53 AM
+CommandLine     : C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe devtools --machine --allow-embedding --dtd-uri ws://127.0.0.1:57647/sAcWOrN-V7k=
+
+ProcessId       : 16848
+ParentProcessId : 17724
+Name            : conhost.exe
+CreationDate    : 10/8/2026 3:55:53 AM
+CommandLine     : \??\C:\WINDOWS\system32\conhost.exe 0x4
+
+ProcessId       : 15992
+ParentProcessId : 9976
+Name            : dart.exe
+CreationDate    : 10/8/2026 3:56:03 AM
+CommandLine     : "C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe"  --packages="C:\Users\PC\flutter\packages\flutter_tools\.dart_tool\package_config.json"  "C:\Users\PC\flutter\bin\cache\flutter_tools.snapshot" "daemon" 
+
+ProcessId       : 2436
+ParentProcessId : 15992
+Name            : dartvm.exe
+CreationDate    : 10/8/2026 3:56:03 AM
+CommandLine     : C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dartvm.exe --resolved_executable_name=C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe --executable_name=C:\Users\PC\flutter\bin\cache\dart-sdk\bin\dart.exe 
+                  --packages=C:\Users\PC\flutter\packages\flutter_tools\.dart_tool\package_config.json C:\Users\PC\flutter\bin\cache\flutter_tools.snapshot daemon
+
+ProcessId       : 7408
+ParentProcessId : 17668
+Name            : Code.exe
+CreationDate    : 10/8/2026 3:57:14 AM
+CommandLine     : "C:\Users\PC\AppData\Local\Programs\Microsoft VS Code\Code.exe" --type=renderer --user-data-dir="C:\Users\PC\AppData\Roaming\Code" --standard-schemes=vscode-webview,vscode-file --enable-sandbox 
+                  --secure-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --cors-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource 
+                  --fetch-schemes=vscode-webview,vscode-file,vscode-remote-resource,vscode-managed-remote-resource --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --app-user-model-id=Microsoft.VisualStudioCode 
+                  --app-path="C:\Users\PC\AppData\Local\Programs\Microsoft VS Code\2a59476c9b\resources\app" --enable-sandbox --enable-blink-features=HighlightAPI --max-active-webgl-contexts=32 --disable-blink-features=FontMatchingCTMigration,StandardizedBrowserZoom, 
+                  --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=1.25 --num-raster-threads=1 --renderer-client-id=14 --time-ticks-at-unix-epoch=-1791351470521110 --launch-time-ticks=80363833117 --field-trial-handle=1860,i,5199425346382630594,5557544899014844835,262144 
+                  --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,PdfUseShowSaveFilePicker 
+                  --disable-features=CalculateNativeWinOcclusion,DropInputEventsWhilePaintHolding,HideCursorWhileTyping,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version 
+                  --pseudonymization-salt-handle=1864,i,2920836061423668321,8637270740373724356,4 --trace-process-track-uuid=3190708999430457380 --mojo-platform-channel-handle=2904 --vscode-window-config=vscode:5cfebef7-0d93-451c-a05e-bbeb7518a2cb /prefetch:1
+
+ProcessId       : 18368
+ParentProcessId : 11652
+Name            : cloudcode_cli.exe
+CreationDate    : 10/8/2026 4:00:00 AM
+CommandLine     : C:\Users\PC\AppData\Local\cloud-code\cloudcode_cli\cloudcode_cli\4f0458f7\cloudcode_cli.exe duet -trace -logtostderr
+
+ProcessId       : 12004
+ParentProcessId : 18368
+Name            : conhost.exe
+CreationDate    : 10/8/2026 4:00:01 AM
+CommandLine     : \??\C:\WINDOWS\system32\conhost.exe 0x4
+
+ProcessId       : 13040
+ParentProcessId : 6436
+Name            : OpenConsole.exe
+CreationDate    : 10/8/2026 4:06:18 AM
+CommandLine     : "c:\Users\PC\AppData\Local\Programs\Microsoft VS Code\2a59476c9b\resources\app\node_modules.asar.unpacked\node-pty\build\Release\conpty\OpenConsole.exe" --headless --width 126 --height 14 --signal 0x544 --server 0x588
+
+ProcessId       : 12576
+ParentProcessId : 6436
+Name            : powershell.exe
+CreationDate    : 10/8/2026 4:06:20 AM
+CommandLine     : C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Import-Module 'c:\Users\PC\.vscode\extensions\ms-vscode.powershell-2025.4.0\modules\PowerShellEditorServices\PowerShellEditorServices.psd1'; Start-EditorServices -HostName 
+                  'Visual Studio Code Host' -HostProfileId 'Microsoft.VSCode' -HostVersion '2025.4.0' -BundledModulesPath 'c:\Users\PC\.vscode\extensions\ms-vscode.powershell-2025.4.0\modules' -EnableConsoleRepl -StartupBanner \"PowerShell Extension v2025.4.0
+                  Copyright (c) Microsoft Corporation.
+                  
+                  https://aka.ms/vscode-powershell
+                  Type 'help' to get help.
+                  \" -LogLevel 'Warning' -LogPath 'c:\Users\PC\AppData\Roaming\Code\logs\20261008T034624\window1\exthost\ms-vscode.powershell' -SessionDetailsPath 'c:\Users\PC\AppData\Roaming\Code\User\globalStorage\ms-vscode.powershell\sessions\PSES-VSCode-17668-971480.json' -FeatureFlags @() "
+
+ProcessId       : 17792
+ParentProcessId : 6436
+Name            : OpenConsole.exe
+CreationDate    : 10/8/2026 4:19:31 AM
+CommandLine     : "c:\Users\PC\AppData\Local\Programs\Microsoft VS Code\2a59476c9b\resources\app\node_modules.asar.unpacked\node-pty\build\Release\conpty\OpenConsole.exe" --headless --width 126 --height 14 --signal 0x2f4 --server 0x5e4
+
+ProcessId       : 7424
+ParentProcessId : 6436
+Name            : powershell.exe
+CreationDate    : 10/8/2026 4:19:31 AM
+CommandLine     : C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command "try { . \"c:\Users\PC\AppData\Local\Programs\Microsoft VS Code\2a59476c9b\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1\" } catch {}"
+
+ProcessId       : 8132
+ParentProcessId : 7424
+Name            : powershell.exe
+CreationDate    : 10/8/2026 4:19:35 AM
+CommandLine     : "C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File C:\src\flutter\bin\_holder.ps1
+
+ProcessId       : 14840
+ParentProcessId : 1188
+Name            : WmiPrvSE.exe
+CreationDate    : 10/8/2026 4:19:43 AM
+CommandLine     : 
+
+
+
+

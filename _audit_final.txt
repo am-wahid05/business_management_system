@@ -1,0 +1,38 @@
+﻿00:00 +0: loading C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart
+00:00 +0: C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart: (setUpAll)
+00:02 +0: C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart: same delivery ID and bag numbers coexist per company
+00:04 +1: C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart: company-scoped update, bag delete, and delivery delete stay isolated
+00:05 +2: C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart: composite foreign key rejects A bag weight under B delivery scope
+00:05 +3: C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart: sync download does not replace another company duplicate ID
+00:08 +4: C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart: v20 migration preserves tenant keys and archives mismatched legacy weights
+00:08 +5: C:/Projects/flutter_application_2/test/features/products/product_database_company_scope_test.dart: (tearDownAll)
+00:11 +5: loading C:/Projects/flutter_application_2/test/features/products/product_database_recorder_migration_test.dart
+00:17 +5: C:/Projects/flutter_application_2/test/features/products/product_database_recorder_migration_test.dart: v12 migration keeps legacy rows and preserves NOT NULL recorder IDs
+00:19 +6: loading C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart
+00:22 +6: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: forSupplier is company scoped returns the deliveries the supplier statement reads, and never another company's
+00:23 +7: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: forSupplier is company scoped includes both individual and bulk records for the same supplier
+00:23 +8: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: saves a delivery and every individual bag weight in one database operation
+00:23 +9: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: attributes each bag to its authenticated secretary and scopes it to company
+00:24 +10: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: attributes a bulk delivery to the authenticated secretary
+00:24 +11: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: attributes a bulk delivery to the authenticated secretary
+00:24 +12: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: rejects a caller trying to create a delivery for another user
+00:24 +13: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: keeps legacy deliveries and weights unassigned
+00:25 +14: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: delivery calculation derives count and total from bag weights
+00:25 +15: C:/Projects/flutter_application_2/test/features/receiving/delivery_repository_test.dart: returns only the selected date and supports controlled correction
+00:26 +16: loading C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart
+00:31 +16: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: (setUpAll)
+00:32 +16: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: normal sync uploads an A delivery only to company A
+00:33 +17: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: switch before upload keeps queue and local status bound to A
+00:33 +18: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: a queued delivery from B is rejected in an A sync before side effects
+00:33 +19: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: switch after upload starts cannot retarget the captured scope
+00:34 +20: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: failed in-flight A upload marks only the A local row failed
+00:34 +21: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: Supabase store rejects mismatched delivery before network writes
+00:36 +22: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: Supabase store keeps all writes on captured A after context switches
+00:36 +23: C:/Projects/flutter_application_2/test/features/sync/sync_company_scope_test.dart: (tearDownAll)
+00:37 +23: loading C:/Projects/flutter_application_2/test/features/sync/sync_coordinator_test.dart
+00:39 +23: C:/Projects/flutter_application_2/test/features/sync/sync_coordinator_test.dart: offline creation remains pending and successful sync is idempotent
+00:40 +24: C:/Projects/flutter_application_2/test/features/sync/sync_coordinator_test.dart: failed sync preserves the record and retry succeeds
+00:40 +25: C:/Projects/flutter_application_2/test/features/sync/sync_coordinator_test.dart: a delivery accepted by the server is NOT marked failed when only a later follow-up write fails
+00:40 +26: C:/Projects/flutter_application_2/test/features/sync/sync_coordinator_test.dart: a failing catalog or download is reported as a warning and never marks an uploaded delivery as failed
+00:40 +27: C:/Projects/flutter_application_2/test/features/sync/sync_coordinator_test.dart: syncs multiple pending records and prevents duplicate remote uploads
+00:41 +28: All tests passed!

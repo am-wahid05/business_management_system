@@ -375,6 +375,7 @@ void main() {
           return http.Response(
             '{}',
             201,
+            request: request,
             headers: {'content-type': 'application/json'},
           );
         }
@@ -382,6 +383,7 @@ void main() {
           return http.Response(
             '{}',
             201,
+            request: request,
             headers: {'content-type': 'application/json'},
           );
         }
@@ -389,12 +391,18 @@ void main() {
           return http.Response(
             jsonEncode({'id': 'cashew'}),
             200,
+            request: request,
             headers: {'content-type': 'application/json'},
           );
         }
         if (path.endsWith('/deliveries') &&
             request.url.queryParameters['select'] == 'record_type') {
-          return http.Response('[]', 200, headers: {'content-type': 'application/json'});
+          return http.Response(
+            '[]',
+            200,
+            request: request,
+            headers: {'content-type': 'application/json'},
+          );
         }
         if (path.endsWith('/deliveries')) {
           return http.Response(
@@ -403,13 +411,24 @@ void main() {
               'recorded_by_user_id': 'user-a',
             }),
             200,
+            request: request,
             headers: {'content-type': 'application/json'},
           );
         }
         if (path.endsWith('/delivery_bag_weights')) {
-          return http.Response('[]', 200, headers: {'content-type': 'application/json'});
+          return http.Response(
+            '[]',
+            200,
+            request: request,
+            headers: {'content-type': 'application/json'},
+          );
         }
-        return http.Response('{}', 200, headers: {'content-type': 'application/json'});
+        return http.Response(
+          '{}',
+          200,
+          request: request,
+          headers: {'content-type': 'application/json'},
+        );
       }),
     );
     final store = SupabaseDeliveryStore(

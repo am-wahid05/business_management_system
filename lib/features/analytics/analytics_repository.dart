@@ -10,18 +10,18 @@ class AnalyticsRepository {
 
   Future<AnalyticsSummary> summary(AnalyticsFilters filters) async {
     final query = _query(filters);
+    final deliveries = await _analyticsDeliveries();
     final row = (await database.rawQuery('''
       SELECT
         COUNT(DISTINCT d.id) AS delivery_count,
-        COUNT(w.delivery_id) AS total_bags,
-        COALESCE(SUM(w.weight), 0) AS total_weight,
+        COALESCE(SUM(d.analytics_total_bags), 0) AS total_bags,
+        COALESCE(SUM(d.analytics_total_weight), 0) AS total_weight,
         COUNT(DISTINCT d.supplier_id) AS unique_suppliers,
         COUNT(DISTINCT CASE WHEN d.supplier_type = 'farmer' THEN d.supplier_id END) AS unique_farmers,
         COUNT(DISTINCT CASE WHEN d.supplier_type = 'aggregator' THEN d.supplier_id END) AS unique_aggregators,
         COUNT(DISTINCT CASE WHEN s.is_active = 1 THEN d.supplier_id END) AS active_suppliers,
         COUNT(DISTINCT d.product_id) AS product_count
-      FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+      FROM ($deliveries) d
       LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
     ''', query.arguments)).single;
@@ -41,16 +41,16 @@ class AnalyticsRepository {
     AnalyticsFilters filters,
   ) async {
     final query = _query(filters);
+    final deliveries = await _analyticsDeliveries();
     final rows = await database.rawQuery('''
       SELECT
         d.product_id,
         d.product_name,
         COUNT(DISTINCT d.id) AS delivery_count,
-        COUNT(w.delivery_id) AS total_bags,
-        COALESCE(SUM(w.weight), 0) AS total_weight,
+        COALESCE(SUM(d.analytics_total_bags), 0) AS total_bags,
+        COALESCE(SUM(d.analytics_total_weight), 0) AS total_weight,
         COUNT(DISTINCT d.supplier_id) AS unique_suppliers
-      FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+      FROM ($deliveries) d
       LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
       GROUP BY d.product_id, d.product_name
@@ -74,16 +74,16 @@ class AnalyticsRepository {
     AnalyticsFilters filters,
   ) async {
     final query = _query(filters);
+    final deliveries = await _analyticsDeliveries();
     final rows = await database.rawQuery('''
       SELECT
         d.supplier_id,
         MAX(d.supplier_name) AS supplier_name,
         MAX(d.supplier_type) AS supplier_type,
         COUNT(DISTINCT d.id) AS delivery_count,
-        COUNT(w.delivery_id) AS total_bags,
-        COALESCE(SUM(w.weight), 0) AS total_weight
-      FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+        COALESCE(SUM(d.analytics_total_bags), 0) AS total_bags,
+        COALESCE(SUM(d.analytics_total_weight), 0) AS total_weight
+      FROM ($deliveries) d
       LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
       GROUP BY d.company_id, d.supplier_id
@@ -108,6 +108,7 @@ class AnalyticsRepository {
     AnalyticsTrend trend,
   ) async {
     final query = _query(filters);
+    final deliveries = await _analyticsDeliveries();
     final expression = switch (trend) {
       AnalyticsTrend.daily => "substr(d.recorded_at, 1, 10)",
       AnalyticsTrend.weekly => "strftime('%Y-W%W', d.recorded_at)",
@@ -118,10 +119,9 @@ class AnalyticsRepository {
       SELECT
         $expression AS period,
         COUNT(DISTINCT d.id) AS delivery_count,
-        COUNT(w.delivery_id) AS total_bags,
-        COALESCE(SUM(w.weight), 0) AS total_weight
-      FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+        COALESCE(SUM(d.analytics_total_bags), 0) AS total_bags,
+        COALESCE(SUM(d.analytics_total_weight), 0) AS total_weight
+      FROM ($deliveries) d
       LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where}
       GROUP BY period
@@ -176,6 +176,7 @@ class AnalyticsRepository {
     String field = 'town',
   }) async {
     final query = _query(filters);
+    final deliveries = await _analyticsDeliveries();
     final column = switch (field) {
       'district' => 's.district',
       'region' => 's.region',
@@ -183,10 +184,10 @@ class AnalyticsRepository {
     };
     final rows = await database.rawQuery('''
       SELECT $column AS location, COUNT(DISTINCT d.supplier_id) AS supplier_count,
-        COUNT(DISTINCT d.id) AS delivery_count, COUNT(w.delivery_id) AS total_bags,
-        COALESCE(SUM(w.weight), 0) AS total_weight
-      FROM deliveries d
-      LEFT JOIN delivery_bag_weights w ON w.company_id IS d.company_id AND w.delivery_id = d.id AND w.weight > 0
+        COUNT(DISTINCT d.id) AS delivery_count,
+        COALESCE(SUM(d.analytics_total_bags), 0) AS total_bags,
+        COALESCE(SUM(d.analytics_total_weight), 0) AS total_weight
+      FROM ($deliveries) d
       LEFT JOIN suppliers s ON s.company_id IS d.company_id AND s.supplier_id = d.supplier_id
       WHERE ${query.where} AND $column IS NOT NULL AND TRIM($column) != ''
       GROUP BY $column
@@ -203,6 +204,38 @@ class AnalyticsRepository {
           ),
         )
         .toList(growable: false);
+  }
+
+  Future<String> _analyticsDeliveries() async {
+    final columns = (await database.rawQuery(
+      'PRAGMA table_info(deliveries)',
+    )).map((row) => row['name']).toSet();
+    final recordType = columns.contains('record_type')
+        ? 'd.record_type'
+        : "'individual'";
+    final bulkWeight = columns.contains('total_weight')
+        ? 'd.total_weight'
+        : 'NULL';
+    final bulkBags = columns.contains('bag_count') ? 'd.bag_count' : 'NULL';
+    return '''
+      SELECT d.*,
+        CASE WHEN $recordType = 'bulk'
+          THEN COALESCE($bulkWeight, 0)
+          ELSE COALESCE(w.total_weight, 0)
+        END AS analytics_total_weight,
+        CASE WHEN $recordType = 'bulk'
+          THEN COALESCE($bulkBags, 0)
+          ELSE COALESCE(w.total_bags, 0)
+        END AS analytics_total_bags
+      FROM deliveries d
+      LEFT JOIN (
+        SELECT company_id, delivery_id, COUNT(*) AS total_bags,
+          SUM(weight) AS total_weight
+        FROM delivery_bag_weights
+        WHERE weight > 0
+        GROUP BY company_id, delivery_id
+      ) w ON w.company_id IS d.company_id AND w.delivery_id = d.id
+    ''';
   }
 
   _AnalyticsQuery _query(AnalyticsFilters filters) {

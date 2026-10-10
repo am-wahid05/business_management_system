@@ -47,5 +47,5 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
-
+android/app/google-services.json
 

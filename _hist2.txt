@@ -1,0 +1,8 @@
+﻿e99e697:lib/features/products/product_database.dart:92:        recorded_by_user_id TEXT NOT NULL,
+9a9d651:lib/features/products/product_database.dart:92:        recorded_by_user_id TEXT NOT NULL,
+21fad08:lib/features/sync/supabase_delivery_store.dart:156:          'recorded_by_user_id': row['recorded_by_user_id'],
+21fad08:lib/features/sync/supabase_delivery_store.dart:192:            'recorded_by_user_id': weight['recorded_by_user_id'],
+21fad08:lib/features/sync/supabase_delivery_store.dart:286:        .select('updated_at, recorded_by_user_id')
+21fad08:lib/features/sync/supabase_delivery_store.dart:309:                .select('bag_number, recorded_by_user_id')
+21fad08:lib/features/sync/supabase_delivery_store.dart:352:      deliveryPayload['recorded_by_user_id'] = delivery.recordedByUserId;
+21fad08:lib/features/sync/supabase_delivery_store.dart:396:            'recorded_by_user_id': delivery.recorderForBag(index),

@@ -1,0 +1,21 @@
+=== SEARCH FOR SUPABASE BINARY IN COMMON LOCATIONS ===
+=== npm global supabase package present? ===
+npm global root: C:\Users\PC\AppData\Roaming\npm\node_modules
+npm global supabase dir: False
+=== scoop presence ===
+scoop: NOT on PATH
+=== .temp/project-ref (SAFE - not a secret) ===
+simhlgswtlpylpsdwyoy
+=== .temp file presence (names only; secret-bearing files NOT dumped) ===
+cli-latest
+gotrue-version
+linked-project.json
+pooler-url
+postgres-version
+project-ref
+rest-version
+storage-migration
+storage-version
+=== pooler-url present? (existence only - may embed password, NOT dumping) ===
+pooler-url file exists: True
+=== DONE ===

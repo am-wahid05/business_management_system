@@ -1,8 +1,14 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/albnc_app.dart';
 import 'app/supabase_config.dart';
+import 'domain/models/delivery.dart';
+import 'domain/models/supplier.dart';
 import 'features/auth/account_service.dart';
 import 'features/products/product_database.dart';
 import 'features/products/product_repository.dart';
@@ -19,16 +25,33 @@ import 'features/suppliers/supplier_repository.dart';
 import 'features/sync/supabase_delivery_store.dart';
 import 'features/sync/sync_coordinator.dart';
 
+const _smokeTestRequested = bool.fromEnvironment(
+  'BUSINESSMS_SMOKE_TEST',
+  defaultValue: false,
+);
+const _smokeCompanyId = 'businessms-isolated-smoke-company';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final database = await ProductDatabase.open();
+  final smokeTestEnabled = kDebugMode && _smokeTestRequested;
+  final smokeDirectory = smokeTestEnabled
+      ? await Directory.systemTemp.createTemp('businessms-smoke-')
+      : null;
+  final database = await ProductDatabase.open(
+    databasePath: smokeDirectory == null
+        ? null
+        : path.join(smokeDirectory.path, 'smoke-test.db'),
+  );
+  if (smokeDirectory != null) {
+    debugPrint('BusinessMS isolated smoke database: ${database.path}');
+  }
   late final AuthRepository authRepository;
   AccountService? accountService;
   SupabaseAuthLinkHandler? authLinkHandler;
   CompanyBrandingService? brandingService;
   SupabaseClient? subscriptionClient;
 
-  if (SupabaseConfig.useLocalAuth) {
+  if (smokeTestEnabled || SupabaseConfig.useLocalAuth) {
     final localRepository = LocalAuthRepository(database);
     authRepository = localRepository;
     await _seedLocalDemoUsers(localRepository);
@@ -81,7 +104,9 @@ Future<void> main() async {
   // Local installations are a single-company database and do not have a
   // tenant ID. When the remote auth path is active, scope repositories to the
   // selected company in the shared auth context.
-  final String? Function()? companyIdProvider = authRepository.isRemote
+  final String? Function()? companyIdProvider = smokeTestEnabled
+      ? () => _smokeCompanyId
+      : authRepository.isRemote
       ? () => authRepository.activeCompanyContext.companyId
       : null;
   final productRepository = ProductRepository(
@@ -99,6 +124,13 @@ Future<void> main() async {
     companyIdProvider: companyIdProvider,
   );
   await supplierRepository.initialize();
+  if (smokeTestEnabled) {
+    await _seedSyntheticSmokeData(
+      productRepository: productRepository,
+      supplierRepository: supplierRepository,
+      deliveryRepository: deliveryRepository,
+    );
+  }
   SyncCoordinator? syncCoordinator;
   if (authRepository.isRemote && subscriptionClient != null) {
     final client = subscriptionClient;
@@ -132,6 +164,7 @@ Future<void> main() async {
         await supplierRepository.initialize();
       },
       repository: supplierRepository,
+      companyIdProvider: companyIdProvider,
       receivingService: ReceivingService(
         database: database,
         supplierRepository: supplierRepository,
@@ -140,6 +173,47 @@ Future<void> main() async {
       ),
     ),
   );
+}
+
+Future<void> _seedSyntheticSmokeData({
+  required ProductRepository productRepository,
+  required SupplierRepository supplierRepository,
+  required DeliveryRepository deliveryRepository,
+}) async {
+  final supplier = await supplierRepository.create(
+    name: 'Synthetic Smoke Supplier',
+    type: SupplierType.farmer,
+    phone: '',
+    town: 'Synthetic Town',
+    district: 'Synthetic District',
+    region: 'Synthetic Region',
+    notes: 'Generated only in the isolated smoke-test database.',
+  );
+  final products = await productRepository.all(activeOnly: true);
+  final product = products.firstWhere((item) => item.id == 'cashew');
+  final today = DateTime.now();
+  final monday = DateTime(
+    today.year,
+    today.month,
+    today.day,
+  ).subtract(Duration(days: today.weekday - DateTime.monday));
+  const weeklyWeights = [100.0, 135.0, 90.0, 155.0];
+
+  for (var index = 0; index < weeklyWeights.length; index++) {
+    final recordedAt = monday.subtract(Duration(days: 7 * (3 - index)));
+    await deliveryRepository.save(
+      Delivery(
+        id: 'synthetic-smoke-delivery-$index',
+        supplier: supplier,
+        product: product,
+        recordedAt: recordedAt.add(const Duration(hours: 10)),
+        bagWeights: [weeklyWeights[index] / 2, weeklyWeights[index] / 2],
+        recordedByUserId: null,
+        companyId: _smokeCompanyId,
+        synchronizationStatus: SynchronizationStatus.localOnly,
+      ),
+    );
+  }
 }
 
 Future<void> _seedLocalDemoUsers(LocalAuthRepository authRepository) async {

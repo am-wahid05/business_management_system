@@ -20,6 +20,7 @@ void main() {
               recorded_at TEXT NOT NULL, recorded_by_user_id TEXT NOT NULL, status TEXT NOT NULL,
               synchronization_status TEXT NOT NULL, supplier_internal_id TEXT,
               supplier_name TEXT NOT NULL, product_name TEXT NOT NULL, supplier_type TEXT NOT NULL,
+              record_type TEXT NOT NULL DEFAULT 'individual', total_weight REAL, bag_count INTEGER,
               created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
               PRIMARY KEY (company_id, id)
             )
@@ -148,6 +149,70 @@ void main() {
     expect(trend.single.totalWeight, 260);
     expect(trend.single.totalBags, 4);
   });
+
+  test(
+    'analytics totals include bulk records without double-counting',
+    () async {
+      await _insertDelivery(
+        database,
+        'bulk-cocoa',
+        'ALB-000001',
+        'cocoa',
+        'Cocoa',
+        'aggregator',
+        '2026-09-20T12:00:00',
+        const [],
+        recordType: 'bulk',
+        totalWeight: 500,
+        bagCount: 10,
+      );
+      await _insertDelivery(
+        database,
+        'legacy-bulk-cocoa',
+        'ALB-000001',
+        'cocoa',
+        'Cocoa',
+        'aggregator',
+        '2026-09-21T12:00:00',
+        const [],
+        recordType: 'bulk',
+      );
+
+      final summary = await repository.summary(_filters());
+      expect(summary.deliveryCount, 5);
+      expect(summary.totalBags, 14);
+      expect(summary.totalWeight, 760);
+
+      final cocoa = (await repository.productBreakdown(
+        _filters(productId: 'cocoa'),
+      )).single;
+      expect(cocoa.deliveryCount, 3);
+      expect(cocoa.totalBags, 11);
+      expect(cocoa.totalWeight, 550);
+
+      final ibrahim = (await repository.supplierBreakdown(
+        _filters(supplierType: 'aggregator'),
+      )).single;
+      expect(ibrahim.deliveryCount, 4);
+      expect(ibrahim.totalBags, 13);
+      expect(ibrahim.totalWeight, 700);
+
+      final trend = (await repository.trend(
+        _filters(),
+        AnalyticsTrend.monthly,
+      )).single;
+      expect(trend.deliveryCount, 5);
+      expect(trend.totalBags, 14);
+      expect(trend.totalWeight, 760);
+
+      final location = (await repository.locationBreakdown(
+        _filters(town: 'Techiman'),
+      )).single;
+      expect(location.deliveryCount, 4);
+      expect(location.totalBags, 13);
+      expect(location.totalWeight, 700);
+    },
+  );
 
   test('empty periods return zero-safe metrics', () async {
     final summary = await repository.summary(
@@ -308,6 +373,9 @@ Future<void> _insertDelivery(
   List<double> weights, {
   String status = 'received',
   String? companyId,
+  String recordType = 'individual',
+  double? totalWeight,
+  int? bagCount,
 }) async {
   await database.insert('deliveries', {
     'id': id,
@@ -323,6 +391,9 @@ Future<void> _insertDelivery(
         : 'Ama Boateng',
     'product_name': productName,
     'supplier_type': supplierType,
+    'record_type': recordType,
+    'total_weight': totalWeight,
+    'bag_count': bagCount,
     'created_at': recordedAt,
     'updated_at': recordedAt,
   });

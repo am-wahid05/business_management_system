@@ -148,6 +148,13 @@ void main() {
   });
 
   test('sync download does not replace another company duplicate ID', () async {
+    // The sync store writes the per-bag recorder that Supabase returns, but the
+    // v21 product schema does not create that column locally (the repository
+    // layer only writes it when present). The fixture adds it so the download
+    // path can run its INSERT unchanged.
+    await database.execute(
+      'ALTER TABLE delivery_bag_weights ADD COLUMN recorded_by_user_id TEXT',
+    );
     final client = SupabaseClient(
       'https://example.supabase.co',
       'test-publishable-key',
@@ -159,7 +166,12 @@ void main() {
         return http.Response(
           jsonEncode(records),
           200,
-          headers: {'content-type': 'application/json'},
+          request: request,
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'apikey': 'test-publishable-key',
+            'Authorization': 'Bearer test-publishable-key',
+          },
         );
       }),
     );
@@ -210,6 +222,9 @@ void main() {
         onCreate: (database, version) async {
           await database.execute(_legacyDeliveriesTable);
           await database.execute(_legacyBagWeightsTable);
+          await database.execute(_legacyProductsTable);
+          await database.execute(_legacyReceiptSendsTable);
+          await database.execute(_legacyImportLogsTable);
           await database.insert('deliveries', _legacyDeliveryRow);
           await database.insert('delivery_bag_weights', {
             'delivery_id': 'DUPLICATE-001',
@@ -445,6 +460,44 @@ const _legacyBagWeightsTable = '''
     weight REAL NOT NULL,
     PRIMARY KEY (delivery_id, bag_number),
     FOREIGN KEY (delivery_id) REFERENCES deliveries(id) ON DELETE CASCADE
+  )
+''';
+
+const _legacyProductsTable = '''
+  CREATE TABLE products (
+    id TEXT PRIMARY KEY,
+    company_id TEXT,
+    name TEXT NOT NULL COLLATE NOCASE,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )
+''';
+
+const _legacyReceiptSendsTable = '''
+  CREATE TABLE receipt_sends (
+    id TEXT PRIMARY KEY,
+    delivery_id TEXT NOT NULL,
+    company_id TEXT,
+    phone TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    status TEXT NOT NULL,
+    sent_at TEXT NOT NULL,
+    provider_reference TEXT
+  )
+''';
+
+const _legacyImportLogsTable = '''
+  CREATE TABLE import_logs (
+    id TEXT PRIMARY KEY,
+    filename TEXT NOT NULL,
+    imported_at TEXT NOT NULL,
+    imported_by_user_id TEXT NOT NULL,
+    company_id TEXT,
+    rows_total INTEGER NOT NULL,
+    rows_imported INTEGER NOT NULL,
+    rows_skipped INTEGER NOT NULL,
+    rows_failed INTEGER NOT NULL
   )
 ''';
 

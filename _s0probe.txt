@@ -1,0 +1,13 @@
+
+cmd_supabase: False
+cmd_npx: True
+cmd_scoop: False
+path_supabase_exe: False
+scoop_supabase: False
+config_toml: False
+temp_dir: True
+token_file_appdata: False
+token_file_home: False
+env_token_set: False
+env_dburl_set: False
+PROBE_DONE

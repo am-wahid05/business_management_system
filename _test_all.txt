@@ -1,0 +1,543 @@
+STARTED=Thu 10/08/2026  4:21:49.76 
+00:00 +0: loading C:/Projects/flutter_application_2/test/app/password_recovery_gate_test.dart
+00:00 +0: C:/Projects/flutter_application_2/test/app/password_recovery_gate_test.dart: a warm-start recovery link replaces the app content
+00:05 +1: C:/Projects/flutter_application_2/test/app/password_recovery_gate_test.dart: a cold-start recovery link is not lost
+00:06 +2: C:/Projects/flutter_application_2/test/app/password_recovery_gate_test.dart: the reset screen survives a rebuild of the gate
+00:07 +3: C:/Projects/flutter_application_2/test/app/password_recovery_gate_test.dart: a normal session is never blocked by the gate
+00:07 +4: C:/Projects/flutter_application_2/test/app/password_recovery_gate_test.dart: the local-only setup renders the app unchanged
+00:08 +5: loading C:/Projects/flutter_application_2/test/app/role_navigation_test.dart
+00:16 +5: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation does not offer the Secretary receiving workflow
+00:17 +6: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation does not link to any receiving route
+00:17 +7: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation keeps the legitimate Admin destinations
+00:17 +8: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation offers Excel for exporting records
+00:17 +9: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation keeps Excel separate from Spreadsheet so it lights up on its own
+00:17 +10: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Admin navigation every Admin destination points at an absolute route
+00:17 +11: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation retains the receiving workflow and Today's Records
+00:17 +12: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation retains Settings and About as secondary destinations
+00:17 +13: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation About reuses the shared About route rather than a duplicate
+00:17 +14: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation does not offer Excel, which is an Admin-only feature
+00:17 +15: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: Secretary navigation the Secretary never links to an Admin-only route
+00:17 +16: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: routes are preserved for both roles the receiving routes still exist
+00:17 +17: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: routes are preserved for both roles the shared About and account settings routes still exist
+00:17 +18: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: destination matching a destination lights up for every route in its family
+00:17 +19: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: destination matching an unknown route highlights nothing
+00:18 +20: loading C:/Projects/flutter_application_2/test/app/supabase_config_test.dart
+00:25 +20: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Supabase email confirmation callback uses the registered application callback URL
+00:25 +21: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Supabase email confirmation callback accepts only the application auth callback host
+00:26 +22: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Supabase email confirmation callback accepts the password recovery callback Supabase actually sends
+00:26 +23: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration (setUpAll)
+00:26 +23: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration declares an intent filter for the custom scheme and host
+00:26 +24: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration declares no other custom scheme that could hijack the callback
+00:26 +25: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration keeps the activity singleTop so a warm start is delivered
+00:26 +26: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration exports the activity so the system can launch it
+00:26 +27: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration (tearDownAll)
+00:27 +27: loading C:/Projects/flutter_application_2/test/bug_repro_test.dart
+00:34 +27: C:/Projects/flutter_application_2/test/bug_repro_test.dart: GhanaLocationFields char-by-char typing keeps every character
+00:40 +28: C:/Projects/flutter_application_2/test/bug_repro_test.dart: admin supplier form district accepts Techiman
+00:43 +29: C:/Projects/flutter_application_2/test/bug_repro_test.dart: secretary receiving form district accepts Techiman
+10:44 +29 -1: C:/Projects/flutter_application_2/test/bug_repro_test.dart: secretary receiving form district accepts Techiman [E]
+  TimeoutException after 0:10:00.000000: Test timed out after 10 minutes.
+  dart:isolate  _RawReceivePort._handleMessage
+  
+10:44 +29 -1: C:/Projects/flutter_application_2/test/bug_repro_test.dart: focus stays on the district field while typing
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+Guarded function conflict.
+You must use "await" with all Future-returning test APIs.
+The guarded method "pumpWidget" from class WidgetTester was called from
+file:///C:/Projects/flutter_application_2/test/bug_repro_test.dart on line 87.
+Then, the "pump" method from class AutomatedTestWidgetsFlutterBinding was called from
+package:flutter_test/src/binding.dart on line 1949.
+The first method (WidgetTester.pumpWidget) had not yet finished executing at the time that the
+second method (AutomatedTestWidgetsFlutterBinding.pump) was called. Since both are guarded, and the
+second was not a nested call inside the first, the first must complete its execution before the
+second can be called. Typically, this is achieved by putting an "await" statement in front of the
+call to the first.
+
+When the first method (WidgetTester.pumpWidget) was called, this was the stack:
+#0      TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:72:42)
+#1      WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#2      main.<anonymous closure> (file:///C:/Projects/flutter_application_2/test/bug_repro_test.dart:87:18)
+<asynchronous suspension>
+#3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1960:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+When the exception was thrown, this was the stack:
+#0      TestAsyncUtils.guardSync (package:flutter_test/src/test_async_utils.dart:312:5)
+#1      TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:66:5)
+#2      AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2258:27)
+#3      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1949:11)
+#5      TestWidgetsFlutterBinding._runTest (package:flutter_test/src/binding.dart:1934:10)
+#6      AutomatedTestWidgetsFlutterBinding.runTest.<anonymous closure> (package:flutter_test/src/binding.dart:2498:24)
+#7      FakeAsync.run.<anonymous closure>.<anonymous closure> (package:fake_async/fake_async.dart:182:47)
+#10     withClock (package:clock/src/default.dart:52:10)
+#11     FakeAsync.run.<anonymous closure> (package:fake_async/fake_async.dart:182:15)
+#14     FakeAsync.run (package:fake_async/fake_async.dart:181:52)
+#15     AutomatedTestWidgetsFlutterBinding.runTest (package:flutter_test/src/binding.dart:2495:15)
+#16     testWidgets.<anonymous closure> (package:flutter_test/src/widget_tester.dart:184:24)
+#17     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#18     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#19     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+(elided 5 frames from dart:async)
+
+The test description was:
+  focus stays on the district field while typing
+════════════════════════════════════════════════════════════════════════════════════════════════════
+10:45 +29 -2: C:/Projects/flutter_application_2/test/bug_repro_test.dart: focus stays on the district field while typing [E]
+  Test failed. See exception logs above.
+  The test description was: focus stays on the district field while typing
+  
+10:45 +29 -2: loading C:/Projects/flutter_application_2/test/domain/models/delivery_test.dart
+10:49 +29 -2: C:/Projects/flutter_application_2/test/domain/models/delivery_test.dart: calculates bag count and total weight from individual weights
+10:49 +30 -2: C:/Projects/flutter_application_2/test/domain/models/delivery_test.dart: does not expose a mutable bag-weight list
+10:49 +31 -2: C:/Projects/flutter_application_2/test/domain/models/delivery_test.dart: rejects a delivery without any bag weights
+10:49 +32 -2: C:/Projects/flutter_application_2/test/domain/models/delivery_test.dart: rejects non-positive or non-finite bag weights
+10:49 +33 -2: loading C:/Projects/flutter_application_2/test/features/analytics/analytics_repository_test.dart
+10:51 +33 -2: C:/Projects/flutter_application_2/test/features/analytics/analytics_repository_test.dart: summary uses SQL aggregates and excludes cancelled deliveries
+10:51 +34 -2: C:/Projects/flutter_application_2/test/features/analytics/analytics_repository_test.dart: breakdowns and filters work together
+10:51 +35 -2: C:/Projects/flutter_application_2/test/features/analytics/analytics_repository_test.dart: monthly trend returns only periods with records
+10:51 +36 -2: C:/Projects/flutter_application_2/test/features/analytics/analytics_repository_test.dart: empty periods return zero-safe metrics
+10:51 +37 -2: C:/Projects/flutter_application_2/test/features/analytics/analytics_repository_test.dart: analytics joins and filters stay within the active company
+10:51 +38 -2: loading C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart
+10:53 +38 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: the assistant can never write business data contains no insert, update, upsert or delete against the database
+10:53 +39 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: the assistant can never write business data has no raw SQL execution path
+10:53 +40 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: the assistant can never write business data does not post the model output anywhere as a command
+10:53 +41 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: authentication and company isolation requires an Authorization header and resolves the user
+10:53 +42 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: authentication and company isolation reads the company from company_memberships, not from the request
+10:53 +43 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: authentication and company isolation rejects a client-supplied company_id outright
+10:53 +44 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: authentication and company isolation scopes every delivery read to the authorized company
+10:53 +45 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: authentication and company isolation requires an admin role, so a secretary is refused
+10:53 +46 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: provider configuration is server-side only reads the OpenAI key from the function environment
+10:53 +47 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: provider configuration is server-side only reads the model id from the environment instead of hardcoding it
+10:53 +48 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: provider configuration is server-side only uses the current Responses API, not legacy Chat Completions
+10:53 +49 -2: C:/Projects/flutter_application_2/test/features/assistant/ai_assistant_function_source_test.dart: provider configuration is server-side only never returns the raw provider error to the client
+10:53 +50 -2: loading C:/Projects/flutter_application_2/test/features/assistant/business_assistant_service_test.dart
+test/features/assistant/business_assistant_service_test.dart:13:39: Error: Type 'AssistantInvoker' not found.
+class FakeAssistantInvoker implements AssistantInvoker {
+                                      ^^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:16:16: Error: Type 'AssistantAnswer' not found.
+  final Future<AssistantAnswer> Function(String question) reply;
+               ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:22:10: Error: Type 'AssistantAnswer' not found.
+  Future<AssistantAnswer> ask(String question) async {
+         ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:16:16: Error: 'AssistantAnswer' isn't a type.
+  final Future<AssistantAnswer> Function(String question) reply;
+               ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:39:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        (_) async => const AssistantAnswer.answer('ok'),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:49:23: Error: Method not found: 'SupabaseAssistantInvoker'.
+      final invoker = SupabaseAssistantInvoker(null);
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:53:27: Error: Undefined name 'AssistantAnswer'.
+      expect(answer.text, AssistantAnswer.defaultOfflineMessage);
+                          ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:58:9: Error: Undefined name 'AssistantAnswer'.
+        AssistantAnswer.defaultOfflineMessage,
+        ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:67:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        (_) async => const AssistantAnswer.answer('ok'),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:77:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        (_) async => const AssistantAnswer.answer('ok'),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:87:30: Error: 'AssistantAnswer' isn't a type.
+      final gate = Completer<AssistantAnswer>();
+                             ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:99:27: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+      gate.complete(const AssistantAnswer.answer('done'));
+                          ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:105:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        (_) async => const AssistantAnswer.answer('done'),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:118:28: Error: Couldn't find constructor 'AssistantAnswer.offline'.
+        (_) async => const AssistantAnswer.offline(),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:132:28: Error: Couldn't find constructor 'AssistantAnswer.offline'.
+        (_) async => const AssistantAnswer.offline(),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:137:27: Error: Undefined name 'AssistantAnswer'.
+      expect(answer.text, AssistantAnswer.defaultOfflineMessage);
+                          ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:142:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        (_) async => const AssistantAnswer.answer('You received 400 kg.'),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:155:30: Error: 'AssistantAnswer' isn't a type.
+      final gate = Completer<AssistantAnswer>();
+                             ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:168:27: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+      gate.complete(const AssistantAnswer.answer('You received 400 kg.'));
+                          ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:179:28: Error: Couldn't find constructor 'AssistantAnswer.offline'.
+        (_) async => const AssistantAnswer.offline(),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:188:24: Error: Undefined name 'AssistantAnswer'.
+      expect(find.text(AssistantAnswer.defaultOfflineMessage), findsOneWidget);
+                       ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:194:30: Error: 'AssistantAnswer' isn't a type.
+      final gate = Completer<AssistantAnswer>();
+                             ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:208:27: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+      gate.complete(const AssistantAnswer.answer('done'));
+                          ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:218:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        (_) async => const AssistantAnswer.answer('ok'),
+                           ^^^^^^^^^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:41:32: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      BusinessAssistantService(invoker).answer('How much today?');
+                               ^
+test/features/assistant/business_assistant_service_test.dart:69:53: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      final answer = await BusinessAssistantService(invoker).answer('   ');
+                                                    ^
+test/features/assistant/business_assistant_service_test.dart:72:21: Error: The getter 'text' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+      expect(answer.text, contains('type a question'));
+                    ^^^^
+test/features/assistant/business_assistant_service_test.dart:79:38: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      await BusinessAssistantService(invoker).answer('  total for today?  ');
+                                     ^
+test/features/assistant/business_assistant_service_test.dart:89:48: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      final service = BusinessAssistantService(invoker);
+                                               ^
+test/features/assistant/business_assistant_service_test.dart:97:21: Error: The getter 'text' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+      expect(second.text, contains('Still working'));
+                    ^^^^
+test/features/assistant/business_assistant_service_test.dart:100:28: Error: The getter 'text' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+      expect((await first).text, 'done');
+                           ^^^^
+test/features/assistant/business_assistant_service_test.dart:107:48: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      final service = BusinessAssistantService(invoker);
+                                               ^
+test/features/assistant/business_assistant_service_test.dart:113:22: Error: The getter 'isBusy' isn't defined for the type 'BusinessAssistantService'.
+ - 'BusinessAssistantService' is from 'package:flutter_application_2/features/assistant/business_assistant_service.dart' ('lib/features/assistant/business_assistant_service.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'isBusy'.
+      expect(service.isBusy, isFalse);
+                     ^^^^^^
+test/features/assistant/business_assistant_service_test.dart:120:48: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      final service = BusinessAssistantService(invoker);
+                                               ^
+test/features/assistant/business_assistant_service_test.dart:125:22: Error: The getter 'isBusy' isn't defined for the type 'BusinessAssistantService'.
+ - 'BusinessAssistantService' is from 'package:flutter_application_2/features/assistant/business_assistant_service.dart' ('lib/features/assistant/business_assistant_service.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'isBusy'.
+      expect(service.isBusy, isFalse);
+                     ^^^^^^
+test/features/assistant/business_assistant_service_test.dart:134:53: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      final answer = await BusinessAssistantService(invoker).answer('totals?');
+                                                    ^
+test/features/assistant/business_assistant_service_test.dart:136:21: Error: The getter 'offline' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'offline'.
+      expect(answer.offline, isTrue);
+                    ^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:137:21: Error: The getter 'text' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+      expect(answer.text, AssistantAnswer.defaultOfflineMessage);
+                    ^^^^
+test/features/assistant/business_assistant_service_test.dart:144:53: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      final answer = await BusinessAssistantService(invoker).answer('totals?');
+                                                    ^
+test/features/assistant/business_assistant_service_test.dart:146:21: Error: The getter 'offline' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'offline'.
+      expect(answer.offline, isFalse);
+                    ^^^^^^^
+test/features/assistant/business_assistant_service_test.dart:147:21: Error: The getter 'text' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+      expect(answer.text, 'You received 400 kg.');
+                    ^^^^
+test/features/assistant/business_assistant_service_test.dart:158:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                            ^
+test/features/assistant/business_assistant_service_test.dart:182:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                            ^
+test/features/assistant/business_assistant_service_test.dart:197:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                            ^
+test/features/assistant/business_assistant_service_test.dart:221:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+ - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+ - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+      await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                            ^
+10:53 +50 -3: loading C:/Projects/flutter_application_2/test/features/assistant/business_assistant_service_test.dart [E]
+  Failed to load "C:/Projects/flutter_application_2/test/features/assistant/business_assistant_service_test.dart":
+  Compilation failed for testPath=C:/Projects/flutter_application_2/test/features/assistant/business_assistant_service_test.dart: test/features/assistant/business_assistant_service_test.dart:13:39: Error: Type 'AssistantInvoker' not found.
+  class FakeAssistantInvoker implements AssistantInvoker {
+                                        ^^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:16:16: Error: Type 'AssistantAnswer' not found.
+    final Future<AssistantAnswer> Function(String question) reply;
+                 ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:22:10: Error: Type 'AssistantAnswer' not found.
+    Future<AssistantAnswer> ask(String question) async {
+           ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:16:16: Error: 'AssistantAnswer' isn't a type.
+    final Future<AssistantAnswer> Function(String question) reply;
+                 ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:39:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+          (_) async => const AssistantAnswer.answer('ok'),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:49:23: Error: Method not found: 'SupabaseAssistantInvoker'.
+        final invoker = SupabaseAssistantInvoker(null);
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:53:27: Error: Undefined name 'AssistantAnswer'.
+        expect(answer.text, AssistantAnswer.defaultOfflineMessage);
+                            ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:58:9: Error: Undefined name 'AssistantAnswer'.
+          AssistantAnswer.defaultOfflineMessage,
+          ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:67:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+          (_) async => const AssistantAnswer.answer('ok'),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:77:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+          (_) async => const AssistantAnswer.answer('ok'),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:87:30: Error: 'AssistantAnswer' isn't a type.
+        final gate = Completer<AssistantAnswer>();
+                               ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:99:27: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        gate.complete(const AssistantAnswer.answer('done'));
+                            ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:105:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+          (_) async => const AssistantAnswer.answer('done'),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:118:28: Error: Couldn't find constructor 'AssistantAnswer.offline'.
+          (_) async => const AssistantAnswer.offline(),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:132:28: Error: Couldn't find constructor 'AssistantAnswer.offline'.
+          (_) async => const AssistantAnswer.offline(),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:137:27: Error: Undefined name 'AssistantAnswer'.
+        expect(answer.text, AssistantAnswer.defaultOfflineMessage);
+                            ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:142:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+          (_) async => const AssistantAnswer.answer('You received 400 kg.'),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:155:30: Error: 'AssistantAnswer' isn't a type.
+        final gate = Completer<AssistantAnswer>();
+                               ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:168:27: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        gate.complete(const AssistantAnswer.answer('You received 400 kg.'));
+                            ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:179:28: Error: Couldn't find constructor 'AssistantAnswer.offline'.
+          (_) async => const AssistantAnswer.offline(),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:188:24: Error: Undefined name 'AssistantAnswer'.
+        expect(find.text(AssistantAnswer.defaultOfflineMessage), findsOneWidget);
+                         ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:194:30: Error: 'AssistantAnswer' isn't a type.
+        final gate = Completer<AssistantAnswer>();
+                               ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:208:27: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+        gate.complete(const AssistantAnswer.answer('done'));
+                            ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:218:28: Error: Couldn't find constructor 'AssistantAnswer.answer'.
+          (_) async => const AssistantAnswer.answer('ok'),
+                             ^^^^^^^^^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:41:32: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        BusinessAssistantService(invoker).answer('How much today?');
+                                 ^
+  test/features/assistant/business_assistant_service_test.dart:69:53: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        final answer = await BusinessAssistantService(invoker).answer('   ');
+                                                      ^
+  test/features/assistant/business_assistant_service_test.dart:72:21: Error: The getter 'text' isn't defined for the type 'String'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+        expect(answer.text, contains('type a question'));
+                      ^^^^
+  test/features/assistant/business_assistant_service_test.dart:79:38: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        await BusinessAssistantService(invoker).answer('  total for today?  ');
+                                       ^
+  test/features/assistant/business_assistant_service_test.dart:89:48: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        final service = BusinessAssistantService(invoker);
+                                                 ^
+  test/features/assistant/business_assistant_service_test.dart:97:21: Error: The getter 'text' isn't defined for the type 'String'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+        expect(second.text, contains('Still working'));
+                      ^^^^
+  test/features/assistant/business_assistant_service_test.dart:100:28: Error: The getter 'text' isn't defined for the type 'String'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+        expect((await first).text, 'done');
+                             ^^^^
+  test/features/assistant/business_assistant_service_test.dart:107:48: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        final service = BusinessAssistantService(invoker);
+                                                 ^
+  test/features/assistant/business_assistant_service_test.dart:113:22: Error: The getter 'isBusy' isn't defined for the type 'BusinessAssistantService'.
+   - 'BusinessAssistantService' is from 'package:flutter_application_2/features/assistant/business_assistant_service.dart' ('lib/features/assistant/business_assistant_service.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'isBusy'.
+        expect(service.isBusy, isFalse);
+                       ^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:120:48: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        final service = BusinessAssistantService(invoker);
+                                                 ^
+  test/features/assistant/business_assistant_service_test.dart:125:22: Error: The getter 'isBusy' isn't defined for the type 'BusinessAssistantService'.
+   - 'BusinessAssistantService' is from 'package:flutter_application_2/features/assistant/business_assistant_service.dart' ('lib/features/assistant/business_assistant_service.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'isBusy'.
+        expect(service.isBusy, isFalse);
+                       ^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:134:53: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        final answer = await BusinessAssistantService(invoker).answer('totals?');
+                                                      ^
+  test/features/assistant/business_assistant_service_test.dart:136:21: Error: The getter 'offline' isn't defined for the type 'String'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'offline'.
+        expect(answer.offline, isTrue);
+                      ^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:137:21: Error: The getter 'text' isn't defined for the type 'String'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+        expect(answer.text, AssistantAnswer.defaultOfflineMessage);
+                      ^^^^
+  test/features/assistant/business_assistant_service_test.dart:144:53: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        final answer = await BusinessAssistantService(invoker).answer('totals?');
+                                                      ^
+  test/features/assistant/business_assistant_service_test.dart:146:21: Error: The getter 'offline' isn't defined for the type 'String'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'offline'.
+        expect(answer.offline, isFalse);
+                      ^^^^^^^
+  test/features/assistant/business_assistant_service_test.dart:147:21: Error: The getter 'text' isn't defined for the type 'String'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'text'.
+        expect(answer.text, 'You received 400 kg.');
+                      ^^^^
+  test/features/assistant/business_assistant_service_test.dart:158:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                              ^
+  test/features/assistant/business_assistant_service_test.dart:182:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                              ^
+  test/features/assistant/business_assistant_service_test.dart:197:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                              ^
+  test/features/assistant/business_assistant_service_test.dart:221:61: Error: The argument type 'FakeAssistantInvoker' can't be assigned to the parameter type 'AnalyticsRepository'.
+   - 'FakeAssistantInvoker' is from 'test/features/assistant/business_assistant_service_test.dart'.
+   - 'AnalyticsRepository' is from 'package:flutter_application_2/features/analytics/analytics_repository.dart' ('lib/features/analytics/analytics_repository.dart').
+        await tester.pumpWidget(host(BusinessAssistantService(invoker)));
+                                                              ^
+  .
+10:53 +50 -3: loading C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart
+11:02 +50 -3: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: stores a salted hash and authenticates the correct password only
+11:07 +51 -3: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: enforces role permissions
+11:10 +52 -3: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: rejects duplicate usernames and inactive users
+11:13 +53 -3: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: signing out clears print context before another company signs in
+11:13 +54 -3: loading C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart
+11:16 +54 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role an admin signing in as Admin is allowed
+11:19 +55 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role a secretary signing in as Secretary is allowed
+11:20 +56 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role a secretary selecting Admin is refused with a clear message
+11:21 +57 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role an admin selecting Secretary is refused with a clear message
+11:23 +58 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: role selection matches the real account role the rejection reveals nothing about other companies or members
+11:23 +59 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: the role selection cannot bypass authorization a secretary account stays a secretary after any sign in
+11:26 +60 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: the role selection cannot bypass authorization an admin account keeps its admin permissions
+11:28 +61 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: session lifecycle a signed in admin is the current user with an admin role
+11:31 +62 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: session lifecycle a signed in secretary is the current user with a secretary role
+11:34 +63 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: logout signing out clears the session and requires signing in again
+11:35 +64 -3: C:/Projects/flutter_application_2/test/features/auth/login_role_test.dart: logout after logout the same account can sign in again
+11:38 +65 -3: loading C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart
+11:40 +65 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules accepts a strong password
+11:40 +66 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules rejects a password with no uppercase letter
+11:40 +67 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules rejects a password with no lowercase letter
+11:40 +68 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules rejects a password with no number
+11:40 +69 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules rejects a password under 8 characters
+11:40 +70 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules rejects an empty password
+11:40 +71 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules reports length before character-class problems
+11:40 +72 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules reports a mismatched confirmation
+11:40 +73 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password rules accepts a matching confirmation
+11:40 +74 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Change Password rejects a weak new password and shows why
+11:43 +75 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Change Password rejects a mismatched confirmation
+11:44 +76 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Change Password submits a valid change and confirms success
+11:45 +77 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Change Password requires the current password
+11:45 +78 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Change Password shows a friendly message when the provider refuses
+11:46 +79 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Change Password obscures every password field until revealed
+11:46 +80 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Forgot Password rejects an invalid email before sending anything
+11:47 +81 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Forgot Password requires an email to be entered
+11:47 +82 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Forgot Password sends the link and confirms generically
+11:47 +83 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Forgot Password never reveals whether an email is registered
+11:47 +84 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Forgot Password offers a way back to login
+11:47 +85 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Reset Password enforces the same rules as Change Password
+11:48 +86 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Reset Password applies a valid new password and confirms
+11:48 +87 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: Reset Password does not reach a dashboard before the reset is done
+11:48 +88 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password access does not depend on the role admin and secretary reach the identical screen
+11:49 +89 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: password access does not depend on the role the screen carries no role or permission gate
+11:49 +90 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: About page describes the software shows the product name, version and developer
+11:49 +91 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: About page describes the software labels Website without showing a URL
+11:49 +92 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: About page describes the software never renders the WhatsApp number as visible text
+11:49 +93 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: About page describes the software the WhatsApp destination uses the Ghana international format
+11:49 +94 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: About page describes the software the About page reads no company data
+11:49 +95 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: About page describes the software the software mark is not the company logo
+11:49 +96 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: responsive breakpoints bands follow the available width, not the device
+11:49 +97 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: responsive breakpoints a narrow window is treated exactly like a phone
+11:49 +98 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: responsive breakpoints only a band that fits offers side navigation
+11:49 +99 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: responsive breakpoints the password form fits a small phone
+11:49 +100 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: responsive breakpoints the password form fits a narrow desktop window
+11:49 +101 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: responsive breakpoints the About page fits a small phone
+11:50 +102 -3: C:/Projects/flutter_application_2/test/features/auth/password_and_about_test.dart: responsive breakpoints the About page fits a large monitor
+11:50 +103 -3: loading C:/Projects/flutter_application_2/test/features/auth/supabase_account_service_test.dart
+11:51 +103 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_account_service_test.dart: forgot-password sends the configured recovery redirect
+11:52 +104 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_account_service_test.dart: signup with confirmation required reports a null-session outcome
+11:52 +105 -3: loading C:/Projects/flutter_application_2/test/features/auth/supabase_auth_link_handler_test.dart
+11:53 +105 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_auth_link_handler_test.dart: an expired recovery callback is classified without exchanging it
+11:53 +106 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_auth_link_handler_test.dart: an expired verification callback is classified separately
+11:53 +107 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_auth_link_handler_test.dart: a valid callback does not create a client-side session
+11:53 +108 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_auth_link_handler_test.dart: the same provider failure reported by two auth listeners is shown once
+11:53 +109 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_auth_link_handler_test.dart: unrelated auth-stream errors are ignored without a callback
+11:53 +110 -3: loading C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart
+12:11 +110 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: Supabase login repository sends credentials to the Supabase Auth password endpoint
+12:12 +111 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: Supabase login repository restoring without a session clears cached print context
+12:13 +112 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: logout clears cached print context so the next user cannot inherit it
+12:13 +113 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: company-specific preferences reload correctly after switching back to the previous company
+12:13 +114 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: remote login UI submits entered credentials and has no local demo path
+12:16 +115 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: login shows the active company branding
+12:17 +116 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: selected membership determines the dashboard role
+12:18 +117 -3: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: settings exposes company branding and change password
+22:18 +117 -4: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: settings exposes company branding and change password [E]
+  TimeoutException after 0:10:00.000000: Test timed out after 10 minutes.
+  dart:isolate  _RawReceivePort._handleMessage
+  
+EXITCODE=1 

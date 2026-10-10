@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
-  test('v12 to v13 keeps legacy rows and allows NULL recorder IDs', () async {
+  test('v12 migration keeps legacy rows and preserves NOT NULL recorder IDs', () async {
     sqfliteFfiInit();
     final directory = await Directory.systemTemp.createTemp(
       'recorded-by-migration-',
@@ -50,6 +50,41 @@ void main() {
                 FOREIGN KEY (delivery_id) REFERENCES deliveries(id) ON DELETE CASCADE
               )
             ''');
+            await database.execute('''
+              CREATE TABLE products (
+                id TEXT PRIMARY KEY,
+                company_id TEXT,
+                name TEXT NOT NULL COLLATE NOCASE,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+              )
+            ''');
+            await database.execute('''
+              CREATE TABLE receipt_sends (
+                id TEXT PRIMARY KEY,
+                delivery_id TEXT NOT NULL,
+                company_id TEXT,
+                phone TEXT NOT NULL,
+                channel TEXT NOT NULL,
+                status TEXT NOT NULL,
+                sent_at TEXT NOT NULL,
+                provider_reference TEXT
+              )
+            ''');
+            await database.execute('''
+              CREATE TABLE import_logs (
+                id TEXT PRIMARY KEY,
+                filename TEXT NOT NULL,
+                imported_at TEXT NOT NULL,
+                imported_by_user_id TEXT NOT NULL,
+                company_id TEXT,
+                rows_total INTEGER NOT NULL,
+                rows_imported INTEGER NOT NULL,
+                rows_skipped INTEGER NOT NULL,
+                rows_failed INTEGER NOT NULL
+              )
+            ''');
             await database.insert('deliveries', {
               'id': 'legacy-delivery',
               'supplier_id': 'supplier-1',
@@ -92,26 +127,32 @@ void main() {
         deliveryColumns.singleWhere(
           (column) => column['name'] == 'recorded_by_user_id',
         )['notnull'],
-        0,
+        1,
       );
       expect(weights, hasLength(1));
       expect(weights.single['weight'], 50);
-      expect(weights.single['recorded_by_user_id'], isNull);
       expect(
         weightColumns.any((column) => column['name'] == 'recorded_by_user_id'),
-        isTrue,
+        isFalse,
       );
       expect(await database.rawQuery('PRAGMA foreign_key_check'), isEmpty);
 
-      await database.update(
-        'deliveries',
-        {'recorded_by_user_id': null},
-        where: 'id = ?',
-        whereArgs: ['legacy-delivery'],
+      // The local schema keeps recorded_by_user_id NOT NULL and uses the
+      // 'local-secretary' sentinel instead of SQL NULL, so an attempt to null
+      // the recorder must be rejected by the constraint and leave the legacy
+      // sentinel intact.
+      await expectLater(
+        database.update(
+          'deliveries',
+          {'recorded_by_user_id': null},
+          where: 'id = ?',
+          whereArgs: ['legacy-delivery'],
+        ),
+        throwsA(isA<DatabaseException>()),
       );
       expect(
         (await database.query('deliveries')).single['recorded_by_user_id'],
-        isNull,
+        'local-secretary',
       );
     } finally {
       await database?.close();

@@ -1,0 +1,35 @@
+=== SUPABASE CLI AVAILABILITY ===
+supabase: NOT FOUND on PATH
+=== npx-based CLI? (npm/npx presence) ===
+npx found: C:\Program Files\nodejs\npx.ps1
+=== AUTH TOKEN FILE PRESENCE (existence only, no contents) ===
+APPDATA\supabase\access-token : False
+LOCALAPPDATA\supabase\access-token : False
+APPDATA\supabase dir : False
+=== LOCAL MIGRATION FILES (12 expected) ===
+202609230001_initial_schema.sql
+202609230002_multi_company.sql
+202609240001_company_branding_storage.sql
+202609240002_recorded_by_identity.sql
+202609250001_company_sms_sender_id.sql
+202609260001_sms_credits.sql
+202609260002_bulk_deliveries.sql
+202609260003_sms_credit_reserve_many.sql
+202609270001_subscriptions.sql
+202610020001_sms_initial_credits_and_send_claims.sql
+202610030001_company_print_preferences.sql
+202610070001_subscription_function_execute_privileges.sql
+=== config.toml present? ===
+config.toml : False
+=== .temp project-link state present? ===
+.temp dir : True
+cli-latest
+gotrue-version
+linked-project.json
+pooler-url
+postgres-version
+project-ref
+rest-version
+storage-migration
+storage-version
+=== DONE ===

@@ -1,0 +1,8 @@
+﻿
+Path                                                                          LineNumber Line                                                                      
+----                                                                          ---------- ----                                                                      
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart        614   /// constraints in SQLite; `ALTER TABLE ... ADD COLUMN` cannot. The copy
+C:\Projects\flutter_application_2\lib\features\products\product_database.dart        673     await database.execute('ALTER TABLE $table ADD COLUMN $definition');  
+
+
+

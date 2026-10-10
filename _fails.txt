@@ -1,0 +1,8 @@
+11:18 +29 -1: C:/Projects/flutter_application_2/test/bug_repro_test.dart: secretary receiving form district accepts Techiman [E]
+11:19 +29 -2: C:/Projects/flutter_application_2/test/bug_repro_test.dart: focus stays on the district field while typing [E]
+11:41 +50 -3: loading C:/Projects/flutter_application_2/test/features/assistant/business_assistant_service_test.dart [E]
+12:38 +50 -4: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: stores a salted hash and authenticates the correct password only [E]
+12:46 +50 -4: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: stores a salted hash and authenticates the correct password only [E]
+13:10 +50 -5: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: enforces role permissions [E]
+13:12 +50 -5: C:/Projects/flutter_application_2/test/features/auth/local_auth_repository_test.dart: enforces role permissions [E]
+28:46 +115 -6: C:/Projects/flutter_application_2/test/features/auth/supabase_login_wiring_test.dart: settings exposes company branding and change password [E]

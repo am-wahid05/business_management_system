@@ -1,0 +1,7 @@
+=== where.exe search for supabase ===
+=== bounded search in common roots ===
+=== check a few explicit paths ===
+C:\Users\PC\scoop\shims\supabase.exe => False
+C:\Users\PC\AppData\Local\Microsoft\WindowsApps\supabase.exe => False
+C:\Users\PC\AppData\Roaming\npm\supabase.cmd => False
+=== DONE ===

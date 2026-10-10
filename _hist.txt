@@ -1,0 +1,20 @@
+﻿
+          recorded_at TEXT NOT NULL,
+>         recorded_by_user_id TEXT NOT NULL,
+          company_id TEXT,
+
+
+
+          recorded_at TEXT NOT NULL,
+>         recorded_by_user_id TEXT NOT NULL,
+          company_id TEXT,
+
+
+
+              'company_id': activeCompanyId,
+              'bag_number': weight['bag_number'],
+              'weight': (weight['weight'] as num).toDouble(),
+>             'recorded_by_user_id': weight['recorded_by_user_id'],
+            }, conflictAlgorithm: ConflictAlgorithm.replace);
+
+

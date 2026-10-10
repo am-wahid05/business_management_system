@@ -106,3 +106,28 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
+
+# The staged runtime is prepared by tooling/prepare_weekly_python_runtime.ps1.
+# It is kept under build/ so the binary distribution is never checked in.
+set(WEEKLY_PYTHON_RUNTIME_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}/../build/windows/weekly_python_runtime")
+if(CMAKE_SIZEOF_VOID_P LESS 8)
+  message(FATAL_ERROR "The bundled CPython runtime is x64; configure a 64-bit Windows build.")
+endif()
+foreach(WEEKLY_PYTHON_REQUIRED_FILE
+    "python.exe"
+    "python313.dll"
+    "python313.zip"
+    "python313._pth"
+    "weekly_purchasing_intelligence.py"
+    "LICENSE.txt")
+  if(NOT EXISTS "${WEEKLY_PYTHON_RUNTIME_DIR}/${WEEKLY_PYTHON_REQUIRED_FILE}")
+    message(FATAL_ERROR
+      "Missing bundled Python file: ${WEEKLY_PYTHON_RUNTIME_DIR}/${WEEKLY_PYTHON_REQUIRED_FILE}. "
+      "Run tooling/prepare_weekly_python_runtime.ps1 before building Windows.")
+  endif()
+endforeach()
+
+install(DIRECTORY "${WEEKLY_PYTHON_RUNTIME_DIR}/"
+  DESTINATION "${INSTALL_BUNDLE_LIB_DIR}/python"
+  COMPONENT Runtime)

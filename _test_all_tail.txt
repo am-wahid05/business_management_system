@@ -1,0 +1,15 @@
+00:13 +19: C:/Projects/flutter_application_2/test/app/role_navigation_test.dart: destination matching an unknown route highlights nothing
+00:14 +20: loading C:/Projects/flutter_application_2/test/app/supabase_config_test.dart
+00:19 +20: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Supabase email confirmation callback uses the registered application callback URL
+00:19 +21: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Supabase email confirmation callback accepts only the application auth callback host
+00:19 +22: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Supabase email confirmation callback accepts the password recovery callback Supabase actually sends
+00:19 +23: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration (setUpAll)
+00:19 +23: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration declares an intent filter for the custom scheme and host
+00:19 +24: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration declares no other custom scheme that could hijack the callback
+00:19 +25: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration keeps the activity singleTop so a warm start is delivered
+00:19 +26: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration exports the activity so the system can launch it
+00:19 +27: C:/Projects/flutter_application_2/test/app/supabase_config_test.dart: Android deep link registration (tearDownAll)
+00:19 +27: loading C:/Projects/flutter_application_2/test/bug_repro_test.dart
+01:02 +27: C:/Projects/flutter_application_2/test/bug_repro_test.dart: GhanaLocationFields char-by-char typing keeps every character
+01:10 +28: C:/Projects/flutter_application_2/test/bug_repro_test.dart: admin supplier form district accepts Techiman
+01:12 +29: C:/Projects/flutter_application_2/test/bug_repro_test.dart: secretary receiving form district accepts Techiman

@@ -1,0 +1,230 @@
+    );
+  });
+
+  test('composite foreign key rejects A bag weight under B delivery scope',
+      () async {
+    await repositoryFor('company-a').save(
+      _delivery('DUPLICATE-001', 'company-a', [11]),
+    );
+
+    await expectLater(
+      database.insert('delivery_bag_weights', {
+        'company_id': 'company-b',
+        'delivery_id': 'DUPLICATE-001',
+        'bag_number': 2,
+        'weight': 99,
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+  });
+
+  test('sync download does not replace another company duplicate ID', () async {
+    final client = SupabaseClient(
+      'https://example.supabase.co',
+      'test-publishable-key',
+      httpClient: MockClient((request) async {
+        final table = request.url.pathSegments.last;
+        final companyId = request.url.queryParameters['company_id']
+            ?.replaceFirst('eq.', '');
+        final records = _remoteRows[table]?[companyId] ?? const [];
+        return http.Response(
+          jsonEncode(records),
+          200,
+          request: request,
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'apikey': 'test-publishable-key',
+            'Authorization': 'Bearer test-publishable-key',
+          },
+        );
+      }),
+    );
+    final store = SupabaseDeliveryStore(
+      client,
+      localDatabase: database,
+      userId: () => 'user-company-a',
+      isAdmin: () => true,
+    );
+
+    await store.downloadCompany(
+      scope: const SyncScope(companyId: 'company-a', isCompanyScoped: true),
+    );
+    await store.downloadCompany(
+      scope: const SyncScope(companyId: 'company-b', isCompanyScoped: true),
+    );
+
+    final deliveries = await database.query(
+      'deliveries',
+      where: 'id = ?',
+      whereArgs: ['DUPLICATE-001'],
+      orderBy: 'company_id',
+    );
+    final weights = await database.query(
+      'delivery_bag_weights',
+      where: 'delivery_id = ? AND bag_number = ?',
+      whereArgs: ['DUPLICATE-001', 1],
+      orderBy: 'company_id',
+    );
+    expect(deliveries.map((row) => row['company_id']), [
+      'company-a',
+      'company-b',
+    ]);
+    expect(weights.map((row) => row['weight']), [11.0, 22.0]);
+    expect(weights.map((row) => row['company_id']), ['company-a', 'company-b']);
+
+    await client.dispose();
+  });
+
+  test('v20 migration preserves tenant keys and archives mismatched legacy weights',
+      () async {
+    final legacyPath =
+        '${directory.path}${Platform.pathSeparator}legacy-v20.db';
+    final legacy = await databaseFactoryFfi.openDatabase(
+      legacyPath,
+      options: OpenDatabaseOptions(
+        version: 20,
+        onCreate: (database, version) async {
+          await database.execute(_legacyDeliveriesTable);
+          await database.execute(_legacyBagWeightsTable);
+          await database.execute(_legacyProductsTable);
+          await database.execute(_legacyReceiptSendsTable);
+          await database.execute(_legacyImportLogsTable);
+          await database.insert('deliveries', _legacyDeliveryRow);
+          await database.insert('delivery_bag_weights', {
+            'delivery_id': 'DUPLICATE-001',
+            'company_id': 'company-a',
+            'bag_number': 1,
+            'weight': 11,
+          });
+          await database.insert('delivery_bag_weights', {
+            'delivery_id': 'DUPLICATE-001',
+            'company_id': 'company-b',
+            'bag_number': 2,
+            'weight': 99,
+          });
+        },
+      ),
+    );
+    await legacy.close();
+
+    final upgraded = await ProductDatabase.open(
+      databasePath: legacyPath,
+      databaseFactoryOverride: databaseFactoryFfi,
+    );
+    addTearDown(upgraded.close);
+
+    final delivery = (await upgraded.query('deliveries')).single;
+    final activeWeight = (await upgraded.query('delivery_bag_weights')).single;
+    final orphanWeight =
+        (await upgraded.query('delivery_bag_weights_legacy_orphans')).single;
+    final deliveryColumns = await upgraded.rawQuery(
+      'PRAGMA table_info(deliveries)',
+    );
+    final weightColumns = await upgraded.rawQuery(
+      'PRAGMA table_info(delivery_bag_weights)',
+    );
+    final foreignKeys = await upgraded.rawQuery(
+      'PRAGMA foreign_key_list(delivery_bag_weights)',
+    );
+
+    expect(delivery['company_id'], 'company-a');
+    expect(activeWeight['company_id'], 'company-a');
+    expect(activeWeight['weight'], 11);
+    expect(orphanWeight['company_id'], 'company-b');
+    expect(orphanWeight['weight'], 99);
+    expect(
+      deliveryColumns.singleWhere((row) => row['name'] == 'company_id')['pk'],
+      1,
+    );
+    expect(
+      deliveryColumns.singleWhere((row) => row['name'] == 'id')['pk'],
+      2,
+    );
+    expect(
+      weightColumns.singleWhere((row) => row['name'] == 'company_id')['pk'],
+      1,
+    );
+    expect(
+      weightColumns.singleWhere((row) => row['name'] == 'delivery_id')['pk'],
+      2,
+    );
+    expect(
+      weightColumns.singleWhere((row) => row['name'] == 'bag_number')['pk'],
+      3,
+    );
+    expect(
+      foreignKeys.map((row) => '${row['from']}:${row['to']}').toSet(),
+      {'company_id:company_id', 'delivery_id:id'},
+    );
+    expect(await upgraded.rawQuery('PRAGMA foreign_key_check'), isEmpty);
+  });
+}
+
+Delivery _delivery(String id, String companyId, List<double> weights) {
+  return Delivery(
+    id: id,
+    supplier: Supplier(
+      id: 'supplier-$companyId',
+      companyId: companyId,
+      name: 'Supplier $companyId',
+      type: SupplierType.farmer,
+      town: 'Town $companyId',
+      district: 'District $companyId',
+      region: 'Region',
+    ),
+    product: Product(
+      id: 'product-$companyId',
+      name: 'Product $companyId',
+      companyId: companyId,
+    ),
+    recordedAt: DateTime(2026, 10, 7),
+    bagWeights: weights,
+    recordedByUserId: 'user-$companyId',
+    companyId: companyId,
+  );
+}
+
+const Map<String, Map<String, List<Map<String, dynamic>>>> _remoteRows = {
+  'suppliers': {
+    'company-a': [
+      {
+        'supplier_id': 'supplier-company-a',
+        'normalized_name': 'supplier company a',
+        'name': 'Supplier A',
+        'type': 'farmer',
+        'is_active': true,
+        'town': 'Town A',
+        'district': 'District A',
+        'region': 'Region',
+        'created_at': '2026-10-01T00:00:00Z',
+        'updated_at': '2026-10-01T00:00:00Z',
+      },
+    ],
+    'company-b': [
+      {
+        'supplier_id': 'supplier-company-b',
+        'normalized_name': 'supplier company b',
+        'name': 'Supplier B',
+        'type': 'farmer',
+        'is_active': true,
+        'town': 'Town B',
+        'district': 'District B',
+        'region': 'Region',
+        'created_at': '2026-10-01T00:00:00Z',
+        'updated_at': '2026-10-01T00:00:00Z',
+      },
+    ],
+  },
+  'products': {
+    'company-a': [
+      {
+        'id': 'cashew',
+        'name': 'Cashew',
+        'is_active': true,
+        'created_at': '2026-10-01T00:00:00Z',
+        'updated_at': '2026-10-01T00:00:00Z',
+      },
+    ],
+    'company-b': [
+      {
+        'id': 'cocoa',
