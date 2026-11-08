@@ -677,7 +677,8 @@ abstract final class ProductDatabase {
   if (kIsWeb) {
     // Web: use in-memory DB - avoids sqlite3.wasm + COOP/COEP headers
     // that Render does not send. Data comes from Supabase anyway.
-    return inMemoryDatabaseFactory;
+        return 
+sqflite_common.inMemoryDatabaseFactory;
   }
   return databaseFactoryFfi;
 }
