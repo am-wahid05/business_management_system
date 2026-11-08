@@ -1,8 +1,7 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 abstract final class ProductDatabase {
   static Future<Database> open({
     String? databasePath,
@@ -673,11 +672,10 @@ abstract final class ProductDatabase {
     await database.execute('ALTER TABLE $table ADD COLUMN $definition');
   }
 
-  static DatabaseFactory _databaseFactory() {
-    if (Platform.isWindows) {
-      sqfliteFfiInit();
-      return databaseFactoryFfi;
+    static DatabaseFactory _databaseFactory() {
+    if (kIsWeb) {
+      return databaseFactoryFfiWeb;
     }
-    return databaseFactory;
+    return databaseFactoryFfi;
   }
 }
