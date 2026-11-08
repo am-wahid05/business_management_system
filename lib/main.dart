@@ -28,7 +28,7 @@ Future<void> main() async {
   } catch (e) {
     // If local DB fails on web, fall back to in-memory so login still shows
     database = await ProductDatabase.open(
-      databasePath: inMemoryDatabasePath,
+      databasePath: ':memory:',
     );
   }
   late final AuthRepository authRepository;
