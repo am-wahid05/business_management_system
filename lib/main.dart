@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app/albnc_app.dart';
 import 'app/supabase_config.dart';
@@ -21,7 +22,15 @@ import 'features/sync/sync_coordinator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final database = await ProductDatabase.open();
+  late final Database database;
+  try {
+    database = await ProductDatabase.open();
+  } catch (e) {
+    // If local DB fails on web, fall back to in-memory so login still shows
+    database = await ProductDatabase.open(
+      databasePath: inMemoryDatabasePath,
+    );
+  }
   late final AuthRepository authRepository;
   AccountService? accountService;
   SupabaseAuthLinkHandler? authLinkHandler;
