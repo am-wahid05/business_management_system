@@ -48,6 +48,7 @@ dependencies:
   printing: ^5.15.1
   pdf: ^3.11.3
   url_launcher: ^6.3.2
+  universal_io: ^2.2.2
 
 dev_dependencies:
   flutter_test:
