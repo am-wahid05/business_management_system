@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+=import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
@@ -673,9 +673,11 @@ abstract final class ProductDatabase {
   }
 
     static DatabaseFactory _databaseFactory() {
-    if (kIsWeb) {
-      return databaseFactoryFfiWeb;
-    }
-    return databaseFactoryFfi;
+  if (kIsWeb) {
+    // Web: use in-memory DB - avoids sqlite3.wasm + COOP/COEP headers
+    // that Render does not send. Data comes from Supabase anyway.
+    return inMemoryDatabaseFactory;
   }
+  return databaseFactoryFfi;
+}
 }
